@@ -652,6 +652,82 @@ The `/retro` command writes to all relevant tiers automatically.
 
 ---
 
+## Recommended `settings.json` Configuration
+
+Beyond MCP servers and permissions, `~/.claude/settings.json` accepts several flags that significantly improve day-to-day usability. Add these to take full advantage of Claude's large context window and long-running SDLC sessions:
+
+```json
+{
+  "cleanupPeriodDays": 365,
+  "maxTerminalOutputCharacters": 150000,
+  "maxFileReadTokens": 100000,
+  "autoCompactPercentageOverride": 75
+}
+```
+
+| Flag | Default | Recommended | Why |
+|------|---------|-------------|-----|
+| `cleanupPeriodDays` | 30 | 365 | Retains conversation history for a full year — critical for long SDLC workflows |
+| `maxTerminalOutputCharacters` | 30,000 | 150,000 | Handles full `terraform plan`, CI logs, and migration outputs without truncation |
+| `maxFileReadTokens` | 25,000 | 100,000 | Reads large Terraform modules, PHP controllers, and generated files in full |
+| `autoCompactPercentageOverride` | 95 | 75 | Triggers context compaction earlier, preserving output quality in multi-phase sessions |
+
+### Optional: Telemetry Opt-Out
+
+Claude Code collects Statsig telemetry, Sentry error reports, and usage feedback by default. To opt out without blocking auto-updates (unlike `--no-network`), add the following three keys — verify exact names against the Claude Code changelog as they may evolve:
+
+```json
+{
+  "disableTelemetry": true,
+  "disableSentryReporting": true,
+  "disableFeedback": true
+}
+```
+
+### Optional: Remove Co-authorship Attribution
+
+By default, Claude appends `Co-Authored-By: Claude ...` to commits and PRs. To remove or replace with a custom string:
+
+```json
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}
+```
+
+---
+
+## ClaudeCTX — Profile Switcher (Recommended for Multi-Repo Workspaces)
+
+[ClaudeCTX](https://github.com/bsyunus/claudectx) is an open-source CLI that manages separate `settings.json`, `CLAUDE.md`, MCP servers, and permissions per profile — preventing configuration bleed between contexts (e.g., infrastructure vs. frontend vs. security work).
+
+```bash
+# Install (macOS)
+brew install claudectx
+
+# Save current config as a named profile
+claudectx save infra       # → ~/.claude/profiles/infra/
+
+# Switch profiles (auto-backs up current state before switching)
+claudectx infra            # restores ~/.claude/profiles/infra/ → ~/.claude/
+claudectx frontend
+claudectx security
+```
+
+Profiles live in `~/.claude/profiles/<name>/` and include `settings.json`, `CLAUDE.md`, and MCP server configs.
+
+**Suggested profiles for this workflow:**
+
+| Profile | Expert commands enabled | MCP servers |
+|---------|------------------------|-------------|
+| `infra` | terraform-pro, ansible-pro, kubernetes-pro | Shannon, claude-context |
+| `app` | typescript-pro, php-pro, python-pro | Firecrawl, n8n, claude-context |
+| `security` | software-engineer-pro | Shannon, OBLITERATUS |
+
+---
+
 ## 00_STATUS.md — Your Progress Dashboard
 
 Every command reads and updates `00_STATUS.md`. It is the single source of truth.
