@@ -115,7 +115,7 @@ cp -r .claude/ /path/to/your/project/.claude/
 | 3 | **Design** | `/design-system {issue}` | `03_ARCHITECTURE.md`, `03_ADR-*.md`, `03_PROJECT_SPEC.md` |
 | 4 | **Plan** | `/plan {issue}` | `04_IMPLEMENTATION_PLAN.md`, test strategy |
 | 5 | **Implement** | `/implement {issue}` | Source code, tests, updated `00_STATUS.md` |
-| 6 | **Review** | `/review {issue}` | `06_CODE_REVIEW.md`, approval/rejection status |
+| 6 | **Review** | `/review {issue}` | `06_CODE_REVIEW.md`, approval/rejection status (parallel specialist agents: architect, qa, sre, security, tech-writer) |
 | 7a | **Static Security** | `/security {issue}` | `07a_SECURITY_AUDIT.md` (OWASP, STRIDE, deps) |
 | 7b | **Dynamic Pentest** | `/security/pentest {issue}` | `07b_PENTEST_REPORT.md` (Shannon-confirmed exploits) |
 | 7c | **AI Model Audit** | `/security/redteam-ai {issue}` | `07c_AI_THREAT_MODEL.md` (only if LLMs in stack) |
@@ -194,6 +194,31 @@ OBLITERATUS requires a GPU. See the [OBLITERATUS repo](https://github.com/elder-
 **Navigation:** [`.claude/skills/SECURITY_SKILLS_README.md`](.claude/skills/SECURITY_SKILLS_README.md) is the library entry point — full inventory with tier / profile / output-artifact per skill and the cross-skill dispatch map.
 
 **Validation:** `./scripts/validate-skills.sh` enforces structural correctness — name matches directory, required frontmatter fields, required body sections (Goal / When to Use / When NOT to Use / Authorization Check / Methodology / Output Format / Quality Check), forbidden-tool catch (sqlmap / metasploit / hydra / nikto), and `cloud-readonly` write-verb catch. Expected output: **0 errors, 0 warnings**.
+
+---
+
+## Agent Library
+
+Agents live under `.claude/agents/` and split into two roles — **orchestrators** (drive a phase end-to-end) and **specialists** (focused domain experts dispatched by an orchestrator or invoked directly). The `/review` phase (Phase 6) dispatches five specialists in parallel, aggregates their verdicts, and runs a scoped fix loop (max 3 iterations — only failing specialists re-review). The `/security` phase (Phase 7a) delegates to `security-orchestrator` for large scopes, which composes the 39 defensive hunter skills.
+
+**Orchestrators:**
+
+| Agent | Role |
+|---|---|
+| `sdlc-orchestrator` | Autonomous SDLC driver — Research → Plan → Implement → Review, with parallel specialist dispatch and JSON state machine |
+| `security-orchestrator` | Composes 39 defensive hunter skills based on asset type, scope risk, and detected stack |
+
+**Specialists:**
+
+| Agent | Focus | Primary Phase |
+|---|---|---|
+| `architect` | Architecture fit, design patterns, coupling, contracts | Review (6) |
+| `qa-reviewer` | Test coverage, test quality, edge cases, regression risk | Review (6) |
+| `sre-reviewer` | Reliability, observability, failure modes, operational readiness | Review (6) |
+| `security-analyst` | OWASP / STRIDE, credential handling, input validation, Shannon / OBLITERATUS operation | Review (6) + Security (7a–8) |
+| `tech-writer` | Docs, changelog, API surface, breaking-change detection | Review (6) + Deploy (9) |
+
+Full pattern reference: [`.claude/sdlc/AGENTIC_WORKFLOW_BEST_PRACTICES.md`](.claude/sdlc/AGENTIC_WORKFLOW_BEST_PRACTICES.md) — parallel-dispatch contract, JSON state schema (v2.0.0), scoped-fix-loop semantics, risk-level extraction, and agent composition patterns.
 
 ## Bonus Commands
 
@@ -557,7 +582,14 @@ your-project/
 │   │       └── 11_RETROSPECTIVE.md
 │   ├── agents/                      # Multi-agent orchestration
 │   │   ├── sdlc-orchestrator.md    # Autonomous SDLC agent (Research→Plan→Implement→Review)
+│   │   ├── architect.md            # Specialist reviewer — architecture & design
+│   │   ├── qa-reviewer.md          # Specialist reviewer — test coverage & quality
+│   │   ├── sre-reviewer.md         # Specialist reviewer — reliability & operations
+│   │   ├── tech-writer.md          # Specialist reviewer — docs, changelog, API surface
+│   │   ├── security-orchestrator.md # Composes 39 defensive hunter skills (Phase 7a)
 │   │   └── security-analyst.md     # Security persona (OWASP, Shannon, OBLITERATUS)
+│   ├── sdlc/                        # SDLC reference docs
+│   │   └── AGENTIC_WORKFLOW_BEST_PRACTICES.md  # Parallel-review, scoped-fix-loop, JSON state patterns
 │   ├── skills/                      # Folder-based skills (Anthropic official format)
 │   │   ├── researching-code/
 │   │   │   └── SKILL.md            # Codebase research skill (model: opus)
