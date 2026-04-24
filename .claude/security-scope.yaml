@@ -1,0 +1,107 @@
+#            .claude/security-scope.yaml
+# =====================================================================
+#  ⚠  TEMPLATE — REPLACE WITH REAL COMPANY ASSETS BEFORE RUNNING ANY
+#     SECURITY SKILL OR THE security-orchestrator AGENT.
+# =====================================================================
+#
+# Authorization declaration for defensive security testing.
+# Every security skill reads this file before producing test traffic.
+# If this file does not exist OR contains only placeholder assets,
+# skills must halt and refuse to test.
+#
+# Placeholder values below (`app.internal.example.com`,
+# `*.aws-account-12345.s3.amazonaws.com`, etc.) are illustrative
+# examples showing the expected shape of each field. They are NOT
+# testable targets. Replace them with real, explicitly-authorized
+# company assets before the first live run.
+#
+# Maintenance:
+#   - Update `authorized_by` to the actual approving team / individual.
+#   - Set `authorization_date` to the date the scope was signed off.
+#   - Set `review_date` to the next required review (quarterly default).
+#   - Every `assets:` entry must reflect a real in-scope target.
+# ---------------------------------------------------------------------
+
+version: "1.0"
+authorized_by: "REPLACE_ME - the team or individual authorizing the assessment"
+authorization_date: "YYYY-MM-DD"
+review_date: "YYYY-MM-DD"  # Scope file must be re-validated quarterly
+
+# Environments in scope. Production requires explicit opt-in per asset.
+environments:
+  - name: staging
+    default_testing: active
+    rate_limit_rps: 20
+  - name: development
+    default_testing: active
+    rate_limit_rps: 50
+  - name: production
+    default_testing: passive_only  # Override per-asset below
+    rate_limit_rps: 5
+
+# Assets explicitly in scope.
+# Every asset must declare: name, environment, testing_level,
+# and whether destructive or service-affecting tests are approved.
+assets:
+
+  - name: "app.internal.example.com"
+    environment: staging
+    asset_type: web_application
+    tech_stack: [php, laravel, mysql]
+    testing_level: active         # active | passive | none
+    destructive_testing: denied   # denied | approved
+    service_affecting: denied
+    notes: "Primary customer-facing app. Test auth flows carefully."
+
+  - name: "api.internal.example.com"
+    environment: staging
+    asset_type: rest_api
+    tech_stack: [node, express, postgres]
+    testing_level: active
+    destructive_testing: denied
+    service_affecting: approved   # Rate-limit tests approved
+    owasp_api_top10_applicable: true
+
+  - name: "admin.internal.example.com"
+    environment: staging
+    asset_type: web_application
+    tech_stack: [python, django]
+    testing_level: active
+    destructive_testing: denied
+    service_affecting: denied
+    requires_auth_testing_credentials: true
+    test_credentials_vault_path: "secret/pentest/admin-app"
+
+  - name: "*.aws-account-12345.s3.amazonaws.com"
+    asset_type: aws_s3
+    testing_level: passive        # Enumeration only, no uploads
+    destructive_testing: denied
+    service_affecting: denied
+    notes: "Check bucket ACLs and policies only."
+
+  - name: "gitlab.internal.example.com"
+    asset_type: gitlab_instance
+    testing_level: passive
+    destructive_testing: denied
+    service_affecting: denied
+    notes: "CI/CD config review only. No pipeline execution tests."
+
+# Explicitly out of scope. Skills must refuse these even if tempted.
+out_of_scope:
+  - "*.thirdparty-saas.com"        # Vendor we integrate with
+  - "auth.oauth-provider.com"      # External IdP
+  - "cdn.cloudprovider.com"
+  - "prod-db.internal.example.com" # Direct DB access not approved
+  - "*.customer-owned.com"         # Customer-managed assets
+
+# Technique-level restrictions that override per-asset settings.
+technique_restrictions:
+  never_run:
+    - "credential_stuffing"        # We have other controls for this
+    - "social_engineering"
+    - "physical_access_tests"
+    - "dos_flooding"               # Different from rate-limit testing
+  require_approval:
+    - "fuzzing_with_high_volume"   # >1000 requests
+    - "session_fixation_across_users"
+    - "authentication_brute_force" # Even with test accounts

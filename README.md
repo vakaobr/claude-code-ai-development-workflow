@@ -130,6 +130,7 @@ cp -r .claude/ /path/to/your/project/.claude/
 
 | Command | Phase | What It Does |
 |---------|-------|--------------|
+| `/security {issue}` | 7a | Static audit — runs OWASP/STRIDE checklist for small scopes, or delegates to `@security-orchestrator` (which composes 39 defensive hunter skills) for large / high-risk scopes |
 | `/security/pentest {issue}` | 7b | Dynamic pentest via Shannon — only reports proven exploits with PoCs |
 | `/security/redteam-ai {issue}` | 7c | AI/LLM threat modeling — prompt injection surface, OBLITERATUS analysis |
 | `/security/harden {issue}` | 8 | Prioritized fix plan (P0–P3), implements P0 patches, creates GitHub issues |
@@ -168,6 +169,31 @@ claude login
 Relevant **only** when your app embeds a self-hosted open-source LLM (Llama, Mistral, etc.). For cloud APIs (Claude, GPT), skip this and use the prompt injection patterns from `/security/redteam-ai` instead.
 
 OBLITERATUS requires a GPU. See the [OBLITERATUS repo](https://github.com/elder-plinius/OBLITERATUS) for installation.
+
+### Defensive Security Skills Library
+
+39 specialist defensive-testing skills live under `.claude/skills/{name}/SKILL.md`, grouped by tier and class. A `security-orchestrator` agent composes them based on target type (web app / API / cloud / CI-CD), scope risk, and detected stack. The library is the backbone of `/security` Phase 7a for anything larger than an M-sized feature.
+
+**Coverage by class (skill counts in parentheses):**
+
+| Class | Skills | Notable |
+|---|---|---|
+| Recon (T4) | web-recon-passive, web-recon-active, api-recon, auth-flow-mapper, attack-surface-mapper | Produce `PASSIVE_RECON.md` / `ATTACK_SURFACE.md` / `API_INVENTORY.md` / `AUTH_FLOWS.md` / `CONSOLIDATED_ATTACK_SURFACE.md` — consumed by every hunter |
+| Authentication (T1) | auth-flaw, session-flaw, jwt, oauth-oidc | Full auth stack: enumeration, lockout, MFA-skip, JWT `alg:none` / HS256 crack / RS256→HS256, OAuth redirect-URI bypass |
+| Access control (T1) | idor, bola-bfla | Web-app IDOR + API BOLA/BFLA (OWASP API1:2023, API5:2023) |
+| Injection (T1–T2) | sqli, xxe, ssti, command-injection, path-traversal, deserialization | With post-RCE halt contract: stop at proof, never pivot |
+| Client-side (T1–T2) | xss, dom-xss, clickjacking, csrf, open-redirect, cors-misconfig | Context-aware payloads, filter-evasion catalog, CSP + SameSite audits |
+| API-class (T1–T2) | graphql, mass-assignment, excessive-data-exposure, rate-limit, owasp-api-top10-tester | `owasp-api-top10-tester` is a meta-skill producing `API_TOP10_COVERAGE.md` |
+| Server-side (T1–T2) | ssrf, ssrf-cloud-metadata, cache-smuggling | `cache-smuggling-hunter` is dual-gated (staging only, post-test cache-purge required) |
+| Logic + crypto | business-logic, crypto-flaw | Workflow bypasses + consolidated TLS/cookie/JWT/secret audit |
+| Cloud / CI-CD / Secrets (T3) | aws-iam, s3-misconfig, container, gitlab-cicd, secrets-in-code | READ-ONLY AWS CLI, trufflehog + gitleaks over repo history |
+| Recon-adjacent (T2) | subdomain-takeover | Dangling CNAMEs to unclaimed GitHub / S3 / Heroku / Azure |
+
+**Authorization model.** Every skill reads `.claude/security-scope.yaml` before any outbound activity and halts if the file is missing, malformed, or contains only placeholder assets. The scope file is distributed as a template — it **must** be populated with real company-owned targets before live use. See the "Security Testing Scope and Authorization" section of `CLAUDE.md` for the full rules-of-engagement contract.
+
+**Navigation:** [`.claude/skills/SECURITY_SKILLS_README.md`](.claude/skills/SECURITY_SKILLS_README.md) is the library entry point — full inventory with tier / profile / output-artifact per skill and the cross-skill dispatch map.
+
+**Validation:** `./scripts/validate-skills.sh` enforces structural correctness — name matches directory, required frontmatter fields, required body sections (Goal / When to Use / When NOT to Use / Authorization Check / Methodology / Output Format / Quality Check), forbidden-tool catch (sqlmap / metasploit / hydra / nikto), and `cloud-readonly` write-verb catch. Expected output: **0 errors, 0 warnings**.
 
 ## Bonus Commands
 

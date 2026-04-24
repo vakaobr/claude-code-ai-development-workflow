@@ -16,6 +16,52 @@ You are entering the **Static Security Audit** phase (7a) for issue: `$ARGUMENTS
 - Read `00_STATUS.md` — confirm Review is complete and APPROVED
 - Read `03_ARCHITECTURE.md` for system design
 - Read `06_CODE_REVIEW.md` for any security-related findings
+- Read `.claude/security-scope.yaml` — confirm this asset is in scope
+
+### Delegation Decision
+
+Before running the checklist below, decide whether to delegate to the
+`security-orchestrator` agent (which composes the 40 specialist hunter
+skills under `.claude/skills/`).
+
+**Delegate to `@security-orchestrator $ARGUMENTS` if ANY of these are true:**
+
+1. `.claude/security-scope.yaml` declares more than 3 assets with
+   `testing_level: active`
+2. `00_STATUS.md` for this issue has `Risk: High`
+3. The user's invocation included "full", "deep", "comprehensive",
+   or "orchestrated" (check `$ARGUMENTS` and the command-line intent)
+4. `01_DISCOVERY.md` flags any of:
+   - Authentication / authorization changes
+   - New API endpoints
+   - Handling of user-uploaded content
+   - Changes to tenant-isolation logic
+   - Integration with new third-party services
+   - Cryptographic key or secret handling
+
+**If delegating:**
+- Invoke `@security-orchestrator $ARGUMENTS`
+- Do NOT run the OWASP/STRIDE checklist in parallel — the orchestrator
+  supersedes it and produces a superset of findings.
+- Wait for the orchestrator's `07a_SECURITY_AUDIT.md` before marking
+  Phase 7a complete in `00_STATUS.md`.
+- Phase 7a checkbox in `00_STATUS.md` renders as:
+  ```
+  - [~] Security (orchestrated)
+    - [x] Phase 1: Reconnaissance (N skills)
+    - [x] Phase 2: Authentication (N skills, N findings)
+    - [~] Phase 3: Access Control (in progress)
+    - [ ] Phase 4: Injection
+    - [ ] Phase 5: Client-side
+    - [ ] Phase 6: API
+    - [ ] Phase 7: Infrastructure
+    - [ ] Phase 8: Cross-cutting
+    - [ ] Phase 9: Report
+  ```
+
+**Otherwise (small scope, low risk):** proceed with the OWASP/STRIDE
+checklist below. The checklist is the fastest path for small/focused
+changes and remains the default for M-sized features.
 
 ### Instructions
 

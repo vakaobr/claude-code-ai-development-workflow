@@ -5,3 +5,6 @@ dist/
 build/
 *.log
 .DS_Store
+
+# Security methodology reference (local only — too large for VCS, possibly copyright-sensitive)
+pentest-agent-development/source-books/

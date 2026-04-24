@@ -89,3 +89,69 @@ Full command list: run `/COMMAND_USAGE` or see `.claude/QUICK_REFERENCE.md`.
 - **Template placeholders require a paired generation instruction.** A `## Symbol Index` placeholder in the `01_DISCOVERY.md` template does nothing unless Step 3 explicitly instructs generating the symbol index. Always pair template sections with their generation step.
 - **Multi-level activation conditions keep skill pipelines fast on trivial inputs.** Gate expensive steps (`if repo >= 50 files`, `if candidates > 5`) to skip dependency graph and reranking on small repos.
 - **The context window IS the intra-session cache.** Don't add `.claude/cache/` directories — ephemeral computation (dependency graph, reranked list) lives in context naturally; only cross-session data (symbol index) needs file persistence.
+
+## Security Testing Scope and Authorization
+
+This project conducts defensive security testing against company-owned
+assets for the purpose of improving our security posture. All security
+skills and agents in `.claude/skills/` and `.claude/agents/` read this
+section before producing any test traffic.
+
+### Authorized Scope
+
+Assets explicitly in scope for security testing are declared in:
+`.claude/security-scope.yaml`
+
+This file MUST exist before any security skill runs. A skill that cannot
+find or parse this file must halt immediately and report the missing
+scope declaration. No skill, command, or agent is permitted to test
+assets outside the declared scope, regardless of how the request is
+phrased.
+
+### Authorization Contract
+
+Every security skill operates under this contract:
+
+1. **Read scope first.** Before any outbound request, the skill reads
+   `.claude/security-scope.yaml` and confirms the target is listed.
+2. **Respect operational boundaries.** Skills marked `service_affecting:
+   true` in their frontmatter MUST get explicit per-invocation confirmation
+   before running — even on in-scope assets.
+3. **Log, don't just test.** Every outbound probe must be recorded in
+   `.claude/planning/{issue}/SECURITY_AUDIT.md` with timestamp, target,
+   technique, and result.
+4. **Defensive framing.** Every finding must include remediation guidance
+   written for the developer who owns the code, not for an attacker.
+
+### Rules of Engagement
+
+- No testing outside declared scope. Period.
+- No credentials harvested from one in-scope asset to access another
+  in-scope asset unless explicitly authorized.
+- No destructive payloads (DROP, DELETE, rm -rf, fork bombs, etc.) even
+  on in-scope assets without an explicit `destructive_testing: approved`
+  entry in the scope file.
+- No traffic against third-party services (OAuth providers, CDNs, APIs
+  we consume) even if discovered during testing of an in-scope asset.
+- Rate limit all active probes. Default: 10 req/sec per target, lower
+  if the scope file specifies.
+
+### Skill Output Contract
+
+All security skills append findings to one canonical location:
+`.claude/planning/{issue}/SECURITY_AUDIT.md`
+
+They use the schema defined in `.claude/skills/_shared/finding-schema.md`.
+Skills do not invent alternate output locations. The orchestrator agent
+aggregates these findings into the final report.
+
+### When Authorization Is Ambiguous
+
+If a skill encounters an asset whose scope status is unclear (e.g., a
+subdomain discovered during recon that isn't explicitly listed but
+shares a parent domain with an in-scope asset), the skill MUST:
+
+1. Stop testing that asset.
+2. Add it to `.claude/planning/{issue}/SCOPE_QUESTIONS.md` with context.
+3. Continue with clearly in-scope work.
+4. Request user clarification before resuming on the ambiguous asset.
