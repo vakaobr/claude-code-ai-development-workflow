@@ -12,7 +12,7 @@ You are helping the user search, index, and manage their codebase's semantic sea
 
 ### Check if claude-context MCP is configured
 
-Read `.claude/settings.json` and check if `claude-context` exists in the `mcpServers` section.
+Run `claude mcp get claude-context` and check whether the server is registered. (Claude Code reads MCP config from `~/.claude.json` or project-local `.mcp.json` — **not** from `settings.json`.)
 
 **If NOT configured**, respond:
 

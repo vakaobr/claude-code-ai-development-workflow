@@ -102,7 +102,7 @@ Remove old flat skill files and update all cross-references to reflect the new s
 Create the auto-memory directory with structured templates and extend `/retro` to write to both tiers.
 
 ### Tasks
-- [ ] Task 3.1: Create `MEMORY.md` in auto-memory directory with structured template — `~/.claude/projects/-Users-andersonleite-secra-repos-claude-code-ai-development-workflow/memory/MEMORY.md`
+- [ ] Task 3.1: Create `MEMORY.md` in auto-memory directory with structured template — `~/.claude/projects/<dashed-project-path>/memory/MEMORY.md`
 - [ ] Task 3.2: Create `patterns.md` template — `memory/patterns.md`
 - [ ] Task 3.3: Create `decisions.md` template — `memory/decisions.md`
 - [ ] Task 3.4: Create `learnings.md` template — `memory/learnings.md`
@@ -122,7 +122,7 @@ Create the auto-memory directory with structured templates and extend `/retro` t
 - `/retro` command instructs writing to both CLAUDE.md and auto-memory
 
 ### Rollback
-- Delete memory files: `rm -rf ~/.claude/projects/-Users-andersonleite-secra-repos-claude-code-ai-development-workflow/memory/`
+- Delete memory files: `rm -rf ~/.claude/projects/<dashed-project-path>/memory/`
 - Revert retro: `git checkout HEAD~1 -- .claude/commands/retro.md`
 
 ---

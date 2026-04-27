@@ -17,17 +17,19 @@ claude-context MCP provides:
 
 ## Step 1: Check Existing Configuration
 
-First, check if claude-context is already configured:
+First, check if claude-context is already registered as an MCP server:
 
 ```bash
-cat .claude/settings.json
+claude mcp get claude-context
 ```
 
-If `claude-context` already exists in `mcpServers`, inform the user:
+If the command returns server details (not "No MCP server found"), inform the user:
 
-> claude-context MCP is already configured in this project. Run `/retrieval/setup` again to reconfigure, or use `/retrieval` to search and index.
+> claude-context MCP is already configured. Run `/retrieval/setup` again to reconfigure, or use `/retrieval` to search and index.
 
 If not configured, proceed to Step 2.
+
+> **Note:** Claude Code reads MCP server configuration from `~/.claude.json` (user scope) or a project-local `.mcp.json` (project scope) — **not** from `settings.json`. The `claude mcp` CLI writes to the correct location automatically. Don't hand-edit `mcpServers` blocks into `settings.json` — they will be silently ignored.
 
 ## Step 2: Ask About Setup Preference
 
@@ -64,16 +66,43 @@ Guide the user through prerequisites:
 > ```
 >
 > **2. Milvus** (vector database)
+>
+> Milvus standalone needs **etcd** (metadata) and **MinIO** (object storage). Run all three on a user-defined Docker network so they resolve each other by name (default-bridge IPs shuffle on Docker Desktop restarts and break Milvus's etcd connection):
+>
 > ```bash
-> docker run -d --name milvus \
+> # 1. User-defined network
+> docker network create milvus-net
+>
+> # 2. etcd
+> docker run -d --name milvus-etcd --network milvus-net \
+>   -p 127.0.0.1:2379:2379 \
+>   -e ALLOW_NONE_AUTHENTICATION=yes \
+>   quay.io/coreos/etcd:v3.5.18 \
+>   etcd --advertise-client-urls=http://0.0.0.0:2379 \
+>        --listen-client-urls=http://0.0.0.0:2379 \
+>        --auto-compaction-mode=revision --auto-compaction-retention=1000
+>
+> # 3. MinIO
+> docker run -d --name milvus-minio --network milvus-net \
+>   -p 127.0.0.1:9000:9000 -p 127.0.0.1:9001:9001 \
+>   -e MINIO_ACCESS_KEY=minioadmin -e MINIO_SECRET_KEY=minioadmin \
+>   minio/minio:latest server /data --console-address ":9001"
+>
+> # 4. Milvus (pin a tested version — :latest has shipped breaking changes)
+> docker run -d --name milvus --network milvus-net \
 >   -p 127.0.0.1:19530:19530 -p 127.0.0.1:9091:9091 \
 >   -v milvus-data:/var/lib/milvus \
->   milvusdb/milvus:latest milvus run standalone
+>   -e ETCD_ENDPOINTS=milvus-etcd:2379 \
+>   -e MINIO_ADDRESS=milvus-minio:9000 \
+>   -e MINIO_ACCESS_KEY_ID=minioadmin \
+>   -e MINIO_SECRET_ACCESS_KEY=minioadmin \
+>   milvusdb/milvus:v2.6.15 milvus run standalone
 > ```
 >
-> Confirm both are running:
+> Confirm everything is running:
 > - Ollama: `ollama list` should show `nomic-embed-text`
-> - Milvus: `docker ps | grep milvus` should show the container
+> - Milvus stack: `docker ps --filter network=milvus-net` should show all three containers
+> - Milvus health: `curl -sf http://127.0.0.1:9091/healthz && echo OK`
 
 ### Option 2: Zilliz Cloud + Ollama
 
@@ -116,122 +145,141 @@ Guide the user through prerequisites:
 > 1. **API Base URL** — e.g., `http://localhost:1234/v1`
 > 2. **Model name** — The embedding model name in your server
 
-## Step 4: Apply Configuration
+## Step 4: Register the MCP Server
 
-Based on user choices, update `.claude/settings.json` to add the claude-context MCP server. **Merge with existing config — do not replace the Shannon or other MCP servers.**
+Use `claude mcp add-json` to register the server. Pick the scope:
+
+- **`--scope user`** (recommended for local infrastructure setups) — registered in `~/.claude.json`, available to every project on this machine.
+- **`--scope project`** — registered in a project-local `.mcp.json` (commit-friendly if you want teammates to pick it up).
+
+Pre-warm the npm cache once so the first MCP spawn doesn't time out:
+
+```bash
+npx -y @zilliz/claude-context-mcp@latest --help </dev/null
+```
+
+Then run the command for the chosen option below.
 
 ### Option 1: Fully Local
 
-```json
-{
-  "mcpServers": {
-    "claude-context": {
-      "command": "npx",
-      "args": ["-y", "@zilliz/claude-context-mcp@latest"],
-      "env": {
-        "EMBEDDING_PROVIDER": "Ollama",
-        "EMBEDDING_MODEL": "nomic-embed-text",
-        "EMBEDDING_DIMENSION": "768",
-        "EMBEDDING_BATCH_SIZE": "5",
-        "OLLAMA_HOST": "http://127.0.0.1:11434",
-        "OLLAMA_NUM_PARALLEL": "1",
-        "MILVUS_ADDRESS": "127.0.0.1:19530",
-        "SPLITTER_TYPE": "ast",
-        "HYBRID_MODE": "true",
-        "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
-      }
-    }
+```bash
+claude mcp add-json --scope user claude-context '{
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "@zilliz/claude-context-mcp@latest"],
+  "env": {
+    "EMBEDDING_PROVIDER": "Ollama",
+    "EMBEDDING_MODEL": "nomic-embed-text",
+    "EMBEDDING_DIMENSION": "768",
+    "EMBEDDING_BATCH_SIZE": "5",
+    "OLLAMA_HOST": "http://127.0.0.1:11434",
+    "OLLAMA_NUM_PARALLEL": "1",
+    "MILVUS_ADDRESS": "127.0.0.1:19530",
+    "SPLITTER_TYPE": "ast",
+    "HYBRID_MODE": "true",
+    "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
   }
-}
+}'
 ```
 
 ### Option 2: Zilliz Cloud + Ollama
 
-```json
+Replace `<user-provided-zilliz-endpoint>` and export `MILVUS_TOKEN` in your shell **before** running the command (so the secret never lands in `~/.claude.json`):
+
+```bash
+export MILVUS_TOKEN='your-zilliz-cloud-api-key'
+
+claude mcp add-json --scope user claude-context "$(cat <<JSON
 {
-  "mcpServers": {
-    "claude-context": {
-      "command": "npx",
-      "args": ["-y", "@zilliz/claude-context-mcp@latest"],
-      "env": {
-        "EMBEDDING_PROVIDER": "Ollama",
-        "EMBEDDING_MODEL": "nomic-embed-text",
-        "EMBEDDING_DIMENSION": "768",
-        "EMBEDDING_BATCH_SIZE": "5",
-        "OLLAMA_HOST": "http://127.0.0.1:11434",
-        "OLLAMA_NUM_PARALLEL": "1",
-        "MILVUS_ADDRESS": "<user-provided-zilliz-endpoint>",
-        "MILVUS_TOKEN": "${MILVUS_TOKEN}",
-        "SPLITTER_TYPE": "ast",
-        "HYBRID_MODE": "true",
-        "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
-      }
-    }
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "@zilliz/claude-context-mcp@latest"],
+  "env": {
+    "EMBEDDING_PROVIDER": "Ollama",
+    "EMBEDDING_MODEL": "nomic-embed-text",
+    "EMBEDDING_DIMENSION": "768",
+    "EMBEDDING_BATCH_SIZE": "5",
+    "OLLAMA_HOST": "http://127.0.0.1:11434",
+    "OLLAMA_NUM_PARALLEL": "1",
+    "MILVUS_ADDRESS": "<user-provided-zilliz-endpoint>",
+    "MILVUS_TOKEN": "${MILVUS_TOKEN}",
+    "SPLITTER_TYPE": "ast",
+    "HYBRID_MODE": "true",
+    "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
   }
 }
+JSON
+)"
 ```
 
 ### Option 3: Zilliz Cloud + OpenAI
 
-```json
+Export both secrets before running:
+
+```bash
+export OPENAI_API_KEY='sk-...'
+export MILVUS_TOKEN='your-zilliz-cloud-api-key'
+
+claude mcp add-json --scope user claude-context "$(cat <<JSON
 {
-  "mcpServers": {
-    "claude-context": {
-      "command": "npx",
-      "args": ["-y", "@zilliz/claude-context-mcp@latest"],
-      "env": {
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "MILVUS_ADDRESS": "<user-provided-zilliz-endpoint>",
-        "MILVUS_TOKEN": "${MILVUS_TOKEN}",
-        "SPLITTER_TYPE": "ast",
-        "HYBRID_MODE": "true",
-        "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
-      }
-    }
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "@zilliz/claude-context-mcp@latest"],
+  "env": {
+    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+    "MILVUS_ADDRESS": "<user-provided-zilliz-endpoint>",
+    "MILVUS_TOKEN": "${MILVUS_TOKEN}",
+    "SPLITTER_TYPE": "ast",
+    "HYBRID_MODE": "true",
+    "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
   }
 }
+JSON
+)"
 ```
 
 ### Option 4: OpenAI-Compatible Local
 
-```json
-{
-  "mcpServers": {
-    "claude-context": {
-      "command": "npx",
-      "args": ["-y", "@zilliz/claude-context-mcp@latest"],
-      "env": {
-        "EMBEDDING_PROVIDER": "OpenAI",
-        "OPENAI_API_KEY": "local",
-        "OPENAI_BASE_URL": "<user-provided-base-url>",
-        "EMBEDDING_MODEL": "<user-provided-model-name>",
-        "MILVUS_ADDRESS": "127.0.0.1:19530",
-        "SPLITTER_TYPE": "ast",
-        "HYBRID_MODE": "true",
-        "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
-      }
-    }
+```bash
+claude mcp add-json --scope user claude-context '{
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "@zilliz/claude-context-mcp@latest"],
+  "env": {
+    "EMBEDDING_PROVIDER": "OpenAI",
+    "OPENAI_API_KEY": "local",
+    "OPENAI_BASE_URL": "<user-provided-base-url>",
+    "EMBEDDING_MODEL": "<user-provided-model-name>",
+    "MILVUS_ADDRESS": "127.0.0.1:19530",
+    "SPLITTER_TYPE": "ast",
+    "HYBRID_MODE": "true",
+    "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
   }
-}
+}'
 ```
 
 ## Step 5: Verify Setup
 
-After applying configuration:
+Verify the registration and connection from the shell — no Claude Code restart needed for the new server to be picked up by future sessions:
 
-1. Inform the user they need to **restart Claude Code** for MCP changes to take effect
-2. After restart, they can verify by running `/retrieval status`
+```bash
+claude mcp list | grep claude-context
+```
+
+Expected: `claude-context: ... - ✓ Connected`
+
+If it shows `✗ Failed to connect`, check `claude --mcp-debug` startup output for the underlying error (most common: Milvus / Ollama not running, or an `EMBEDDING_DIMENSION` mismatch).
 
 > ### Setup Complete!
 >
-> claude-context MCP has been configured in `.claude/settings.json`.
+> claude-context MCP is registered. New Claude Code sessions will load it automatically.
 >
 > **Next steps:**
-> 1. **Restart Claude Code** for the MCP server to load
-> 2. Run `/retrieval index` to build the search index for this project
+> 1. Open a new Claude Code session in this project
+> 2. Run `/retrieval index` to build the search index
 > 3. Run `/retrieval search "your query"` to test semantic search
 >
-> **Available tools (after restart):**
+> **Available tools (after the next session starts):**
 > - `search_code` — Hybrid BM25 + semantic search over indexed code
 > - `index_codebase` — Build or update the code index (AST + embeddings)
 > - `get_indexing_status` — Check index health and progress

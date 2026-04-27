@@ -17,45 +17,49 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# 1. Locate the Claude credentials file
+# 1+2. Load Claude credentials and extract the OAuth token.
+#
+# On macOS, Claude Code stores credentials in the login keychain under
+# "Claude Code-credentials". On Linux, it falls back to ~/.claude/credentials.json.
 # ---------------------------------------------------------------------------
-CLAUDE_CREDENTIALS_FILE="${HOME}/.claude/credentials.json"
+CRED_JSON=""
 
-if [[ ! -f "$CLAUDE_CREDENTIALS_FILE" ]]; then
-  echo "[shannon-mcp-wrapper] ERROR: Claude credentials not found at $CLAUDE_CREDENTIALS_FILE" >&2
-  echo "[shannon-mcp-wrapper] Run 'claude login' first to authenticate with Claude Code." >&2
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  CRED_JSON=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null || true)
+fi
+
+if [[ -z "$CRED_JSON" ]]; then
+  CLAUDE_CREDENTIALS_FILE="${HOME}/.claude/credentials.json"
+  if [[ -f "$CLAUDE_CREDENTIALS_FILE" ]]; then
+    CRED_JSON=$(cat "$CLAUDE_CREDENTIALS_FILE")
+  fi
+fi
+
+if [[ -z "$CRED_JSON" ]]; then
+  echo "[shannon-mcp-wrapper] ERROR: Claude credentials not found." >&2
+  echo "[shannon-mcp-wrapper] Looked in macOS Keychain (service 'Claude Code-credentials') and ${HOME}/.claude/credentials.json." >&2
+  echo "[shannon-mcp-wrapper] Run 'claude login' to authenticate." >&2
   exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# 2. Extract the OAuth token (supports both claudeAiOauth and direct token)
-# ---------------------------------------------------------------------------
-# Try claudeAiOauth.accessToken first (Team / Pro subscriptions)
-OAUTH_TOKEN=$(python3 -c "
-import json, sys
+OAUTH_TOKEN=$(CRED_JSON="$CRED_JSON" python3 -c "
+import json, os, sys
 try:
-    with open('$CLAUDE_CREDENTIALS_FILE') as f:
-        data = json.load(f)
-    # Claude Code stores tokens under different keys depending on version
+    data = json.loads(os.environ['CRED_JSON'])
     token = (
         data.get('claudeAiOauth', {}).get('accessToken') or
         data.get('oauthToken') or
         data.get('accessToken') or
         data.get('token')
     )
-    if not token:
-        print('NOT_FOUND', end='')
-    else:
-        print(token, end='')
+    print(token or 'NOT_FOUND', end='')
 except Exception as e:
     print('ERROR:' + str(e), end='')
 " 2>/dev/null)
 
 if [[ -z "$OAUTH_TOKEN" || "$OAUTH_TOKEN" == "NOT_FOUND" ]]; then
-  echo "[shannon-mcp-wrapper] ERROR: Could not extract OAuth token from $CLAUDE_CREDENTIALS_FILE" >&2
-  echo "[shannon-mcp-wrapper] Contents preview (keys only):" >&2
-  python3 -c "import json; d=json.load(open('$CLAUDE_CREDENTIALS_FILE')); print(list(d.keys()))" >&2
-  echo "[shannon-mcp-wrapper] Try running 'claude login' to refresh credentials." >&2
+  echo "[shannon-mcp-wrapper] ERROR: Could not extract OAuth token from credentials." >&2
+  echo "[shannon-mcp-wrapper] Try 'claude login' to refresh credentials." >&2
   exit 1
 fi
 

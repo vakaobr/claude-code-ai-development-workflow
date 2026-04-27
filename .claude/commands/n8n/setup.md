@@ -16,18 +16,19 @@ n8n-MCP provides AI-assisted access to:
 
 ## Step 1: Check Existing Configuration
 
-First, check if n8n-mcp is already configured:
+First, check if n8n-mcp is already registered:
 
 ```bash
-# Check project settings
-cat .claude/settings.json
+claude mcp get n8n-mcp
 ```
 
-If `n8n-mcp` already exists in `mcpServers`, inform the user:
+If the command returns server details (not "No MCP server found"), inform the user:
 
-> n8n-MCP is already configured in this project. Run `/n8n/setup` again to reconfigure, or use `/n8n` to start working with n8n.
+> n8n-MCP is already configured. Run `/n8n/setup` again to reconfigure, or use `/n8n` to start working with n8n.
 
 If not configured, proceed to Step 2.
+
+> **Note:** Claude Code reads MCP server configuration from `~/.claude.json` (user scope) or a project-local `.mcp.json` (project scope) — **not** from `settings.json`. The `claude mcp` CLI writes to the correct location automatically. Don't hand-edit `mcpServers` blocks into `settings.json` — they will be silently ignored.
 
 ## Step 2: Ask About Hosting Preference
 
@@ -72,106 +73,102 @@ If the user chose Full capabilities:
 - Reference it in the configuration
 - Suggest adding it to a `.env` file (which must be in `.gitignore`)
 
-## Step 5: Apply Configuration
+## Step 5: Register the MCP Server
 
-Based on user choices, update `.claude/settings.json` to add the n8n-mcp server.
+Use `claude mcp add` (for HTTP transport) or `claude mcp add-json` (for stdio transport). Pick the scope:
+
+- **`--scope user`** — registered in `~/.claude.json`, available to every project on this machine.
+- **`--scope project`** — registered in a project-local `.mcp.json` (commit-friendly if you want teammates to pick it up).
+
+For Full-mode options, export `N8N_API_KEY` in your shell **before** running so the secret is interpolated at registration time.
 
 ### Option 1: Hosted Service
 
-```json
-{
-  "mcpServers": {
-    "n8n-mcp": {
-      "type": "url",
-      "url": "https://mcp.n8n-mcp.com/mcp"
-    }
-  }
-}
+```bash
+claude mcp add --scope user --transport http n8n-mcp https://mcp.n8n-mcp.com/mcp
 ```
 
 Note: The user will need to sign up at dashboard.n8n-mcp.com and configure their API token separately.
 
 ### Option 2: npx (Basic)
 
-```json
-{
-  "mcpServers": {
-    "n8n-mcp": {
-      "command": "npx",
-      "args": ["n8n-mcp"],
-      "env": {
-        "MCP_MODE": "stdio",
-        "LOG_LEVEL": "error",
-        "DISABLE_CONSOLE_OUTPUT": "true"
-      }
-    }
+```bash
+claude mcp add-json --scope user n8n-mcp '{
+  "type": "stdio",
+  "command": "npx",
+  "args": ["n8n-mcp"],
+  "env": {
+    "MCP_MODE": "stdio",
+    "LOG_LEVEL": "error",
+    "DISABLE_CONSOLE_OUTPUT": "true"
   }
-}
+}'
 ```
 
 ### Option 2: npx (Full)
 
-```json
+```bash
+export N8N_API_KEY='your-n8n-api-key'
+
+claude mcp add-json --scope user n8n-mcp "$(cat <<JSON
 {
-  "mcpServers": {
-    "n8n-mcp": {
-      "command": "npx",
-      "args": ["n8n-mcp"],
-      "env": {
-        "MCP_MODE": "stdio",
-        "LOG_LEVEL": "error",
-        "DISABLE_CONSOLE_OUTPUT": "true",
-        "N8N_API_URL": "<user-provided-url>",
-        "N8N_API_KEY": "<user-provided-key>"
-      }
-    }
+  "type": "stdio",
+  "command": "npx",
+  "args": ["n8n-mcp"],
+  "env": {
+    "MCP_MODE": "stdio",
+    "LOG_LEVEL": "error",
+    "DISABLE_CONSOLE_OUTPUT": "true",
+    "N8N_API_URL": "<user-provided-url>",
+    "N8N_API_KEY": "${N8N_API_KEY}"
   }
 }
+JSON
+)"
 ```
 
 ### Option 3: Docker (Basic)
 
-```json
-{
-  "mcpServers": {
-    "n8n-mcp": {
-      "command": "docker",
-      "args": [
-        "run", "-i", "--rm", "--init",
-        "-e", "MCP_MODE=stdio",
-        "-e", "LOG_LEVEL=error",
-        "-e", "DISABLE_CONSOLE_OUTPUT=true",
-        "ghcr.io/czlonkowski/n8n-mcp:latest"
-      ]
-    }
-  }
-}
+```bash
+claude mcp add-json --scope user n8n-mcp '{
+  "type": "stdio",
+  "command": "docker",
+  "args": [
+    "run", "-i", "--rm", "--init",
+    "-e", "MCP_MODE=stdio",
+    "-e", "LOG_LEVEL=error",
+    "-e", "DISABLE_CONSOLE_OUTPUT=true",
+    "ghcr.io/czlonkowski/n8n-mcp:latest"
+  ]
+}'
 ```
 
 ### Option 3: Docker (Full)
 
-```json
+```bash
+export N8N_API_KEY='your-n8n-api-key'
+
+claude mcp add-json --scope user n8n-mcp "$(cat <<JSON
 {
-  "mcpServers": {
-    "n8n-mcp": {
-      "command": "docker",
-      "args": [
-        "run", "-i", "--rm", "--init",
-        "-e", "MCP_MODE=stdio",
-        "-e", "LOG_LEVEL=error",
-        "-e", "DISABLE_CONSOLE_OUTPUT=true",
-        "-e", "N8N_API_URL=<user-provided-url>",
-        "-e", "N8N_API_KEY=<user-provided-key>",
-        "ghcr.io/czlonkowski/n8n-mcp:latest"
-      ]
-    }
-  }
+  "type": "stdio",
+  "command": "docker",
+  "args": [
+    "run", "-i", "--rm", "--init",
+    "-e", "MCP_MODE=stdio",
+    "-e", "LOG_LEVEL=error",
+    "-e", "DISABLE_CONSOLE_OUTPUT=true",
+    "-e", "N8N_API_URL=<user-provided-url>",
+    "-e", "N8N_API_KEY=${N8N_API_KEY}",
+    "ghcr.io/czlonkowski/n8n-mcp:latest"
+  ]
 }
+JSON
+)"
 ```
 
 ### Option 4: Local Development
 
-Guide the user:
+Build from source:
 
 ```bash
 git clone https://github.com/czlonkowski/n8n-mcp.git
@@ -181,22 +178,22 @@ npm run build
 npm run rebuild
 ```
 
-Then configure settings.json to point to the local build:
+Then register pointing to the local build (use the absolute path — Claude Code does **not** expand `${HOME}` or `~`):
 
-```json
+```bash
+claude mcp add-json --scope user n8n-mcp "$(cat <<JSON
 {
-  "mcpServers": {
-    "n8n-mcp": {
-      "command": "node",
-      "args": ["<path-to-clone>/dist/index.js"],
-      "env": {
-        "MCP_MODE": "stdio",
-        "LOG_LEVEL": "error",
-        "DISABLE_CONSOLE_OUTPUT": "true"
-      }
-    }
+  "type": "stdio",
+  "command": "node",
+  "args": ["/absolute/path/to/n8n-mcp/dist/index.js"],
+  "env": {
+    "MCP_MODE": "stdio",
+    "LOG_LEVEL": "error",
+    "DISABLE_CONSOLE_OUTPUT": "true"
   }
 }
+JSON
+)"
 ```
 
 ## Step 6: Security Configuration (Optional)
@@ -207,21 +204,26 @@ Ask the user:
 >
 > n8n-MCP collects anonymous usage telemetry by default. Would you like to disable it? (y/n)
 
-If yes, add `"N8N_MCP_TELEMETRY_DISABLED": "true"` to the env block.
+If yes, add `"N8N_MCP_TELEMETRY_DISABLED": "true"` to the env block. (To change env on an already-registered server, remove and re-add: `claude mcp remove n8n-mcp --scope user` then re-run the appropriate `claude mcp add-json` command from Step 5 with the extra env entry.)
 
 ## Step 7: Verify Setup
 
-After applying configuration:
+Verify from the shell:
 
-1. Inform the user they need to **restart Claude Code** for MCP changes to take effect
-2. After restart, they can verify by running `/n8n` which will attempt to use the n8n-mcp tools
+```bash
+claude mcp list | grep n8n-mcp
+```
+
+Expected: `n8n-mcp: ... - ✓ Connected`
+
+If it shows `✗ Failed to connect`, check `claude --mcp-debug` startup output for the underlying error (most common: invalid API key, unreachable n8n instance URL, or `npx` cold-fetch timeout — pre-warm with `npx -y n8n-mcp --help </dev/null`).
 
 > ### Setup Complete!
 >
-> n8n-MCP has been configured in `.claude/settings.json`.
+> n8n-MCP is registered. New Claude Code sessions will load it automatically.
 >
 > **Next steps:**
-> 1. Restart Claude Code for the MCP server to load
+> 1. Open a new Claude Code session
 > 2. Run `/n8n` to start working with n8n workflows
 >
 > **Available tools (after restart):**

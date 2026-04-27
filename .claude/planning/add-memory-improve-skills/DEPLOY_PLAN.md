@@ -149,7 +149,7 @@ ls .claude/skills/*/SKILL.md 2>/dev/null
 # Expected: no results (or the new folders still exist but aren't used)
 
 # 4. Delete memory files (local only, not in git)
-rm -rf ~/.claude/projects/-Users-andersonleite-secra-repos-claude-code-ai-development-workflow/memory/
+rm -rf ~/.claude/projects/<dashed-project-path>/memory/
 
 # 5. Verify orchestrator is restored
 grep "fixing-review-issues" .claude/agents/sdlc-orchestrator.md
@@ -178,7 +178,7 @@ git commit -m "Rollback: revert skill migration, keep memory system"
 
 ```bash
 # Delete local memory files
-rm -rf ~/.claude/projects/-Users-andersonleite-secra-repos-claude-code-ai-development-workflow/memory/
+rm -rf ~/.claude/projects/<dashed-project-path>/memory/
 
 # Revert /retro command changes
 git checkout HEAD~1 -- .claude/commands/retro.md

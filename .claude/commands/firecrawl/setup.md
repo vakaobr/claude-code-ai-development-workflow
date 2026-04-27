@@ -19,17 +19,19 @@ Firecrawl MCP provides:
 
 ## Step 1: Check Existing Configuration
 
-First, check if firecrawl is already configured:
+First, check if firecrawl is already registered:
 
 ```bash
-cat .claude/settings.json
+claude mcp get firecrawl
 ```
 
-If `firecrawl` already exists in `mcpServers`, inform the user:
+If the command returns server details (not "No MCP server found"), inform the user:
 
-> Firecrawl MCP is already configured in this project. Run `/firecrawl/setup` again to reconfigure, or use `/firecrawl` to start scraping.
+> Firecrawl MCP is already configured. Run `/firecrawl/setup` again to reconfigure, or use `/firecrawl` to start scraping.
 
 If not configured, proceed to Step 2.
+
+> **Note:** Claude Code reads MCP server configuration from `~/.claude.json` (user scope) or a project-local `.mcp.json` (project scope) — **not** from `settings.json`. The `claude mcp` CLI writes to the correct location automatically. Don't hand-edit `mcpServers` blocks into `settings.json` — they will be silently ignored.
 
 ## Step 2: Ask About Hosting Preference
 
@@ -92,78 +94,77 @@ Guide the user to start a self-hosted Firecrawl instance:
 - Reference it in the configuration
 - Suggest adding it to a `.env` file (which must be in `.gitignore`)
 
-## Step 4: Apply Configuration
+## Step 4: Register the MCP Server
 
-Based on user choices, update `.claude/settings.json` to add the firecrawl MCP server.
+Use `claude mcp add-json` to register the server. Pick the scope:
 
-### Option 1: Self-hosted Docker (with npx MCP client)
+- **`--scope user`** — registered in `~/.claude.json`, available to every project on this machine.
+- **`--scope project`** — registered in a project-local `.mcp.json` (commit-friendly if you want teammates to pick it up).
 
-```json
+Always export secrets in your shell **before** running the command so they're interpolated at registration time and don't end up hand-edited into a JSON file later. (`claude mcp add-json` stores the literal env values it receives.)
+
+### Option 1 / Option 2: Self-hosted (Docker or npx)
+
+```bash
+export FIRECRAWL_API_KEY='your-self-hosted-key'
+
+claude mcp add-json --scope user firecrawl "$(cat <<JSON
 {
-  "mcpServers": {
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_URL": "<user-provided-url>",
-        "FIRECRAWL_API_KEY": "<user-provided-key>"
-      }
-    }
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "firecrawl-mcp"],
+  "env": {
+    "FIRECRAWL_API_URL": "http://localhost:3002",
+    "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
   }
 }
+JSON
+)"
 ```
 
-### Option 2: Self-hosted via npx
-
-```json
-{
-  "mcpServers": {
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_URL": "<user-provided-url>",
-        "FIRECRAWL_API_KEY": "<user-provided-key>"
-      }
-    }
-  }
-}
-```
+Replace `http://localhost:3002` with your actual self-hosted instance URL if different.
 
 ### Option 3: Cloud API
 
-```json
+```bash
+export FIRECRAWL_API_KEY='fc-...'
+
+claude mcp add-json --scope user firecrawl "$(cat <<JSON
 {
-  "mcpServers": {
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_KEY": "<user-provided-key>"
-      }
-    }
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "firecrawl-mcp"],
+  "env": {
+    "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
   }
 }
+JSON
+)"
 ```
 
 Note: When `FIRECRAWL_API_URL` is omitted, the MCP server defaults to Firecrawl's cloud API.
 
 ## Step 5: Verify Setup
 
-After applying configuration:
+Verify from the shell:
 
-1. Inform the user they need to **restart Claude Code** for MCP changes to take effect
-2. After restart, they can verify by running `/firecrawl test https://example.com`
+```bash
+claude mcp list | grep firecrawl
+```
+
+Expected: `firecrawl: ... - ✓ Connected`
+
+If it shows `✗ Failed to connect`, check `claude --mcp-debug` startup output for the underlying error (most common: API URL unreachable, invalid API key, or `npx` cold-fetch timeout — pre-warm with `npx -y firecrawl-mcp --help </dev/null`).
 
 > ### Setup Complete!
 >
-> Firecrawl MCP has been configured in `.claude/settings.json`.
+> Firecrawl MCP is registered. New Claude Code sessions will load it automatically.
 >
 > **Next steps:**
-> 1. Restart Claude Code for the MCP server to load
+> 1. Open a new Claude Code session
 > 2. Run `/firecrawl test https://example.com` to verify
 >
-> **Available tools (after restart):**
+> **Available tools (after the next session starts):**
 > - `firecrawl_scrape` — Scrape a single URL to clean markdown
 > - `firecrawl_crawl` — Recursively crawl a website
 > - `firecrawl_search` — Web search + content extraction

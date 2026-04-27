@@ -154,11 +154,27 @@ docker --version
 # 3. Authenticate with Claude Code (only needed once)
 claude login
 
-# That's it. The MCP wrapper handles everything else automatically.
+# 4. Register the Shannon MCP server (use absolute paths — Claude Code does
+#    NOT expand ${HOME}, ~, or ${workspaceFolder} in mcpServers entries).
+claude mcp add-json --scope project shannon "$(cat <<JSON
+{
+  "type": "stdio",
+  "command": "bash",
+  "args": ["$(pwd)/.claude/scripts/shannon-mcp-wrapper.sh"],
+  "env": {
+    "SHANNON_DIR": "$(pwd)/shannon",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
+  }
+}
+JSON
+)"
+
+# 5. Verify it connected
+claude mcp list | grep shannon
 ```
 
 **How it works:**
-- `.claude/scripts/shannon-mcp-wrapper.sh` reads `~/.claude/credentials.json` at startup
+- `.claude/scripts/shannon-mcp-wrapper.sh` reads the Claude Code OAuth token at startup — from the macOS Keychain (`security find-generic-password -s "Claude Code-credentials"`) on macOS, falling back to `~/.claude/credentials.json` on Linux
 - Extracts OAuth token, builds Shannon's MCP server if needed, launches it
 - When token rotates, just `claude login` — next call picks it up automatically
 
@@ -612,7 +628,7 @@ your-project/
 │   ├── QUICK_REFERENCE.md           # Tool cheat sheets — terraform, docker, kubectl, ansible (on-demand)
 │   ├── scripts/
 │   │   └── shannon-mcp-wrapper.sh  # OAuth token wrapper for Shannon MCP server
-│   └── settings.json                # Claude Code project settings + Shannon MCP config
+│   └── settings.json                # Claude Code project settings (permissions, hooks)
 ├── CLAUDE.md                        # Project-level AI instructions (~91 lines, token-optimized)
 └── docs/
     └── guides/
