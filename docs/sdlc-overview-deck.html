@@ -783,9 +783,9 @@ flowchart LR
         <div class="slide__kpi-trend" style="color:var(--text-dim);">discovery to retro</div>
       </div>
       <div class="slide__kpi reveal">
-        <div class="slide__kpi-val" style="color:var(--accent2);">50+</div>
+        <div class="slide__kpi-val" style="color:var(--accent2);">60+</div>
         <div class="slide__kpi-label">Slash Commands</div>
-        <div class="slide__kpi-trend" style="color:var(--text-dim);">workflow + experts + quality</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">workflow + experts + quality + cloud cost</div>
       </div>
       <div class="slide__kpi reveal">
         <div class="slide__kpi-val" style="color:var(--green);">46</div>
@@ -793,9 +793,9 @@ flowchart LR
         <div class="slide__kpi-trend" style="color:var(--text-dim);">7 SDLC + 39 defensive security</div>
       </div>
       <div class="slide__kpi reveal">
-        <div class="slide__kpi-val" style="color:var(--blue);">8</div>
+        <div class="slide__kpi-val" style="color:var(--blue);">10</div>
         <div class="slide__kpi-label">Integrated Tools</div>
-        <div class="slide__kpi-trend" style="color:var(--text-dim);">Shannon, n8n, Firecrawl, claude-context...</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">Shannon, n8n, Firecrawl, claude-context, aws-doctor, cloud-cost-cli...</div>
       </div>
       <div class="slide__kpi reveal">
         <div class="slide__kpi-val" style="color:var(--accent);">~50%</div>
@@ -927,6 +927,16 @@ flowchart LR
               <td><strong>claude-context</strong></td>
               <td>Semantic code retrieval &mdash; hybrid BM25 + vector search over AST-indexed codebases</td>
               <td><code>/retrieval</code>, <code>/retrieval/setup</code></td>
+            </tr>
+            <tr>
+              <td><strong>aws-doctor</strong></td>
+              <td>AWS cost diagnostics &mdash; idle resource detection, 6-month trend charts, region-aware pricing</td>
+              <td><code>/cloud/aws-doctor-setup</code>, <code>/cloud/aws-cost-estimate</code>, <code>/cloud/aws-waste-scan</code>, <code>/cloud/aws-trend</code></td>
+            </tr>
+            <tr>
+              <td><strong>cloud-cost-cli</strong></td>
+              <td>Multi-cloud cost analysis &mdash; AWS / Azure / GCP, 38 analyzers, confidence-labeled findings</td>
+              <td><code>/cloud/cost-cli-setup</code>, <code>/cloud/cost-scan</code>, <code>/cloud/aws-cost-compare</code></td>
             </tr>
           </tbody>
         </table>
@@ -1098,6 +1108,44 @@ flowchart LR
         </div>
         <div class="reveal" style="margin-top:16px;padding:12px;background:var(--accent-dim);border-radius:8px;border-left:3px solid var(--accent);">
           <div style="font-family:var(--font-mono);font-size:clamp(11px,1.2vw,13px);color:var(--text-dim);">Zero external deps &mdash; all prompt-based (Glob + Grep). Cross-session cache via 01_DISCOVERY.md; intra-session via context window.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 14b: SPLIT — CLOUD COST OPTIMIZATION -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal" style="color:var(--accent);">FinOps Layer</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">Cloud Cost Optimization</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal">Two tools, one workflow &mdash; <strong>aws-doctor</strong> (Go, AWS-only, region-aware pricing) + <strong>cloud-cost-cli</strong> (Node, AWS / Azure / GCP, 38 analyzers)</li>
+          <li class="reveal"><strong>Issue-tied by default</strong> &mdash; cost artifacts land in <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">.claude/planning/{issue}/</code> next to research, design, security</li>
+          <li class="reveal"><code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">aws-cost-compare</code> runs both tools and diffs &mdash; <strong>Consensus</strong> findings act as a high-confidence prioritization signal</li>
+          <li class="reveal"><code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">/discover</code> auto-suggests the right setup per detected cloud; <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">/deploy-plan</code> gates cloud-provisioning deploys on a cost baseline</li>
+          <li class="reveal">Cost-Material flag triggers when projected delta &gt; 10% of account spend or any Consensus finding &gt; $500/mo</li>
+        </ul>
+      </div>
+      <div class="slide__panel slide__panel--secondary">
+        <p class="slide__label reveal" style="color:var(--accent2);">Setup &amp; Use</p>
+        <div style="margin-top:12px;">
+          <pre class="reveal" style="background:var(--code-bg);color:var(--code-text);padding:16px;border-radius:8px;font-family:var(--font-mono);font-size:clamp(11px,1.2vw,14px);line-height:1.6;overflow-x:auto;"><code><span style="color:var(--text-dim);"># One-time setup (per tool)</span>
+<span style="color:var(--accent);">/cloud/aws-doctor-setup</span>
+<span style="color:var(--accent);">/cloud/cost-cli-setup</span>
+
+<span style="color:var(--text-dim);"># AWS &mdash; baseline cost for a change</span>
+<span style="color:var(--accent);">/cloud/aws-cost-estimate</span> migrate-ecs-app
+
+<span style="color:var(--text-dim);"># AWS &mdash; run both tools, diff results</span>
+<span style="color:var(--accent);">/cloud/aws-cost-compare</span> migrate-ecs-app
+
+<span style="color:var(--text-dim);"># Azure / GCP &mdash; multi-cloud scan</span>
+<span style="color:var(--accent);">/cloud/cost-scan</span> migrate-app --provider azure
+<span style="color:var(--accent);">/cloud/cost-scan</span> migrate-app --provider gcp
+
+<span style="color:var(--text-dim);"># Ad-hoc account-wide sweep</span>
+<span style="color:var(--accent);">/cloud/aws-waste-scan</span></code></pre>
         </div>
       </div>
     </div>

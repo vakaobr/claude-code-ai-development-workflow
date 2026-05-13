@@ -26,6 +26,26 @@ Create a deployment strategy. Produce `.claude/planning/$ARGUMENTS/09_DEPLOY_PLA
 - [ ] Monitoring/alerting updated (from /observe phase or planned)
 - [ ] Runbook/playbook updated
 - [ ] Stakeholders notified
+- [ ] **Cost impact captured** — required if the change provisions cloud resources:
+  - AWS: `/cloud/aws-cost-estimate $ARGUMENTS` (and optionally `/cloud/aws-cost-compare $ARGUMENTS` for a second-tool cross-check)
+  - Azure: `/cloud/cost-scan $ARGUMENTS --provider azure --location {region}`
+  - GCP: `/cloud/cost-scan $ARGUMENTS --provider gcp --region {region}`
+
+#### 1a. Cost Impact (cloud-provisioning changes)
+
+The expected cost artifacts per provider are:
+
+| Provider | Required Artifact |
+|----------|-------------------|
+| AWS | `.claude/planning/$ARGUMENTS/05c_COST_BASELINE.md` |
+| Azure / GCP | `.claude/planning/$ARGUMENTS/05f_CLOUD_COST.md` |
+
+If the change provisions cloud resources and the matching artifact does NOT exist:
+
+1. Suggest the user run the appropriate command from the checklist above.
+2. If they decline (or the change is non-cloud), record the reason in this plan under a `## Cost Impact` section: "N/A — non-cloud change" or "Skipped — {reason}".
+
+If the artifact exists, embed its monthly delta / savings figure into `09_DEPLOY_PLAN.md` under `## Cost Impact`, with a link back to the source doc. Flag the deploy as **Cost-Material** if the projected monthly delta exceeds 10% of current account spend (or if any single Consensus finding from `05g_AWS_COMPARE.md` exceeds $500/mo).
 
 #### 2. Rollout Strategy
 

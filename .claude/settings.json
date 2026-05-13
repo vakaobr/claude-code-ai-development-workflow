@@ -3,6 +3,13 @@
     "allow": [
       "Agent",
       "Bash(./shannon/*)",
+      "Bash(aws sts get-caller-identity*)",
+      "Bash(aws pricing get-products*)",
+      "Bash(aws-doctor *)",
+      "Bash(az account show*)",
+      "Bash(cloud-cost-cli *)",
+      "Bash(gcloud auth list*)",
+      "Bash(gcloud config get-value*)",
       "Bash(bundle audit*)",
       "Bash(bundle exec rspec*)",
       "Bash(cargo audit*)",

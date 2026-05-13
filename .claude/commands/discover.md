@@ -195,6 +195,20 @@ If any quality tooling is missing, recommend:
 - Missing dependency auditing → "Run `/quality/dependency-check` to audit"
 - General quality check → "Run `/quality/code-audit` for a full assessment"
 
+### Cloud-Conditional Recommendations
+
+If the detected stack includes **AWS** (any of: `*.tf` with `provider "aws"`, `serverless.yml`, `sam.yml`, `cdk.json`, `aws-sdk` in dependencies):
+- Recommend: "Run `/cloud/aws-doctor-setup` + `/cloud/cost-cli-setup` once, then `/cloud/aws-cost-estimate {issue-name}` after `/design-system` to capture a cost baseline. For a second-opinion comparison, run `/cloud/aws-cost-compare {issue-name}`."
+- Note in `01_DISCOVERY.md` under **Dependencies**: "AWS cost surface — baseline pending."
+
+If the detected stack includes **Azure** (any of: `*.bicep`, ARM templates, `@azure/` packages, `azure-pipelines.yml`):
+- Recommend: "Run `/cloud/cost-cli-setup` once, then `/cloud/cost-scan {issue-name} --provider azure --location {region}` after `/design-system`."
+- Note in `01_DISCOVERY.md` under **Dependencies**: "Azure cost surface — baseline pending."
+
+If the detected stack includes **GCP** (any of: `app.yaml` for App Engine, `cloudbuild.yaml`, `@google-cloud/` packages, `gcp` provider in `*.tf`):
+- Recommend: "Run `/cloud/cost-cli-setup` once, then `/cloud/cost-scan {issue-name} --provider gcp --region {region}` after `/design-system`."
+- Note in `01_DISCOVERY.md` under **Dependencies**: "GCP cost surface — baseline pending."
+
 ### Fallback Expert Commands
 If the detected language or cloud provider does NOT match any specific expert:
 - Unknown/unmatched language → **`/language/software-engineer-pro`** (SOLID, clean architecture, testing, API design, refactoring — universal patterns)

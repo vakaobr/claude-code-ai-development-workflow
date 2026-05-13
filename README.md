@@ -516,6 +516,29 @@ Run anytime — auto-detect your stack and apply appropriate tooling:
 
 ---
 
+## Cloud Cost Commands (AWS / Azure / GCP)
+
+Two underlying tools, used in tandem where useful:
+
+- [**aws-doctor**](https://github.com/elC0mpa/aws-doctor) (Go) — AWS-only, strong region-aware pricing, 6-month trend charts. Setup: `/cloud/aws-doctor-setup`.
+- [**cloud-cost-cli**](https://github.com/vuhp/cloud-cost-cli) (Node ≥20) — multi-cloud (AWS / Azure / GCP), 18 AWS / 11 Azure / 9 GCP analyzers with confidence labels. Setup: `/cloud/cost-cli-setup`.
+
+Issue-tied by default — output lands in the active planning directory and links from `00_STATUS.md`. Pass `--adhoc` (or omit the issue name) for one-off scans that write to `.claude/reports/` instead.
+
+| Command | Tool | Purpose |
+|---------|------|---------|
+| `/cloud/aws-doctor-setup` | aws-doctor | One-time install + IAM permission check |
+| `/cloud/cost-cli-setup` | cloud-cost-cli | One-time install + per-provider auth check (AWS/Azure/GCP) |
+| `/cloud/aws-cost-estimate {issue}` | aws-doctor | Cost baseline + projected monthly delta (`05c_COST_BASELINE.md`) |
+| `/cloud/aws-waste-scan [issue] [services...]` | aws-doctor | Rank idle / over-provisioned AWS resources, P0–P3 (`05d_AWS_WASTE.md`) |
+| `/cloud/aws-trend [issue] [services...]` | aws-doctor | 6-month per-service trend + runaway/creeping classification (`05e_AWS_TREND.md`) |
+| `/cloud/cost-scan [issue] --provider {aws\|azure\|gcp}` | cloud-cost-cli | Multi-cloud scan (`05f_CLOUD_COST.md`) |
+| `/cloud/aws-cost-compare [issue]` | both | Run both tools against AWS, diff consensus / unique / conflicting findings (`05g_AWS_COMPARE.md`) |
+
+`/discover` auto-suggests the relevant setup + scan command based on detected cloud (AWS / Azure / GCP). `/deploy-plan` requires the matching cost artifact before approving cloud-provisioning deploys.
+
+---
+
 ## File Organization
 
 ```
@@ -577,8 +600,16 @@ your-project/
 │   │   ├── retrieval.md               # Semantic code retrieval assistant
 │   │   ├── retrieval/
 │   │   │   └── setup.md              # claude-context MCP setup wizard
-│   │   └── devops/
-│   │       └── ci-pipeline.md       # CI/CD pipeline generation
+│   │   ├── devops/
+│   │   │   └── ci-pipeline.md       # CI/CD pipeline generation
+│   │   └── cloud/
+│   │       ├── aws-doctor-setup.md  # Install/verify aws-doctor CLI
+│   │       ├── aws-cost-estimate.md # Cost baseline + projected delta (aws-doctor)
+│   │       ├── aws-waste-scan.md    # Idle / over-provisioned resources (aws-doctor)
+│   │       ├── aws-trend.md         # 6-month per-service trend (aws-doctor)
+│   │       ├── cost-cli-setup.md    # Install/verify cloud-cost-cli (multi-cloud)
+│   │       ├── cost-scan.md         # Multi-cloud scan (aws/azure/gcp via cloud-cost-cli)
+│   │       └── aws-cost-compare.md  # Run both tools against AWS, diff findings
 │   ├── planning/                    # Auto-generated per issue
 │   │   └── {issue-name}/
 │   │       ├── 00_STATUS.md            # Central progress dashboard
