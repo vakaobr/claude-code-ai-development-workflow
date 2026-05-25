@@ -1011,6 +1011,11 @@ CLAUDE.md (project root, ~91 lines)     ← Always loaded: SDLC workflow, sessio
 The `/retro` command writes **abbreviated** learnings to CLAUDE.md (max 2 recent blocks) and **full detail** to `.claude/LEARNINGS.md`. Older blocks are automatically rotated out of CLAUDE.md to keep the token budget lean.
 
 ---
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=vakaobr/claude-code-ai-development-workflow&type=Date)](https://star-history.com/#vakaobr/claude-code-ai-development-workflow&Date)
+
+---
 
 ## Credits
 
