@@ -5,3 +5,8 @@ dist/
 build/
 *.log
 .DS_Store
+
+# MarkItDown MCP — project-local Python venv created by /markitdown/setup
+.claude/.venvs/
+# MarkItDown — auto-generated converted documents (regenerable; may hold PII/secrets)
+*.converted.md

@@ -16,6 +16,7 @@ This project synthesizes and extends several open-source tools, each bringing di
 | [**n8n-MCP**](https://github.com/czlonkowski/n8n-mcp) by czlonkowski | MCP server bridging n8n workflow automation with Claude Code — access 1,084+ nodes, 2,709 templates, and optionally manage a live n8n instance (CRUD workflows, trigger executions). Self-hosted or hosted | `/n8n`, `/n8n/setup` |
 | [**Firecrawl**](https://github.com/firecrawl/firecrawl) by firecrawl | Web scraping, crawling, and structured data extraction via MCP. Fallback when built-in `WebFetch` fails on JS-rendered or anti-bot protected pages. Self-hosted (Docker) or cloud API | `/firecrawl`, `/firecrawl/setup` |
 | [**claude-context**](https://github.com/zilliztech/claude-context) by Zilliz | Semantic code retrieval via MCP — hybrid BM25 + vector search over AST-indexed codebases. Tree-sitter parsing, Merkle tree incremental indexing, multiple embedding providers (Ollama, OpenAI, Voyage, Gemini). Enhances `/research` and `/implement` with semantic search | `/retrieval`, `/retrieval/setup` |
+| [**MarkItDown**](https://github.com/microsoft/markitdown) by Microsoft | Converts non-plaintext documents (PDF, Office, images, audio, HTML, EPub, ZIP) to clean Markdown via MCP. Saves tokens versus `Read` rendering PDF pages as images. Local-first STDIO server; `/discover` and `/research` convert documents automatically before reading | `/markitdown`, `/markitdown/setup` |
 
 Extended with: Discovery, Architecture/ADR, DevSecOps security layer, Deployment, Observability, Retrospective phases, performance testing, hotfix workflow, multi-agent orchestration, and self-improving CLAUDE.md via automated retrospectives.
 
@@ -296,6 +297,46 @@ Enhance the `/research` and `/implement` phases with semantic code search powere
 
 # Check index status
 /retrieval status
+```
+
+## Document Conversion (MarkItDown)
+
+Convert non-plaintext documents to clean Markdown **before** the workflow reads them, using [MarkItDown](https://github.com/microsoft/markitdown) MCP. This saves tokens: Claude Code's built-in `Read` tool renders PDF pages **as images** (very high token cost, no extractable text), whereas MarkItDown returns plain Markdown — typically an order of magnitude cheaper, plus greppable and diffable (and a good candidate to feed into the semantic retrieval layer).
+
+**Why it matters:**
+
+| | Reading a PDF/DOCX/XLSX directly | With MarkItDown |
+|---|---|---|
+| **Token cost** | PDF pages rendered as images — very expensive | Plain Markdown text — ~an order of magnitude cheaper |
+| **Searchability** | Image content is not greppable | Output is text — greppable, diffable, indexable |
+| **Office docs** | DOCX/PPTX/XLSX not cleanly readable | Converted to structured Markdown |
+
+| Command | Purpose |
+|---------|---------|
+| `/markitdown/setup` | Interactive setup wizard — installs the converter (Python **3.10–3.13**; 3.14 not yet supported by deps) and **offers to install the auto-conversion interceptor** (asks first) |
+| `/markitdown [request]` | Convert a file or URL to Markdown (optionally save alongside the source) |
+
+> **Requires Python 3.10–3.13.** The wizard auto-selects a compatible interpreter. The interceptor can also be installed/re-installed directly: `bash .claude/scripts/install-markitdown-interceptor.sh` (idempotent).
+
+**How it works:**
+- **Tool**: `convert_to_markdown(uri)` accepts `file:`, `http(s):`, and `data:` URIs and returns Markdown text
+- **Supported**: PDF, Word, PowerPoint, Excel, images (OCR), audio (transcription), HTML, CSV/JSON/XML, EPub, ZIP, and more
+- **Local-first**: runs as a directly-installed STDIO server (not Docker) so it reads local `file:` paths without volume mounts
+- **Automatic (phase-level)**: `/discover` and `/research` convert non-plaintext documents to Markdown before reading them — plaintext and source files are read directly
+- **Automatic (harness-level interceptor)**: a `PreToolUse(Read)` hook (`~/.claude/hooks/markitdown-read.sh`, user-level so it applies in every project) intercepts when **Claude calls the `Read` tool** on a document (PDF/DOCX/PPTX/XLSX/EPub) — converts it to a sibling `.converted.md` and redirects the read there, *before* the binary is loaded (so no wasted tokens). Images/audio are left on normal `Read` (so visuals aren't lost); conversion is cached, size-guarded (skips >50 MB), and falls back to native `Read` on any error.
+  - **Known limitation:** this catches *model-initiated* reads, **not** files you drag-drop or paste as a bare path — Claude Code attaches those through an internal pipeline that bypasses the `Read` tool, and no hook can intercept it. For a dropped document, ask *"read /path/file.docx"* (routes through `Read`) or use `/markitdown convert <path>`.
+- **Graceful**: if not configured, the workflow falls back to native `Read` — nothing breaks
+
+```bash
+# First time: run the setup wizard
+/markitdown/setup
+
+# Convert a document (and save docs/requirements.md alongside it)
+/markitdown convert ./docs/requirements.pdf and save it
+
+# Convert a spreadsheet or a remote page
+/markitdown read ./data/metrics.xlsx
+/markitdown convert https://example.com/whitepaper
 ```
 
 ## Code Intelligence Layer
