@@ -84,11 +84,11 @@ Full command list: run `/COMMAND_USAGE` or see `.claude/QUICK_REFERENCE.md`.
 <!-- The /retro command appends lessons learned here. Full history: .claude/LEARNINGS.md -->
 <!-- Keep only the 2 most recent retro blocks here; older ones live in .claude/LEARNINGS.md -->
 
-### 2026-03-15 — add-repo-context-engine
+### 2026-06-11 — add-markitdown-conversion
 
-- **Embed mandatory workflow tools in existing phase entry points, not as optional standalone commands.** Users follow the happy path — they won't run `/repo-map` manually, but they will run `/discover`.
-- **Exclusion lists that exist in multiple prompt files will drift.** Add a cross-reference note pointing to the canonical list. Prevents silent divergence.
-- **The Design phase can be skipped for M-sized prompt-only changes; the Observe phase is always skippable for prompt-only changes.**
+- **A `PreToolUse(Read)` hook only catches *model-initiated* reads — dragged/dropped/pasted file paths are attached before any hook runs and bypass it.** No hook event intercepts the file-attachment pipeline; "auto-convert any dropped file" is not achievable. Route dropped docs via `/markitdown convert <path>`.
+- **Hooks run headless (`sh -c`, minimal PATH) — make them PATH-explicit, fail-open (`exit 0`), and add a toggleable debug log.** "Applies everywhere" hooks belong at user-level (`~/.claude/`) with absolute paths + a reproducible installer, not project-level.
+- **`gh pr create` on a fork targets the upstream repo by default** (symptom: "Head/Base sha can't be blank"). Use `gh pr create --repo <you>/<repo>`. And `git checkout <ref> -- <file>` silently stages the file — always `git diff --cached --name-only` before committing.
 
 ### 2026-03-15 — add-code-intelligence-layer
 

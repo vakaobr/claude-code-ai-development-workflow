@@ -1,6 +1,15 @@
 # Learnings (auto-updated by /retro)
 <!-- The /retro command appends lessons learned here automatically -->
 
+### 2026-06-11 — add-markitdown-conversion
+
+- **A `PreToolUse(Read)` hook only fires on *model-initiated* `Read` tool calls.** Files a user drags/drops or pastes as a bare path are attached by Claude Code *before* any hook runs, bypassing the interceptor entirely. There is **no hook event** (`PreToolUse`, `UserPromptSubmit`, etc.) that intercepts the file-attachment pipeline. "Auto-convert any dropped file before Claude sees it" is therefore not achievable with current hooks — set expectations and route dropped docs via an explicit command (`/markitdown convert <path>`).
+- **Hooks run headless via `sh -c` with a minimal PATH and must fail open.** Always: (1) prepend an explicit `PATH` (`/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin`) so `jq`/`stat`/venv binaries resolve; (2) `exit 0` on any miss/error so the tool proceeds; (3) add a toggleable debug log (off by default) — without it you cannot distinguish "hook not invoked" from "invoked but errored."
+- **"Applies everywhere" hooks belong at user-level (`~/.claude/settings.json` + `~/.claude/hooks/` + absolute command paths), not project-level.** A project-scoped hook silently does nothing in other repos. Decide global-vs-project at design time, and ship a reproducible installer for the user-level pieces (venv + hook + registration) so a clean clone can recreate them.
+- **`markitdown-mcp` (alpha `0.0.1a4`) requires Python 3.10–3.13** — 3.14 fails because `markitdown[all]` → `youtube-transcript-api~=1.0.0` has no 3.14 wheel. It also hard-pins `mcp~=1.8.0`, whose CVEs are HTTP-transport DoS — **not reachable by a STDIO-only local server**, so pin and accept rather than force-upgrade (which breaks the pin).
+- **`gh pr create` on a fork defaults the base to the upstream repo.** Symptom: GraphQL "Head/Base sha can't be blank / No commits between." Fix: `gh pr create --repo <your-user>/<repo> --base main --head <branch>`. Also: repo rulesets that block force-push *and* branch deletion force a fresh-branch + cleanup-commit workflow; delete stale branches via the GitHub UI.
+- **`git checkout <ref> -- <file>` silently stages that file.** It then gets swept into the next commit (it leaked `settings.json` into a docs commit and the PR). Always `git diff --cached --name-only` before committing; stage feature files explicitly, never rely on a clean index.
+
 ### 2026-03-15 — add-repo-context-engine
 
 - **Embed mandatory workflow tools in existing phase entry points, not as optional standalone commands.** Users follow the happy path — they won't run `/repo-map` manually, but they will run `/discover`. Integrate the tool into the phase they already use.
