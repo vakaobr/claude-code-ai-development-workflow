@@ -8,3 +8,8 @@ build/
 
 # Security methodology reference (local only — too large for VCS, possibly copyright-sensitive)
 pentest-agent-development/source-books/
+
+# MarkItDown MCP — project-local Python venv created by /markitdown/setup
+.claude/.venvs/
+# MarkItDown — auto-generated converted documents (regenerable; may hold PII/secrets)
+*.converted.md

@@ -53,5 +53,13 @@ cat .claude/planning/{issue-name}/00_STATUS.md   # Check workflow status
 /retro {issue-name}                  # Phase 11: Retrospective
 ```
 
+## Integrations (MCP)
+```bash
+/retrieval/setup ; /retrieval search "..."   # Semantic code search (claude-context)
+/firecrawl/setup ; /firecrawl scrape <url>    # Web scraping (Firecrawl)
+/markitdown/setup ; /markitdown <file|url>    # PDF/DOCX/XLSX → Markdown (MarkItDown) — auto-runs in /discover + /research
+/n8n/setup ; /n8n <request>                   # Workflow automation (n8n)
+```
+
 ## All Available Commands
 Run `/COMMAND_USAGE` for the full command catalog with descriptions.

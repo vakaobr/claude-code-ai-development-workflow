@@ -29,6 +29,12 @@ If `claude-context` is NOT in `.claude/settings.json` under `mcpServers`, sugges
 
 > Semantic code retrieval is not configured. Run `/retrieval/setup` to enable hybrid BM25 + vector search.
 
+### Session Start: Document Conversion Check
+
+If `markitdown` is NOT in `.claude/settings.json` under `mcpServers`, suggest once:
+
+> Document conversion is not configured. Run `/markitdown/setup` to convert PDFs/DOCX/XLSX/etc. to Markdown before reading — saves tokens versus rendering pages as images.
+
 ### Quick Start
 ```bash
 /sdlc/continue                       # Resume incomplete workflow

@@ -642,7 +642,7 @@
     </div>
     <h1 class="slide__display reveal">AI-Powered SDLC</h1>
     <div class="reveal">
-      <p class="slide__subtitle" style="margin-top:clamp(16px,2vh,32px);">DevSecOps Edition &mdash; 11 Phases, 50+ Commands, 7 Integrated Tools</p>
+      <p class="slide__subtitle" style="margin-top:clamp(16px,2vh,32px);">DevSecOps Edition &mdash; 11 Phases, 50+ Commands, 11 Integrated Tools</p>
     </div>
   </section>
 
@@ -793,9 +793,9 @@ flowchart LR
         <div class="slide__kpi-trend" style="color:var(--text-dim);">7 SDLC + 39 defensive security</div>
       </div>
       <div class="slide__kpi reveal">
-        <div class="slide__kpi-val" style="color:var(--blue);">10</div>
+        <div class="slide__kpi-val" style="color:var(--blue);">11</div>
         <div class="slide__kpi-label">Integrated Tools</div>
-        <div class="slide__kpi-trend" style="color:var(--text-dim);">Shannon, n8n, Firecrawl, claude-context, aws-doctor, cloud-cost-cli...</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">Shannon, n8n, Firecrawl, claude-context, MarkItDown, aws-doctor, cloud-cost-cli...</div>
       </div>
       <div class="slide__kpi reveal">
         <div class="slide__kpi-val" style="color:var(--accent);">~50%</div>
@@ -924,6 +924,11 @@ flowchart LR
               <td><code>/firecrawl</code>, <code>/firecrawl/setup</code></td>
             </tr>
             <tr>
+              <td><strong>MarkItDown</strong></td>
+              <td>Document &rarr; Markdown (PDF, DOCX, PPTX, XLSX, EPub) &mdash; saves tokens vs. rendering PDFs as images; auto-converts on read</td>
+              <td><code>/markitdown</code>, <code>/markitdown/setup</code></td>
+            </tr>
+            <tr>
               <td><strong>claude-context</strong></td>
               <td>Semantic code retrieval &mdash; hybrid BM25 + vector search over AST-indexed codebases</td>
               <td><code>/retrieval</code>, <code>/retrieval/setup</code></td>
@@ -1037,6 +1042,47 @@ flowchart LR
           <div class="icon-card">
             <div class="icon-card__title">firecrawl_extract</div>
             <div class="icon-card__desc">LLM-powered structured extraction</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 12b: SPLIT — MARKITDOWN DOCUMENT CONVERSION -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal" style="color:var(--accent);">Document Conversion</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">MarkItDown Integration</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal">Converts <strong>PDF, DOCX, PPTX, XLSX, EPub</strong> &rarr; clean Markdown</li>
+          <li class="reveal"><strong>Saves tokens</strong> &mdash; <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">Read</code> renders PDFs as images; Markdown is ~an order of magnitude cheaper</li>
+          <li class="reveal"><strong>Auto-converts on read</strong> &mdash; a user-level <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">PreToolUse</code> hook intercepts document reads in every project</li>
+          <li class="reveal">Phase hooks in <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">/discover</code> &amp; <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">/research</code> convert before reading</li>
+          <li class="reveal">Local-first STDIO server (direct install, not Docker) &mdash; reads local <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">file:</code> paths directly</li>
+        </ul>
+      </div>
+      <div class="slide__panel slide__panel--secondary">
+        <p class="slide__label reveal" style="color:var(--accent2);">Setup &amp; Use</p>
+        <div style="margin-top:12px;">
+          <pre class="reveal" style="background:var(--code-bg);color:var(--code-text);padding:16px;border-radius:8px;font-family:var(--font-mono);font-size:clamp(11px,1.2vw,14px);line-height:1.6;overflow-x:auto;"><code><span style="color:var(--text-dim);"># One-time setup (offers the</span>
+<span style="color:var(--text-dim);"># auto-convert interceptor)</span>
+<span style="color:var(--accent);">/markitdown/setup</span>
+
+<span style="color:var(--text-dim);"># Convert a document</span>
+<span style="color:var(--accent);">/markitdown</span> convert ./spec.pdf
+
+<span style="color:var(--text-dim);"># Or just Read it &mdash; the hook</span>
+<span style="color:var(--text-dim);"># auto-converts to .converted.md</span></code></pre>
+          <div class="icon-grid reveal" style="grid-template-columns:1fr;gap:8px;margin-top:12px;">
+            <div class="icon-card">
+              <div class="icon-card__title">convert_to_markdown</div>
+              <div class="icon-card__desc">file:/http(s):/data: &rarr; Markdown</div>
+            </div>
+            <div class="icon-card">
+              <div class="icon-card__title">PreToolUse interceptor</div>
+              <div class="icon-card__desc">Auto-converts docs on read, cached &amp; size-guarded</div>
+            </div>
           </div>
         </div>
       </div>
