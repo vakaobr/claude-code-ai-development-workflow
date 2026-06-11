@@ -7,7 +7,7 @@
 <!--
   Slide deck: overview of the AI-Powered Software Development Lifecycle.
   Theme: Blueprint Teal — DM Sans + Fira Code, teal/amber accents on dark slate.
-  18 slides covering: problem, predictable AI, pipeline, security, tools, integrations, visualization, retrieval, hierarchical context, quick start.
+  slides covering: problem, predictable AI, pipeline, delivery layers, security, tools, integrations, visualization, retrieval, hierarchical context, quick start.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -770,6 +770,33 @@ flowchart LR
   class S7a,S7b,S7c,H security
   class DP,O,RT ops
       </pre>
+    </div>
+  </section>
+
+  <!-- SLIDE 5b: CONTENT — DELIVERY LAYERS -->
+  <section class="slide slide--content" style="background-image:radial-gradient(ellipse at 25% 30%, var(--accent-dim) 0%, transparent 45%);">
+    <div class="slide__inner" style="display:block;">
+      <p class="slide__label reveal">A Lens Over the 11 Phases</p>
+      <h2 class="slide__heading reveal">Four Delivery Layers</h2>
+      <p class="reveal" style="color:var(--text-dim);max-width:60ch;margin-top:8px;">The same 11 phases, read as four layers — what to build, proving it, running it, and the context that powers it.</p>
+      <div class="icon-grid reveal" style="grid-template-columns:repeat(2,1fr);gap:14px;margin-top:clamp(12px,2vh,24px);">
+        <div class="icon-card">
+          <div class="icon-card__title">① Spec</div>
+          <div class="icon-card__desc">Decide what to build, to what bar. <code>/roadmap</code> → <code>/discover</code> → <code>/research</code> → <code>/design</code> → <code>/plan</code>, plus the <strong>Quality Contract</strong> (cognitive complexity ≤12/15/25, ≥90% coverage, BDD, MVVM / Hexagonal).</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-card__title">② Verifier</div>
+          <div class="icon-card__desc">Prove it works and is safe. <code>/review</code> · <code>/security</code> (+ harden) · CI · <code>/deploy-plan</code> · the <code>verify</code> skill · QA / SRE / security review agents.</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-card__title">③ Loop</div>
+          <div class="icon-card__desc">Execute autonomously, bounded. <code>sdlc-orchestrator</code> (one issue, end-to-end) and <code>/roadmap-run</code> (one roadmap phase, one bounded slice per call — 3 hard stops, confirmation-gated).</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-card__title">④ Environment</div>
+          <div class="icon-card__desc">Context &amp; tools for the agent. <code>CLAUDE.md</code> · skills · semantic retrieval · memory · MCP integrations (MarkItDown, Firecrawl, claude-context, …).</div>
+        </div>
+      </div>
     </div>
   </section>
 
