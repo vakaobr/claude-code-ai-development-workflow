@@ -53,13 +53,23 @@ Produce a `TEST_STRATEGY.md`:
     ╱──────────────────────╲
 ```
 
+## Acceptance Criteria (BDD)
+
+Every feature's acceptance criteria are written as **Given / When / Then** (per the Quality Contract). These drive the tests below — each scenario maps to an integration or E2E test:
+```gherkin
+Scenario: {behavior}
+  Given {initial context}
+  When {action}
+  Then {observable outcome}
+```
+
 ## Layer Definitions
 
 ### Unit Tests
 - **What**: Individual functions, classes, hooks, utilities
 - **Isolation**: Mock all external dependencies
 - **Speed**: < 10ms per test
-- **Coverage target**: > 80% lines, > 90% on business logic
+- **Coverage target**: ≥ 90% lines (critical paths ≥ 95%) — per the **Quality Contract** (`CLAUDE.md`)
 - **Naming**: `{module}.test.{ext}` co-located with source
 
 ### Integration Tests

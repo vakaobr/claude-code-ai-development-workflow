@@ -65,6 +65,19 @@ cp -r .claude/ /path/to/your/project/.claude/
 
 ---
 
+## Delivery Layers
+
+The 11 phases read as four layers — a lens for *why* each capability exists:
+
+| Layer | Purpose | Where |
+|-------|---------|-------|
+| **① Spec** | What to build, to what bar | `/roadmap` → `/discover` → `/research` → `/design-system` → `/plan` + the **Quality Contract** (cognitive-complexity tiers, ≥90% coverage, BDD, MVVM/Hexagonal) |
+| **② Verifier** | Prove it works & is safe | `/review` · `/security` · CI · `/deploy-plan` · `verify` · review agents |
+| **③ Loop** | Execute autonomously, bounded | `sdlc-orchestrator` (per issue) · `/roadmap-run` (per roadmap phase, one bounded slice at a time) |
+| **④ Environment** | Context & tools | `CLAUDE.md` · skills · semantic retrieval · memory · MCP integrations |
+
+Full phase→layer map and the Quality Contract rationale: [`.claude/ARCHITECTURE.md`](.claude/ARCHITECTURE.md) → Delivery Layers.
+
 ## The DevSecOps Workflow
 
 ```

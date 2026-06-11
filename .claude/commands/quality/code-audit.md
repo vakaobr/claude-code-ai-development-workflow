@@ -77,10 +77,14 @@ grep -rn "TODO\|FIXME\|HACK\|XXX" --include="*.{ts,js,py,php,tf}" .
 
 Calculate and report:
 
+> Targets below come from the **Quality Contract** (canonical in `CLAUDE.md`) — do not restate different numbers here.
+
 | Metric | Target | How |
 |--------|--------|-----|
-| Test coverage | > 80% (critical paths > 95%) | Coverage tool output |
-| Cyclomatic complexity | < 10 per function | Static analysis |
+| Test coverage | ≥ 90% (critical paths ≥ 95%) — per Quality Contract | Coverage tool output |
+| Cognitive complexity | frontend ≤ 12 · backend ≤ 15 · engines ≤ 25 — per Quality Contract | Static analysis (eslint `complexity`, ruff `C901`, PHPMD, SonarQube) |
+| Acceptance criteria | BDD Given/When/Then present for each feature | Spec/test review |
+| Architecture | frontend MVVM · backend Hexagonal (ports & adapters) | Architecture review (Step 4) |
 | File length | < 300 lines | `wc -l` on source files |
 | Function length | < 30 lines | Static analysis |
 | Dependency count | Minimize | Package manifest |

@@ -31,6 +31,15 @@ Answer: Are the right things tested at the right level?
 
 ## Procedure
 
+### 0. Enforce the Quality Contract
+
+Before evaluating tests, check the change against the **Quality Contract** (canonical in `CLAUDE.md`) — do not invent different thresholds:
+- **Coverage ≥ 90%** (critical paths ≥ 95%).
+- **Cognitive complexity** within tier (frontend ≤ 12 · backend ≤ 15 · engines ≤ 25).
+- **Acceptance criteria** expressed as BDD Given/When/Then and each backed by a test.
+- **Architecture** follows MVVM (frontend) / Hexagonal (backend).
+A breach of any of these is a `NEEDS_FIX` finding.
+
 ### 1. Run the Full Test Suite
 
 ```bash

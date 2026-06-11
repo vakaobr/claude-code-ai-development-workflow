@@ -18,6 +18,8 @@ Execute the complete software development lifecycle autonomously, producing prod
 
 **Tool rule:** Use `Read` (not `cat`), `Glob` (not `find`/`ls`), `Grep` (not `grep`/`rg`), `Write`/`Edit` (not `echo`/`sed`/`awk`) for all file operations. Reserve `Bash` for tests, builds, linters, dependency audits, and `git` commands.
 
+> **Scope — two-level model.** This orchestrator owns **one issue** end-to-end (state: `STATE.json`). The level above — sequencing *multiple* issues across roadmap phases — is owned by **`/roadmap-run`** (state: `ROADMAP.md`), which delegates down to `/sdlc`/this orchestrator per issue. Don't absorb the roadmap level here.
+
 ## Workflow
 
 ```

@@ -391,3 +391,40 @@ Research ──gate──▶ Plan ──gate──▶ Implement ──gate──
 5. **Trust the tool** - Claude Code handles context
 6. **Extended thinking** - For complex reasoning
 7. **Max 3 fix iterations** - Escalate if stuck
+
+---
+
+## Delivery Layers
+
+A conceptual **lens** over the 11 phases — four layers describing *why* each capability exists. It is a way to read the framework, not a fifth process.
+
+| Layer | Purpose | Phases / Capabilities |
+|-------|---------|-----------------------|
+| **① Spec** | Decide *what* to build and to *what bar* | `/roadmap` (project phases) → `/discover` → `/research` → `/design-system` (ADRs) → `/plan`; the **Quality Contract** (CLAUDE.md); `03_PROJECT_SPEC.md` |
+| **② Verifier** | Prove it works and is safe | `/review` · `/security` (+`/security/harden`) · `/devops/ci-pipeline` · `/deploy-plan` · the `verify` skill · `qa-reviewer` / `sre-reviewer` / `security-*` agents |
+| **③ Loop** | Execute autonomously, bounded | `sdlc-orchestrator` (one issue, end-to-end) · `/roadmap-run` (one roadmap phase, one bounded slice per call, driven by native `/loop`) |
+| **④ Environment** | Give the agent context & tools | `CLAUDE.md` · skills · `claude-context` semantic retrieval · memory · MCP integrations (markitdown, firecrawl, …) |
+
+### Phase → Layer map (all 11 phases)
+| Phase | Layer |
+|-------|-------|
+| 1 Discovery | Spec |
+| 2 Research | Spec |
+| 3 Design | Spec |
+| 4 Planning | Spec |
+| 5 Implementation | Loop (executes the plan; can be driven by orchestrator/`/roadmap-run`) |
+| 6 Review | Verifier |
+| 7 Security (7a/7b/7c) | Verifier |
+| 8 Harden | Verifier |
+| 9 Deploy | Verifier |
+| 10 Observe | Verifier |
+| 11 Retro | Environment (feeds learnings back into CLAUDE.md / memory) |
+| (cross-cutting) Quality Contract | Spec (set) → Verifier (enforced) |
+
+### Quality Contract — rationale & tooling
+The Contract (canonical in `CLAUDE.md`) sets a higher, explicit bar:
+- **Cognitive** (not cyclomatic) complexity — measures human comprehension difficulty, the better maintainability signal. Tiers: frontend ≤ 12 · backend ≤ 15 · compilers/engines ≤ 25. Tooling: eslint `complexity`, ruff `C901`/mccabe, PHPMD/PHPStan, Go `gocyclo`, SonarQube cognitive-complexity.
+- **Coverage ≥ 90%** (critical paths ≥ 95%).
+- **BDD** Given/When/Then acceptance criteria (Spec → executable specs in Verifier).
+- **Architecture**: MVVM (frontend) / Hexagonal — ports & adapters (backend).
+These target the **projects the framework builds**, enforced by their CI; this prompt-only repo has no runtime code of its own.
