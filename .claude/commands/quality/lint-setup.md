@@ -22,6 +22,20 @@ Identify the primary language(s) and existing tooling:
 
 Check what's already configured vs missing.
 
+### Step 1b: Enforce the Quality Contract complexity limits
+
+Configure each linter to fail builds that exceed the **Quality Contract** cognitive-complexity limits (`CLAUDE.md`: frontend ≤ 12 · backend ≤ 15 · compilers/engines ≤ 25). Map per language:
+
+| Language | Rule / tool | Example |
+|----------|-------------|---------|
+| JS/TS | ESLint `complexity` | `"complexity": ["error", 12]` (frontend) / `15` (backend) |
+| Python | Ruff `C901` (mccabe) | `[tool.ruff.lint.mccabe] max-complexity = 15` |
+| PHP | PHPMD `CyclomaticComplexity` / PHPStan | rule threshold 15 |
+| Go | `gocyclo` / golangci-lint | `gocyclo: min-complexity: 15` |
+| Any | SonarQube cognitive-complexity | quality gate ≤ tier |
+
+Pick the tier from the codebase role (UI vs service vs engine). Wire it into the pre-commit hook + CI so violations block merge.
+
 ### Step 2: Generate Configurations
 
 For each detected language, generate the appropriate config if not present:

@@ -15,6 +15,14 @@ From the description provided in `$ARGUMENTS`:
 - Keep it concise (2-5 words) and descriptive
 - Prefix with action verb: `add-`, `fix-`, `refactor-`, `improve-`, `migrate-`
 
+#### 1b. Roadmap Association (optional)
+
+If `$ARGUMENTS` contains **`--roadmap-phase {id}`**, this issue belongs to a project roadmap phase:
+- Confirm `ROADMAP.md` exists and has phase `{id}` (if not, suggest running `/roadmap` first; continue without association).
+- Add the issue under that phase's **### Issues** list in `ROADMAP.md` as `{issue-name} — planned`.
+- Add a `**Roadmap-Phase:** {id}` line to the generated `00_STATUS.md`.
+This is purely additive — when the flag is absent, `/discover` behaves exactly as before. `ROADMAP.md` stays authoritative for phase membership; `00_STATUS.md` only references the phase id.
+
 #### 2. Detect Project Tech Stack
 
 **Scan the project root and key directories to identify the full stack.** This is critical — the detected stack determines which expert commands are available throughout the workflow.

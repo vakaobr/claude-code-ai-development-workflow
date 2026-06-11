@@ -89,6 +89,22 @@ cat docs/{issue-name}/STATUS.md
 
 ---
 
+## Roadmap & Loop (project-level)
+
+The framework reads as four **Delivery Layers** (Spec / Verifier / Loop / Environment — see `.claude/ARCHITECTURE.md`). Two commands operate *above* a single issue:
+
+### `/roadmap [description | update]`
+Spec layer. Creates/updates a project-root `ROADMAP.md` that sequences issues into ordered phases, each with a goal, **BDD acceptance criteria**, member issues, status, and an **iteration budget**. Attach a new issue to a phase with `/discover {desc} --roadmap-phase {id}`.
+
+### `/roadmap-run {phase-id}`
+Loop layer. Executes **one bounded slice** of a roadmap phase, then stops and reports. Repeat it (or wrap with native `/loop /roadmap-run {id}`) until done.
+- **Hard stops:** all criteria met (`✅ COMPLETE`) · iteration budget reached (`⛔ BUDGET`) · no criteria defined (refuse).
+- **Delegates** per issue to `/sdlc` / `/implement` (never reimplements the SDLC).
+- **Confirms** before commits, issue creation, and any destructive op. On a bug → regression test + tracked issue.
+- Two-level model: `sdlc-orchestrator` = one issue (`STATE.json`); `/roadmap-run` = one roadmap phase (`ROADMAP.md`).
+
+---
+
 ## `/sdlc/continue`
 
 Resume the most recent incomplete SDLC workflow.
