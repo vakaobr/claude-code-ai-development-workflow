@@ -1,61 +1,42 @@
 {
   "permissions": {
     "allow": [
-      "Read",
-      "Edit",
+      "Agent",
+      "Bash(./shannon/*)",
+      "Bash(aws sts get-caller-identity*)",
+      "Bash(aws pricing get-products*)",
+      "Bash(aws-doctor *)",
+      "Bash(az account show*)",
+      "Bash(cloud-cost-cli *)",
+      "Bash(gcloud auth list*)",
+      "Bash(gcloud config get-value*)",
+      "Bash(bundle audit*)",
+      "Bash(bundle exec rspec*)",
+      "Bash(cargo audit*)",
+      "Bash(cargo test*)",
+      "Bash(cat *)",
+      "Bash(docker *)",
+      "Bash(find *)",
+      "Bash(git *)",
+      "Bash(go mod*)",
+      "Bash(go test*)",
+      "Bash(govulncheck*)",
+      "Bash(ls *)",
+      "Bash(node *)",
       "Bash(npm run *)",
       "Bash(npx *)",
-      "Bash(git *)",
-      "Bash(cat *)",
-      "Bash(ls *)",
-      "Bash(find *)",
-      "Bash(docker *)",
-      "Bash(./shannon/*)",
-      "Bash(node *)",
-      "mcp__claude-context__search_code",
-      "mcp__claude-context__index_codebase",
+      "Bash(pip-audit*)",
+      "Bash(pytest*)",
+      "Bash(python -m pytest*)",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write",
+      "mcp__claude-context__clear_index",
       "mcp__claude-context__get_indexing_status",
-      "mcp__claude-context__clear_index"
+      "mcp__claude-context__index_codebase",
+      "mcp__claude-context__search_code"
     ]
-  },
-  "mcpServers": {
-    "shannon": {
-      "command": "bash",
-      "args": [
-        "${workspaceFolder}/.claude/scripts/shannon-mcp-wrapper.sh"
-      ],
-      "env": {
-        "SHANNON_DIR": "${workspaceFolder}/shannon",
-        "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
-      }
-    },
-    "claude-context": {
-      "command": "npx",
-      "args": ["-y", "@zilliz/claude-context-mcp@0.1.6"],
-      "env": {
-        "EMBEDDING_PROVIDER": "Ollama",
-        "EMBEDDING_MODEL": "nomic-embed-text",
-        "EMBEDDING_DIMENSION": "768",
-        "EMBEDDING_BATCH_SIZE": "5",
-        "OLLAMA_HOST": "http://127.0.0.1:11434",
-        "OLLAMA_NUM_PARALLEL": "1",
-        "MILVUS_ADDRESS": "127.0.0.1:19530",
-        "SPLITTER_TYPE": "ast",
-        "HYBRID_MODE": "true",
-        "CUSTOM_IGNORE_PATTERNS": "node_modules/**,.git/**,vendor/**,dist/**,build/**,.next/**,__pycache__/**,*.pyc,.terraform/**"
-      }
-    },
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_URL": "http://localhost:3002",
-        "FIRECRAWL_API_KEY": "fc-selfhosted-local"
-      }
-    },
-    "markitdown": {
-      "command": "bash",
-      "args": ["${workspaceFolder}/.claude/scripts/markitdown-mcp-wrapper.sh"]
-    }
   }
 }
