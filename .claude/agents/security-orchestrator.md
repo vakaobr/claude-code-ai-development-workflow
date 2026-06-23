@@ -64,11 +64,18 @@ Show this plan to the user. Wait for "go" before Phase 1.
 ### Phase 1: Reconnaissance and Inventory
 
 Invoke in this order (each waits for the prior):
-1. `web-recon-passive` (always)
-2. `web-recon-active` (if any asset has `testing_level: active`)
-3. `api-recon` (if any asset is `asset_type: rest_api` or `graphql`)
-4. `attack-surface-mapper` (always; consumes the three above)
-5. `auth-flow-mapper` (if target has authentication)
+1. `web-check-recon` (always; fast structured first-pass that pre-fills
+   `WEBCHECK.md` + `PASSIVE_RECON.patch.md` and proposes hygiene
+   candidates — runs the self-hosted web-check container on demand and
+   tears it down. Tier is scope-derived: PASSIVE checks only unless the
+   asset is `testing_level: active`.)
+2. `web-recon-passive` (always; consumes `WEBCHECK.md`, adds the OSINT
+   depth web-check skips — GitHub secret dorks, file-metadata, Wayback
+   parameter mining)
+3. `web-recon-active` (if any asset has `testing_level: active`)
+4. `api-recon` (if any asset is `asset_type: rest_api` or `graphql`)
+5. `attack-surface-mapper` (always; consumes the above)
+6. `auth-flow-mapper` (if target has authentication)
 
 Entry: ASSESSMENT_PLAN.md approved.
 Exit: `.claude/planning/{issue}/API_INVENTORY.md`,
