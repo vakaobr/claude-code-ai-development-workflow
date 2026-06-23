@@ -1,0 +1,36 @@
+# Managed, on-demand web-check instance for the web-check-recon skill.
+# Brought up by scripts/webcheck-up.sh and torn down after each run.
+#
+# Hardened for assessment use:
+#   - Bound to 127.0.0.1 ONLY (never exposed on the network).
+#   - GUI disabled — API-only, so nothing extra is served.
+#   - Rate limiting on, per-check timeout bounded.
+#   - Optional .env (copy from .env.sample) supplies third-party API keys.
+#
+# Run with an explicit project name so teardown is unambiguous:
+#   docker compose -p web-check-recon up -d
+#   docker compose -p web-check-recon down
+services:
+  web-check:
+    container_name: web-check-recon
+    image: lissy93/web-check:latest
+    # 127.0.0.1 prefix is the security control — the API is reachable only
+    # from this host, never from the LAN/internet.
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      DISABLE_GUI: "true"
+      API_ENABLE_RATE_LIMIT: "true"
+      PUBLIC_API_TIMEOUT_LIMIT: "25000"
+      PORT: "3000"
+    # Uncomment after copying .env.sample to .env to enable the
+    # third-party-backed checks (shodan, subdomains, rank, location, ...).
+    # env_file:
+    #   - .env
+    restart: "no"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://127.0.0.1:3000/api/status?url=https://example.com' >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_period: 10s

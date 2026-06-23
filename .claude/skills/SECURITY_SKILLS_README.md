@@ -1,6 +1,6 @@
 # Security Skills Library
 
-39 defensive security-testing skills plus the `security-orchestrator`
+40 defensive security-testing skills plus the `security-orchestrator`
 agent that composes them. Skills are under `.claude/skills/{name}/`;
 the agent is at `.claude/agents/security-orchestrator.md`; the
 authorization file is `.claude/security-scope.yaml` (template — must be
@@ -21,13 +21,14 @@ populated with real company assets before any live use).
    the orchestrator for large/high-risk scopes and falls back to the
    OWASP/STRIDE checklist for M-sized features.
 
-## Skill inventory (39 skills)
+## Skill inventory (40 skills)
 
-### Tier 4 — Recon / Foundation (5 skills)
+### Tier 4 — Recon / Foundation (6 skills)
 Run before any hunter. Produce inventory artifacts that hunters consume.
 
 | Skill | Profile | Output |
 |---|---|---|
+| [web-check-recon](web-check-recon/SKILL.md) | recon-webcheck | `WEBCHECK.md` + `PASSIVE_RECON.patch.md` |
 | [web-recon-passive](web-recon-passive/SKILL.md) | passive | `PASSIVE_RECON.md` |
 | [web-recon-active](web-recon-active/SKILL.md) | active | `ATTACK_SURFACE.md` |
 | [api-recon](api-recon/SKILL.md) | active | `API_INVENTORY.md` |
@@ -139,6 +140,12 @@ evidence + remediation.
 
 ## Cross-skill dispatch patterns
 
+- `web-check-recon` → `web-recon-passive` → `web-recon-active` /
+  `api-recon` → `attack-surface-mapper` (web-check-recon runs first as
+  a fast structured first-pass; passive recon consumes its `WEBCHECK.md`
+  and adds the OSINT depth it skips). Hygiene candidates hand off to
+  `crypto-flaw-hunter` / `clickjacking-hunter` / `session-flaw-hunter` /
+  `csrf-hunter`.
 - `ssrf-hunter` → `ssrf-cloud-metadata-hunter` → `aws-iam-hunter`
   (SSRF confirmed → IMDS probe → IAM enumeration). Each skill stops
   at its boundary.
@@ -165,7 +172,7 @@ matches directory, description length, scope-file reference,
 defensive-framing heuristic, forbidden-tool catch, cloud-readonly
 write-verb catch, references/ file consistency.
 
-Expected output: **0 errors, 0 warnings** across 39 skills.
+Expected output: **0 errors, 0 warnings** across 40 skills.
 
 ## Authorization model
 
