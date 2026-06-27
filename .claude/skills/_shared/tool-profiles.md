@@ -130,6 +130,86 @@ Explicitly forbidden:
   `testing_level` is not `active`.
 - Running `tls-labs` (public Qualys scan) without explicit scope approval.
 
+## Profile: internal-ad
+
+For **authorized internal penetration tests** of Active Directory /
+internal networks. This profile DELIBERATELY breaks the no-credential-
+attacks rule that `active` enforces — it permits credential validation,
+password spray, Kerberos roasting, and credential dumping. It is
+therefore the highest-blast-radius profile in the library and carries
+extra gating (see below).
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(nmap:*), Bash(netexec:*), Bash(nxc:*), Bash(crackmapexec:*),
+  Bash(kerbrute:*), Bash(ldapsearch:*), Bash(rpcclient:*),
+  Bash(smbclient:*), Bash(showmount:*), Bash(snmp-check:*),
+  Bash(bloodhound-python:*), Bash(certipy:*),
+  Bash(GetUserSPNs.py:*), Bash(GetNPUsers.py:*), Bash(getTGT.py:*),
+  Bash(secretsdump.py:*), Bash(impacket-*:*),
+  Bash(hashcat:*), Bash(john:*),
+  Bash(jq:*), Bash(dig:*), Bash(host:*)
+```
+
+Extra gating (enforced by every `internal-ad` skill in its Authorization
+Check, beyond the standard scope read):
+- The scope file MUST set `internal_pentest: approved` for the engagement.
+- Credentials MUST come from `ad_credentials_vault_path`; never hardcode.
+- Password spray MUST read the domain lockout policy FIRST and stay one
+  attempt under threshold per window.
+- Credential dumping (`secretsdump`, NTDS, LSASS) requires
+  `credential_dumping: approved` AND already-proven admin reach.
+- Domain-dominance actions (golden/silver ticket, DCSync as DA, forged
+  certs) require `domain_dominance: approved` and are documented for
+  cleanup. STOP at proof.
+
+Explicitly forbidden even here:
+- Any destructive action on production data (account deletion, GPO push
+  to live OUs, mass password reset).
+- Persistence implants left in place after the engagement.
+- Egress of dumped credential material outside the engagement vault.
+
+## Profile: ai-redteam
+
+For automated red-teaming of **the org's own** LLM / inference endpoints
+(prompt-injection, jailbreak, harmful-output probing). Targets must be
+in-scope endpoints, not third-party model providers.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  WebFetch,
+  Bash(garak:*), Bash(python3:-m garak*), Bash(pyrit:*),
+  Bash(python3:*), Bash(pip:show*), Bash(curl:*), Bash(jq:*)
+```
+
+Explicitly forbidden:
+- Pointing probes at a closed-weight provider's public API as the
+  "target" (test YOUR endpoint, not OpenAI/Anthropic infra).
+- Storing any successfully-jailbroken harmful generations beyond the
+  minimal snippet needed as finding evidence.
+
+## Profile: mobile-sast
+
+For **static** Android APK assessment (MobSF static engine + secret
+scanners). Static-only by default; dynamic instrumentation (Frida,
+emulator) is out of profile and requires a human-approved upgrade.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(mobsf:*), Bash(mobsfscan:*), Bash(apkleaks:*),
+  Bash(apktool:d*), Bash(jadx:*), Bash(unzip:*),
+  Bash(trufflehog:*), Bash(jq:*), Bash(python3:*)
+```
+
+Explicitly forbidden:
+- Uploading client APKs to the MobSF **public/hosted** instance — run a
+  local MobSF only (the APK is client IP).
+- Frida / dynamic hooking / live-device instrumentation without a
+  scope-approved upgrade to a dynamic profile.
+
 ## Per-Skill Override
 
 A skill may request a more restrictive subset of its profile by listing

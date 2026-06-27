@@ -188,6 +188,27 @@ deduplicate in individual findings — they each add evidence. The
 final report groups them into a single issue with multiple finding
 IDs cited.
 
+## Out-of-Band Skills (not auto-dispatched)
+
+Five extension skills cover internal AD, mobile, and LLM red-team. They
+are NOT part of your phased web/API/cloud flow — their tooling and blast
+radius differ from the harmless-probe model, and they have their own
+scope gates. Do not invoke them automatically. Instead:
+
+- If the engagement scope includes an **internal AD network**
+  (`internal_pentest: approved`), note in `ASSESSMENT_PLAN.md` that the
+  AD track (`redteam-ad-ops` reference → `ad-recon-hunter` →
+  `ad-kerberos-hunter`, then human-driven lateral/dump/dominance) runs
+  separately, and surface its findings in the final report.
+- If an **LLM endpoint** is in scope (`llm_redteam: approved`), recommend
+  `/redteam-ai` then `llm-redteam-hunter`.
+- If a **mobile app** is in scope (`mobile_testing: approved`), recommend
+  `mobile-android-hunter`, whose discovered endpoints feed back into your
+  `api-recon` phase.
+
+Their findings use the same `07a_SECURITY_AUDIT.md` schema, so your
+Phase 9 report aggregation includes them if they were run.
+
 ## Skill Selection Logic
 
 You do not run every skill every time. Select based on:

@@ -12,8 +12,12 @@ WARNINGS=0
 
 # Skills we're checking (excludes _shared and pre-existing framework skills
 # that predate the security-skill batch — they use a different template)
-EXCLUDE_RE='^(_shared|implementing-code|planning-solutions|reviewing-code|review-fix|researching-code|visual-explainer|offensive-security)$'
-mapfile -t SKILLS < <(find "$SKILLS_DIR" -maxdepth 1 -mindepth 1 \
+EXCLUDE_RE='^(_shared|implementing-code|planning-solutions|reviewing-code|review-fix|researching-code|visual-explainer|offensive-security|redteam-ad-ops)$'
+# bash 3.2-compatible array fill (macOS ships bash 3.2; `mapfile` is 4+)
+SKILLS=()
+while IFS= read -r _skill_name; do
+    SKILLS+=("$_skill_name")
+done < <(find "$SKILLS_DIR" -maxdepth 1 -mindepth 1 \
     -type d -exec basename {} \; | grep -vE "$EXCLUDE_RE")
 
 echo "Validating ${#SKILLS[@]} skills..."
@@ -101,7 +105,15 @@ for skill in "${SKILLS[@]}"; do
     fi
 
     # 9. Forbidden tools check (the big one)
-    forbidden='sqlmap|metasploit|msfconsole|hydra|medusa|hashcat|nikto'
+    # The `internal-ad` profile is the one deliberate exception: authorized
+    # internal pentests permit offline cracking (hashcat), so it is exempt
+    # from the hashcat ban. sqlmap/metasploit/hydra/etc. stay banned for ALL
+    # skills, including internal-ad.
+    if grep -qE '^[[:space:]]*profile:[[:space:]]*internal-ad' "$file"; then
+        forbidden='sqlmap|metasploit|msfconsole|hydra|medusa|nikto'
+    else
+        forbidden='sqlmap|metasploit|msfconsole|hydra|medusa|hashcat|nikto'
+    fi
     if grep -qE "Bash\((${forbidden}):" "$file"; then
         matched=$(grep -oE "Bash\((${forbidden}):" "$file" | head -3)
         echo "  ERROR: forbidden tool in allowed-tools: $matched"

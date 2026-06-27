@@ -1,7 +1,8 @@
 # Security Skills Library
 
-40 defensive security-testing skills plus the `security-orchestrator`
-agent that composes them. Skills are under `.claude/skills/{name}/`;
+45 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
+red-team + 1 reference) plus the `security-orchestrator` agent that
+composes the web/API/cloud set. Skills are under `.claude/skills/{name}/`;
 the agent is at `.claude/agents/security-orchestrator.md`; the
 authorization file is `.claude/security-scope.yaml` (template — must be
 populated with real company assets before any live use).
@@ -114,9 +115,33 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 |---|---|---|
 | [subdomain-takeover-hunter](subdomain-takeover-hunter/SKILL.md) | passive | Dangling CNAMEs to unclaimed GitHub / S3 / Heroku / Azure; NS takeover |
 
+### Internal / Mobile / AI — Red-Team Extension (5 skills)
+
+Net-new categories the 40 web/API/cloud hunters do not cover. Sourced
+from RedefiningReality/Cheatsheets (MIT, per author) and cannibalized
+from guardian-cli (MIT). These run on a **separate track** from the
+web-focused `security-orchestrator` (see "Internal/Mobile/AI track"
+below) and carry their own scope gates.
+
+| Skill | Profile | Covers |
+|---|---|---|
+| [redteam-ad-ops](redteam-ad-ops/SKILL.md) | reference (none) | Knowledge layer: network-service matrix, AD attack lifecycle, credential-access/OPSEC maps, C2/EDR-evasion, output parsing. Grounds the AD hunters. |
+| [ad-recon-hunter](ad-recon-hunter/SKILL.md) | internal-ad | Internal AD enumeration: service sweep, null/guest harvest, BloodHound graph, LDAP quick-wins (GPP/LAPS/SPN/delegation), ADCS template surface |
+| [ad-kerberos-hunter](ad-kerberos-hunter/SKILL.md) | internal-ad | Kerberoasting, AS-REP roasting, delegation (unconstrained/constrained/RBCD) + shadow-cred proof. Cracking & impersonation gated |
+| [llm-redteam-hunter](llm-redteam-hunter/SKILL.md) | ai-redteam | Automated garak + PyRIT probe battery against first-party LLM endpoints → OWASP LLM Top 10 |
+| [mobile-android-hunter](mobile-android-hunter/SKILL.md) | mobile-sast | Static APK assessment (MobSF + mobsfscan + apkleaks) → OWASP MASVS / Mobile Top 10 |
+
+**New scope-file keys these require** (add to `.claude/security-scope.yaml`):
+`internal_pentest: approved`, `ad_credentials_vault_path`,
+`offline_cracking: approved`, `impersonation_proof: approved`,
+`credential_dumping: approved`, `domain_dominance: approved` (AD);
+`llm_endpoints: [...]`, `llm_redteam: approved`,
+`llm_redteam_max_requests` (LLM); `mobile_testing: approved`,
+`mobile_artifacts: [...]` (mobile).
+
 ## Tool profiles
 
-All skills reference one of 5 profiles defined in
+All skills reference one of 9 profiles defined in
 [_shared/tool-profiles.md](_shared/tool-profiles.md):
 
 - **passive** — `Read, Grep, Glob, WebFetch` (no Bash outside planning/)
@@ -129,6 +154,15 @@ All skills reference one of 5 profiles defined in
   `git log/show/blame/grep`
 - **repo-readonly** — passive + `git log/show/blame/grep/diff` +
   `trufflehog`, `gitleaks detect/protect`
+- **internal-ad** — DELIBERATELY breaks the no-credential-attacks rule
+  for authorized internal pentests: `netexec`/`crackmapexec`, `kerbrute`,
+  impacket, `bloodhound-python`, `certipy`, `hashcat`/`john`. Highest
+  blast radius; extra-gated (`internal_pentest: approved`, vault creds,
+  cracking/impersonation/dumping/dominance sub-gates)
+- **ai-redteam** — `garak`, `pyrit`, `python3`, `curl` against
+  first-party LLM endpoints only
+- **mobile-sast** — static APK tooling: `mobsf`, `mobsfscan`, `apkleaks`,
+  `apktool`, `jadx`, `trufflehog` (no dynamic/Frida)
 
 ## Output contract
 
@@ -161,6 +195,25 @@ evidence + remediation.
 - `secrets-in-code-hunter` → `aws-iam-hunter` (AWS-key validation
   handoff; keys stored as `first4…last4…sha256` hash only).
 
+## Internal / Mobile / AI track
+
+The `security-orchestrator` agent is web/API/cloud-scoped and does NOT
+auto-dispatch the 5 extension skills (their blast radius and tooling
+differ too much from the harmless-probe model). Run them deliberately:
+
+- **AD / internal**: `redteam-ad-ops` is reference — load it for context.
+  Then `ad-recon-hunter` → `ad-kerberos-hunter` (recon produces
+  `ad-quickwins.md` that kerberos consumes). Lateral movement, credential
+  dumping, and domain dominance remain human-operator-driven even when
+  scope-approved. Gate: `internal_pentest: approved`.
+- **LLM**: `/redteam-ai` (manual threat model) → `llm-redteam-hunter`
+  (automated garak/PyRIT confirmation). The hunter writes into
+  `07a_SECURITY_AUDIT.md` and summarizes into `07c_AI_THREAT_MODEL.md`
+  without overwriting the manual analysis. Gate: `llm_redteam: approved`.
+- **Mobile**: `mobile-android-hunter` (static). Discovered backend
+  endpoints hand off to `api-recon` for normal API testing. Gate:
+  `mobile_testing: approved`.
+
 ## Validation
 
 ```bash
@@ -172,7 +225,12 @@ matches directory, description length, scope-file reference,
 defensive-framing heuristic, forbidden-tool catch, cloud-readonly
 write-verb catch, references/ file consistency.
 
-Expected output: **0 errors, 0 warnings** across 40 skills.
+Expected output: **0 errors, 0 warnings**. The validator was updated for
+the extension: `redteam-ad-ops` joins the reference-skill exclude list
+(like `offensive-security`, it has no methodology sections), and
+`internal-ad` skills are exempt from the `hashcat` ban (offline cracking
+is intentional there) — `sqlmap`/`metasploit`/`hydra`/`nikto` stay banned
+for every skill.
 
 ## Authorization model
 

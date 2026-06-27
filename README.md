@@ -204,6 +204,8 @@ OBLITERATUS requires a GPU. See the [OBLITERATUS repo](https://github.com/elder-
 
 40 specialist defensive-testing skills live under `.claude/skills/{name}/SKILL.md`, grouped by tier and class. A `security-orchestrator` agent composes them based on target type (web app / API / cloud / CI-CD), scope risk, and detected stack. The library is the backbone of `/security` Phase 7a for anything larger than an M-sized feature.
 
+Alongside these, a **5-skill internal / mobile / AI red-team extension** covers categories the web/API/cloud hunters do not (Active Directory, Android, LLM endpoints). These run on a **separate, manually-driven track** — the orchestrator does not auto-dispatch them because their tooling and blast radius differ from the harmless-probe model. See the extension table below.
+
 **Coverage by class (skill counts in parentheses):**
 
 | Class | Skills | Notable |
@@ -218,6 +220,15 @@ OBLITERATUS requires a GPU. See the [OBLITERATUS repo](https://github.com/elder-
 | Logic + crypto | business-logic, crypto-flaw | Workflow bypasses + consolidated TLS/cookie/JWT/secret audit |
 | Cloud / CI-CD / Secrets (T3) | aws-iam, s3-misconfig, container, gitlab-cicd, secrets-in-code | READ-ONLY AWS CLI, trufflehog + gitleaks over repo history |
 | Recon-adjacent (T2) | subdomain-takeover | Dangling CNAMEs to unclaimed GitHub / S3 / Heroku / Azure |
+
+**Internal / Mobile / AI red-team extension (5 skills, separate track):**
+
+| Class | Skills | Notable |
+|---|---|---|
+| AD reference | redteam-ad-ops | Knowledge skill (no execution): network-service matrix, AD attack lifecycle, credential-access/OPSEC maps, C2/EDR-evasion. Grounds the AD hunters. Sourced from RedefiningReality/Cheatsheets (MIT). |
+| Internal AD (internal-ad) | ad-recon, ad-kerberos | BloodHound + LDAP enumeration → Kerberoast / AS-REP / delegation. New `internal-ad` profile deliberately permits credential attacks; extra-gated by `internal_pentest: approved` + sub-gates |
+| AI red-team (ai-redteam) | llm-redteam | Automated garak + PyRIT against first-party LLM endpoints → OWASP LLM Top 10. Complements the manual `/redteam-ai` command |
+| Mobile (mobile-sast) | mobile-android | Static APK assessment (MobSF + apkleaks) → OWASP MASVS. Cannibalized from guardian-cli (MIT) |
 
 **Authorization model.** Every skill reads `.claude/security-scope.yaml` before any outbound activity and halts if the file is missing, malformed, or contains only placeholder assets. The scope file is distributed as a template — it **must** be populated with real company-owned targets before live use. See the "Security Testing Scope and Authorization" section of `CLAUDE.md` for the full rules-of-engagement contract.
 
@@ -704,6 +715,9 @@ your-project/
 │   │   │   └── SKILL.md            # Review fix skill (model: sonnet)
 │   │   ├── offensive-security/
 │   │   │   └── SKILL.md            # OWASP, STRIDE, exploit patterns reference (model: opus)
+│   │   ├── redteam-ad-ops/
+│   │   │   └── SKILL.md            # Internal/AD red-team reference: lifecycle, OPSEC, evasion (model: opus)
+│   │   │                           # + executable: ad-recon-hunter, ad-kerberos-hunter, llm-redteam-hunter, mobile-android-hunter
 │   │   └── visual-explainer/        # HTML visualization skill (visual-explainer)
 │   │       ├── SKILL.md            # Workflow, diagram types, anti-slop rules (model: sonnet)
 │   │       ├── references/          # CSS patterns, libraries, slide patterns (~120KB)

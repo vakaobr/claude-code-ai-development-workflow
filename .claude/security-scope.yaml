@@ -105,3 +105,42 @@ technique_restrictions:
     - "fuzzing_with_high_volume"   # >1000 requests
     - "session_fixation_across_users"
     - "authentication_brute_force" # Even with test accounts
+
+# =====================================================================
+#  RED-TEAM EXTENSION  (internal AD / mobile / LLM)
+# ---------------------------------------------------------------------
+#  Gates for the extension skills that the web/API/cloud
+#  security-orchestrator does NOT auto-dispatch:
+#    - internal-ad profile : ad-recon-hunter, ad-kerberos-hunter
+#    - ai-redteam  profile : llm-redteam-hunter
+#    - mobile-sast profile : mobile-android-hunter
+#
+#  These carry higher blast radius than the harmless-probe hunters, so
+#  every flag DEFAULTS TO `denied`. A skill halts unless its master gate
+#  is `approved` AND its target appears in the relevant list here AND the
+#  target is not in `out_of_scope` above. Targets listed here must also
+#  be covered by a signed rules-of-engagement.
+# =====================================================================
+red_team_extension:
+
+  # --- Internal Active Directory (ad-recon-hunter, ad-kerberos-hunter) ---
+  internal_pentest: denied            # denied | approved — master gate for internal-ad profile
+  ad_credentials_vault_path: ""       # e.g. "secret/pentest/ad-engagement" — creds loaded ONLY from here
+  ad_domains: []                      # e.g. ["corp.local"] — in-scope AD domains
+  ad_subnets: []                      # e.g. ["10.0.0.0/24"] — in-scope internal ranges
+  scan_hours: "any"                   # ROE scan window, e.g. "Mon-Fri 18:00-06:00 UTC"
+  # Sub-gates (each must be independently approved; all default denied):
+  offline_cracking: denied            # hashcat/john on recovered AS-REP/TGS hashes
+  impersonation_proof: denied         # mint/use S4U / RBCD / shadow-credential tickets (revert after proof)
+  credential_dumping: denied          # secretsdump / LSASS / NTDS — requires already-proven admin reach
+  domain_dominance: denied            # golden/silver/diamond tickets, DCSync as DA, forged certs
+
+  # --- LLM red-team (llm-redteam-hunter) ---
+  llm_redteam: denied                 # denied | approved — master gate for ai-redteam profile
+  llm_endpoints: []                   # FIRST-PARTY endpoints only, e.g. ["https://app.internal.example.com/api/chat"]
+  llm_redteam_max_requests: 2000      # cost ceiling for garak/PyRIT probe batteries
+
+  # --- Mobile static assessment (mobile-android-hunter) ---
+  mobile_testing: denied              # denied | approved — master gate for mobile-sast profile
+  mobile_artifacts: []                # e.g. ["builds/app-release.apk (sha256:abc…)"]
+  mobsf_instance: "local"             # MUST be a local/self-hosted MobSF — never the public hosted instance
