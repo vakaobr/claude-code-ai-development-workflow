@@ -101,6 +101,35 @@ allowed-tools: >
   Bash(trufflehog:*), Bash(gitleaks:detect*), Bash(gitleaks:protect*)
 ```
 
+## Profile: recon-webcheck
+
+For the `web-check-recon` skill, which runs a **self-hosted**
+`lissy93/web-check` container on demand and reads its local JSON API. It
+is the `active` recon profile narrowed to this skill's needs, extended
+with on-demand container lifecycle. The only outbound prober is web-check
+itself (constrained by the scope gate); `curl` is restricted by the
+skill's methodology to the local API (`127.0.0.1:3000`), never to targets.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  WebFetch,
+  Bash(docker:compose*), Bash(docker:ps*), Bash(docker:inspect*),
+  Bash(docker:logs*),
+  Bash(bash:*), Bash(python3:*),
+  Bash(curl:*), Bash(jq:*)
+```
+
+Explicitly forbidden:
+- Pointing web-check at the public `web-check.xyz` instance for any client
+  target (discloses the target to a third party; probes from an
+  uncontrolled IP).
+- Binding the container to anything other than `127.0.0.1`.
+- Running the ACTIVE-tier checks (`ports`, `trace-route`, `firewall`,
+  `linked-pages`, `quality`, `screenshot`) when the asset's
+  `testing_level` is not `active`.
+- Running `tls-labs` (public Qualys scan) without explicit scope approval.
+
 ## Profile: internal-ad
 
 For **authorized internal penetration tests** of Active Directory /

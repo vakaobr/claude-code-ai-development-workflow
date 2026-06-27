@@ -144,7 +144,7 @@ Full phase→layer map and the Quality Contract rationale: [`.claude/ARCHITECTUR
 
 | Command | Phase | What It Does |
 |---------|-------|--------------|
-| `/security {issue}` | 7a | Static audit — runs OWASP/STRIDE checklist for small scopes, or delegates to `@security-orchestrator` (which composes 39 defensive hunter skills) for large / high-risk scopes |
+| `/security {issue}` | 7a | Static audit — runs OWASP/STRIDE checklist for small scopes, or delegates to `@security-orchestrator` (which composes 40 defensive skills) for large / high-risk scopes |
 | `/security/pentest {issue}` | 7b | Dynamic pentest via Shannon — only reports proven exploits with PoCs |
 | `/security/redteam-ai {issue}` | 7c | AI/LLM threat modeling — prompt injection surface, OBLITERATUS analysis |
 | `/security/harden {issue}` | 8 | Prioritized fix plan (P0–P3), implements P0 patches, creates GitHub issues |
@@ -202,7 +202,7 @@ OBLITERATUS requires a GPU. See the [OBLITERATUS repo](https://github.com/elder-
 
 ### Defensive Security Skills Library
 
-39 specialist defensive-testing skills live under `.claude/skills/{name}/SKILL.md`, grouped by tier and class. A `security-orchestrator` agent composes them based on target type (web app / API / cloud / CI-CD), scope risk, and detected stack. The library is the backbone of `/security` Phase 7a for anything larger than an M-sized feature.
+40 specialist defensive-testing skills live under `.claude/skills/{name}/SKILL.md`, grouped by tier and class. A `security-orchestrator` agent composes them based on target type (web app / API / cloud / CI-CD), scope risk, and detected stack. The library is the backbone of `/security` Phase 7a for anything larger than an M-sized feature.
 
 Alongside these, a **5-skill internal / mobile / AI red-team extension** covers categories the web/API/cloud hunters do not (Active Directory, Android, LLM endpoints). These run on a **separate, manually-driven track** — the orchestrator does not auto-dispatch them because their tooling and blast radius differ from the harmless-probe model. See the extension table below.
 
@@ -210,7 +210,7 @@ Alongside these, a **5-skill internal / mobile / AI red-team extension** covers 
 
 | Class | Skills | Notable |
 |---|---|---|
-| Recon (T4) | web-recon-passive, web-recon-active, api-recon, auth-flow-mapper, attack-surface-mapper | Produce `PASSIVE_RECON.md` / `ATTACK_SURFACE.md` / `API_INVENTORY.md` / `AUTH_FLOWS.md` / `CONSOLIDATED_ATTACK_SURFACE.md` — consumed by every hunter |
+| Recon (T4) | web-check-recon, web-recon-passive, web-recon-active, api-recon, auth-flow-mapper, attack-surface-mapper | Produce `WEBCHECK.md` / `PASSIVE_RECON.md` / `ATTACK_SURFACE.md` / `API_INVENTORY.md` / `AUTH_FLOWS.md` / `CONSOLIDATED_ATTACK_SURFACE.md` — consumed by every hunter. `web-check-recon` runs a self-hosted [web-check](https://github.com/lissy93/web-check) container on demand for a fast structured first-pass |
 | Authentication (T1) | auth-flaw, session-flaw, jwt, oauth-oidc | Full auth stack: enumeration, lockout, MFA-skip, JWT `alg:none` / HS256 crack / RS256→HS256, OAuth redirect-URI bypass |
 | Access control (T1) | idor, bola-bfla | Web-app IDOR + API BOLA/BFLA (OWASP API1:2023, API5:2023) |
 | Injection (T1–T2) | sqli, xxe, ssti, command-injection, path-traversal, deserialization | With post-RCE halt contract: stop at proof, never pivot |
@@ -240,14 +240,14 @@ Alongside these, a **5-skill internal / mobile / AI red-team extension** covers 
 
 ## Agent Library
 
-Agents live under `.claude/agents/` and split into two roles — **orchestrators** (drive a phase end-to-end) and **specialists** (focused domain experts dispatched by an orchestrator or invoked directly). The `/review` phase (Phase 6) dispatches five specialists in parallel, aggregates their verdicts, and runs a scoped fix loop (max 3 iterations — only failing specialists re-review). The `/security` phase (Phase 7a) delegates to `security-orchestrator` for large scopes, which composes the 39 defensive hunter skills.
+Agents live under `.claude/agents/` and split into two roles — **orchestrators** (drive a phase end-to-end) and **specialists** (focused domain experts dispatched by an orchestrator or invoked directly). The `/review` phase (Phase 6) dispatches five specialists in parallel, aggregates their verdicts, and runs a scoped fix loop (max 3 iterations — only failing specialists re-review). The `/security` phase (Phase 7a) delegates to `security-orchestrator` for large scopes, which composes the 40 defensive skills.
 
 **Orchestrators:**
 
 | Agent | Role |
 |---|---|
 | `sdlc-orchestrator` | Autonomous SDLC driver — Research → Plan → Implement → Review, with parallel specialist dispatch and JSON state machine |
-| `security-orchestrator` | Composes 39 defensive hunter skills based on asset type, scope risk, and detected stack |
+| `security-orchestrator` | Composes 40 defensive skills based on asset type, scope risk, and detected stack |
 
 **Specialists:**
 
@@ -698,7 +698,7 @@ your-project/
 │   │   ├── qa-reviewer.md          # Specialist reviewer — test coverage & quality
 │   │   ├── sre-reviewer.md         # Specialist reviewer — reliability & operations
 │   │   ├── tech-writer.md          # Specialist reviewer — docs, changelog, API surface
-│   │   ├── security-orchestrator.md # Composes 39 defensive hunter skills (Phase 7a)
+│   │   ├── security-orchestrator.md # Composes 40 defensive skills (Phase 7a)
 │   │   └── security-analyst.md     # Security persona (OWASP, Shannon, OBLITERATUS)
 │   ├── sdlc/                        # SDLC reference docs
 │   │   └── AGENTIC_WORKFLOW_BEST_PRACTICES.md  # Parallel-review, scoped-fix-loop, JSON state patterns

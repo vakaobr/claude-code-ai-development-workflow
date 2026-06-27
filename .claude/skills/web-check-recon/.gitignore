@@ -1,0 +1,6 @@
+# Never commit real API keys.
+.env
+
+# Python bytecode from the normalizer.
+scripts/__pycache__/
+*.pyc

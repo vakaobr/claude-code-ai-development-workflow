@@ -36,6 +36,13 @@ immediately.
 - When the assessment window is constrained and OSINT-level findings
   may be sufficient before escalating to active probes.
 - When the orchestrator's phase-0 plan selects it as the first step.
+- After `web-check-recon` has run (the orchestrator runs it first):
+  read its `WEBCHECK.md` / `PASSIVE_RECON.patch.md` to skip
+  re-collecting the DNS / TLS / headers / cookies / subdomain /
+  reputation signals it already gathered, and focus this skill on the
+  OSINT depth web-check does NOT do — GitHub secret dorks (Phase 4),
+  file-metadata pulls (Phase 1 §2), and Wayback parameter mining
+  (Phase 3).
 
 ## When NOT to Use
 

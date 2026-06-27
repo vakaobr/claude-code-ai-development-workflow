@@ -1,6 +1,6 @@
 # Security Skills Library
 
-44 security skills (39 defensive web/API/cloud + 4 internal/mobile/AI
+45 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
 red-team + 1 reference) plus the `security-orchestrator` agent that
 composes the web/API/cloud set. Skills are under `.claude/skills/{name}/`;
 the agent is at `.claude/agents/security-orchestrator.md`; the
@@ -22,13 +22,14 @@ populated with real company assets before any live use).
    the orchestrator for large/high-risk scopes and falls back to the
    OWASP/STRIDE checklist for M-sized features.
 
-## Skill inventory (39 skills)
+## Skill inventory (40 skills)
 
-### Tier 4 — Recon / Foundation (5 skills)
+### Tier 4 — Recon / Foundation (6 skills)
 Run before any hunter. Produce inventory artifacts that hunters consume.
 
 | Skill | Profile | Output |
 |---|---|---|
+| [web-check-recon](web-check-recon/SKILL.md) | recon-webcheck | `WEBCHECK.md` + `PASSIVE_RECON.patch.md` |
 | [web-recon-passive](web-recon-passive/SKILL.md) | passive | `PASSIVE_RECON.md` |
 | [web-recon-active](web-recon-active/SKILL.md) | active | `ATTACK_SURFACE.md` |
 | [api-recon](api-recon/SKILL.md) | active | `API_INVENTORY.md` |
@@ -116,7 +117,7 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 
 ### Internal / Mobile / AI — Red-Team Extension (5 skills)
 
-Net-new categories the 39 web/API/cloud hunters do not cover. Sourced
+Net-new categories the 40 web/API/cloud hunters do not cover. Sourced
 from RedefiningReality/Cheatsheets (MIT, per author) and cannibalized
 from guardian-cli (MIT). These run on a **separate track** from the
 web-focused `security-orchestrator` (see "Internal/Mobile/AI track"
@@ -130,17 +131,17 @@ below) and carry their own scope gates.
 | [llm-redteam-hunter](llm-redteam-hunter/SKILL.md) | ai-redteam | Automated garak + PyRIT probe battery against first-party LLM endpoints → OWASP LLM Top 10 |
 | [mobile-android-hunter](mobile-android-hunter/SKILL.md) | mobile-sast | Static APK assessment (MobSF + mobsfscan + apkleaks) → OWASP MASVS / Mobile Top 10 |
 
-**New scope-file keys these require** (under a `red_team_extension:` block
-in `.claude/security-scope.yaml`): `internal_pentest`,
-`ad_credentials_vault_path`, `offline_cracking`, `impersonation_proof`,
-`credential_dumping`, `domain_dominance`, `ad_domains`, `ad_subnets` (AD);
-`llm_redteam`, `llm_endpoints`, `llm_redteam_max_requests` (LLM);
-`mobile_testing`, `mobile_artifacts`, `mobsf_instance` (mobile). All
-default `denied`.
+**New scope-file keys these require** (add to `.claude/security-scope.yaml`):
+`internal_pentest: approved`, `ad_credentials_vault_path`,
+`offline_cracking: approved`, `impersonation_proof: approved`,
+`credential_dumping: approved`, `domain_dominance: approved` (AD);
+`llm_endpoints: [...]`, `llm_redteam: approved`,
+`llm_redteam_max_requests` (LLM); `mobile_testing: approved`,
+`mobile_artifacts: [...]` (mobile).
 
 ## Tool profiles
 
-All skills reference one of 8 profiles defined in
+All skills reference one of 9 profiles defined in
 [_shared/tool-profiles.md](_shared/tool-profiles.md):
 
 - **passive** — `Read, Grep, Glob, WebFetch` (no Bash outside planning/)
@@ -173,6 +174,12 @@ evidence + remediation.
 
 ## Cross-skill dispatch patterns
 
+- `web-check-recon` → `web-recon-passive` → `web-recon-active` /
+  `api-recon` → `attack-surface-mapper` (web-check-recon runs first as
+  a fast structured first-pass; passive recon consumes its `WEBCHECK.md`
+  and adds the OSINT depth it skips). Hygiene candidates hand off to
+  `crypto-flaw-hunter` / `clickjacking-hunter` / `session-flaw-hunter` /
+  `csrf-hunter`.
 - `ssrf-hunter` → `ssrf-cloud-metadata-hunter` → `aws-iam-hunter`
   (SSRF confirmed → IMDS probe → IAM enumeration). Each skill stops
   at its boundary.
