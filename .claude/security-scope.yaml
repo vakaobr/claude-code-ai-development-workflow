@@ -164,6 +164,24 @@ red_team_ops:
   host_privesc: denied                # denied | approved — host-privesc-hunter (needs an authorized foothold)
   offline_cracking: denied            # denied | approved — cracking-hunter (offline only; vault-stored results)
   crack_time_budget: "4h"             # bound mask/brute attacks so "uncracked" is meaningful
+  lab_replica: ""                     # optional replica env for exploit-validation (preferred over production)
+
+  # --- Reverse engineering (reverse-engineering-hunter) ---
+  reverse_engineering: denied         # denied | approved
+  re_artifacts: []                    # in-scope binaries/firmware, e.g. ["fw/router-1.2.bin (sha256:…)"]
+  # dynamic RE execution requires a disposable, network-isolated sandbox (skill-enforced)
+
+  # --- Social engineering / phishing (social-engineering-hunter) — targets PEOPLE ---
+  social_engineering: denied          # denied | approved — needs SEPARATE written consent
+  se_consent_ref: ""                  # signed authorization ref naming the campaign + population
+  se_recipient_list: ""               # path to the APPROVED recipient list (no one outside it)
+  se_evilginx: denied                 # denied | approved — MFA-phishing demo (destroy session token after proof)
+
+  # --- Wireless (wireless-hunter) — needs RF hardware + Linux capture host ---
+  wireless: denied                    # denied | approved
+  wireless_targets: []                # in-scope SSIDs/BSSIDs, e.g. ["CorpWiFi (aa:bb:..)"]
+  wireless_workshop_consent: ""       # signed consent + attendee signage ref for rogue-AP / capture demos
+  wireless_capture_host: "vm"         # "vm" (USB passthrough) | "pi" (Raspberry Pi 4/5) — never macOS directly
 
 # =====================================================================
 #  DFIR / INCIDENT RESPONSE

@@ -1,7 +1,7 @@
 # Security Skills Library
 
-53 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
-red-team + 3 red-team-ops + 3 DFIR/incident-response + 3 reference) plus
+57 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
+red-team + 7 red-team-ops + 3 DFIR/incident-response + 3 reference) plus
 the `security-orchestrator` agent that composes the web/API/cloud set.
 Skills are under `.claude/skills/{name}/`;
 the agent is at `.claude/agents/security-orchestrator.md`; the
@@ -140,14 +140,14 @@ below) and carry their own scope gates.
 `llm_redteam_max_requests` (LLM); `mobile_testing: approved`,
 `mobile_artifacts: [...]` (mobile).
 
-### Red-Team Ops (4 skills)
+### Red-Team Ops (8 skills)
 
-Full-scope offensive engagement skills for **proving impact to clients**
-(network/infra pentest + post-exploitation), grounded in PTES / NIST SP
-800-115 / HackTricks / GTFOBins (authored, not imported; tool names
-cross-checked against awesome-pentest CC-BY-4.0). More aggressive than the
-web `active` hunters; least-damage proof, no online brute force, no
-persistence. Findings go to `SECURITY_AUDIT.md` / `PENTEST_REPORT.md`.
+Full-scope offensive engagement skills for **proving impact to clients**,
+grounded in PTES / NIST SP 800-115 / HackTricks / GTFOBins (authored, not
+imported; tool names cross-checked against awesome-pentest CC-BY-4.0).
+More aggressive than the web `active` hunters; least-damage proof, no
+online brute force, no persistence. Findings go to `SECURITY_AUDIT.md` /
+`PENTEST_REPORT.md`. **AV/EDR evasion is intentionally excluded.**
 
 | Skill | Profile | Covers |
 |---|---|---|
@@ -155,13 +155,18 @@ persistence. Findings go to `SECURITY_AUDIT.md` / `PENTEST_REPORT.md`.
 | [network-pentest-hunter](network-pentest-hunter/SKILL.md) | network-pentest | Non-web infra: full nmap/rustscan/masscan, SMB/SNMP/NFS/DB/mail enum, default-cred checks, version→CVE + least-damage validation |
 | [host-privesc-hunter](host-privesc-hunter/SKILL.md) | host-privesc | Local Linux/Windows privesc on an authorized foothold: PEAS enumeration → GTFOBins/LOLBAS/service/cron/kernel paths, least-damage proof |
 | [cracking-hunter](cracking-hunter/SKILL.md) | cracking | Offline hashcat/John against captured hashes (AD/JWT/SAM/NTDS); proves weak password policy. The shared cracking utility |
+| [reverse-engineering-hunter](reverse-engineering-hunter/SKILL.md) | reverse-eng | Static + sandboxed-dynamic RE of binaries/firmware (Ghidra/radare2/gdb/binwalk/capa): secrets, unsafe calls, weak crypto, auth-bypass logic |
+| [exploit-validation-hunter](exploit-validation-hunter/SKILL.md) | exploit-validation | Confirm exploitability with vetted PoCs / pwntools (replica-first, benign proof, stop at proof). Flips Suspected→Confirmed/Not-Exploitable |
+| [social-engineering-hunter](social-engineering-hunter/SKILL.md) | social-eng | Authorized phishing/awareness (Gophish; evilginx MFA-phish demo gated). Targets people — separate written consent; never stores real creds |
+| [wireless-hunter](wireless-hunter/SKILL.md) | wireless | 802.11 survey, WPA handshake/PMKID capture (→ cracking-hunter), rogue-AP/awareness demos. Runs from a Linux capture host (VM passthrough / Pi); needs RF hardware |
 
-**New scope-file keys these require** (under a `red_team_ops:` block):
-`network_pentest`, `network_targets`, `exploit_validation`, `scan_rate`,
-`host_privesc`, `offline_cracking`, `crack_time_budget`. All default
-`denied`. (RE / exploit-dev / social-engineering / wireless skills land in
-later batches with their own gates; AV/EDR evasion is intentionally
-excluded.)
+**New scope-file keys these require** (under the `red_team_ops:` block):
+`network_pentest`, `network_targets`, `exploit_validation`, `lab_replica`,
+`scan_rate`, `host_privesc`, `offline_cracking`, `crack_time_budget`,
+`reverse_engineering`, `re_artifacts`, `social_engineering`,
+`se_consent_ref`, `se_recipient_list`, `se_evilginx`, `wireless`,
+`wireless_targets`, `wireless_workshop_consent`, `wireless_capture_host`.
+All default `denied`.
 
 ### DFIR / Incident Response (4 skills)
 
@@ -186,7 +191,7 @@ to `INCIDENT_REPORT.md`, not `SECURITY_AUDIT.md`.
 
 ## Tool profiles
 
-All skills reference one of 13 profiles defined in
+All skills reference one of 17 profiles defined in
 [_shared/tool-profiles.md](_shared/tool-profiles.md):
 
 - **passive** — `Read, Grep, Glob, WebFetch` (no Bash outside planning/)
@@ -221,6 +226,17 @@ All skills reference one of 13 profiles defined in
 - **cracking** — OFFLINE only: `hashcat`, `john`, `hashid`, `cewl`,
   `crunch`; vault-stored results (hashcat-exempt from the ban, like
   internal-ad)
+- **reverse-eng** — `ghidra`/`analyzeHeadless`, `radare2`/`rizin`,
+  `gdb`, `binwalk`, `capa`, `floss`, `yara`, `objdump`/`readelf`;
+  static-first, dynamic only in an isolated sandbox
+- **exploit-validation** — `searchsploit`, `python3` (pwntools), `gdb`,
+  `ropper`, `one_gadget`, `checksec`, `nc`/`socat`; replica-first, benign
+  proof (no `metasploit`/`msfvenom`, no destructive payloads)
+- **social-eng** — `gophish`, `evilginx2`, `python3`, `curl`, `dig`;
+  consent + approved-recipient gated, never stores real credentials
+- **wireless** — aircrack-ng suite, `kismet`, `hostapd`/`dnsmasq`,
+  `bettercap`, `hcxdumptool`, `tshark`; runs on a Linux capture host
+  (VM passthrough / Pi), RF hardware required, deauth scoped
 
 ## Output contract
 
@@ -287,10 +303,25 @@ hunters:
 - **Cracking**: `cracking-hunter` (offline). The AD chain
   (`ad-kerberos-hunter`), `jwt-hunter`, and `host-privesc-hunter` hand
   captured hashes here. Gate: `red_team_ops.offline_cracking: approved`.
+- **Reverse engineering**: `reverse-engineering-hunter` (binaries/
+  firmware/samples; static-first, dynamic in an isolated sandbox).
+  Feeds `exploit-validation-hunter`. Gate: `red_team_ops.reverse_engineering`.
+- **Exploit validation**: `exploit-validation-hunter` (prove a Suspected
+  finding with a vetted PoC, replica-first, benign proof). `service_affecting`
+  — per-invocation OK. Gate: `red_team_ops.exploit_validation: approved`.
+- **Social engineering**: `social-engineering-hunter` (phishing / awareness;
+  evilginx MFA-demo gated). Targets people — needs `se_consent_ref` +
+  `se_recipient_list`. Gate: `red_team_ops.social_engineering: approved`.
+- **Wireless**: `wireless-hunter` — runs from a **Linux capture host**
+  (VM with USB passthrough, or a Raspberry Pi 4/5; never macOS directly)
+  with a monitor-mode adapter (e.g. Alfa AWUS036ACH). Handshakes hand to
+  `cracking-hunter`. Rogue-AP/awareness demos need
+  `wireless_workshop_consent`. Gate: `red_team_ops.wireless: approved`.
 
 Findings use the offensive finding schema and feed the engagement attack
-narrative. AV/EDR evasion is intentionally out of scope; RE / exploit-dev
-/ social-engineering / wireless ship in later batches.
+narrative. **AV/EDR evasion is intentionally out of scope.** Social
+engineering and wireless require their own consent/hardware; the agent
+plans + analyzes, the operator runs the live part.
 
 ## DFIR track
 

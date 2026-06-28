@@ -237,12 +237,14 @@ Alongside these, a **5-skill internal / mobile / AI red-team extension** covers 
 | IR reference | incident-response | Knowledge skill (no execution): NIST/PICERL lifecycle, evidence handling + chain of custody, triage decision tree, IOC/ATT&CK model. Grounds the DFIR hunters. |
 | Forensics (dfir-readonly) | memory-forensics, disk-triage, log-timeline | Volatility 3 (RAM), Sleuth Kit + plaso (disk), Chainsaw/Hayabusa Sigma (EVTX/logs/PCAP). Hash-verified evidence, unified UTC timeline, ATT&CK-tagged findings. Gated by `dfir_scope.incident_response: approved` |
 
-**Red-team-ops extension (4 skills, full-scope offensive engagements):** for **proving impact to clients** beyond findings — network/infra pentest + post-exploitation. More aggressive than the web `active` hunters; least-damage proof, no online brute force, no persistence. Authored from PTES / NIST SP 800-115 / HackTricks / GTFOBins (tool names cross-checked against awesome-pentest, CC-BY-4.0). AV/EDR evasion intentionally excluded; RE / exploit-dev / social-engineering / wireless ship in later batches.
+**Red-team-ops extension (8 skills, full-scope offensive engagements):** for **proving impact to clients** beyond findings — network/infra pentest, post-exploitation, reverse engineering, exploit validation, social engineering, and wireless. More aggressive than the web `active` hunters; least-damage proof, no online brute force, no persistence. Authored from PTES / NIST SP 800-115 / HackTricks / GTFOBins (tool names cross-checked against awesome-pentest, CC-BY-4.0). **AV/EDR evasion intentionally excluded.**
 
 | Class | Skills | Notable |
 |---|---|---|
 | Engagement reference | redteam-ops | Knowledge skill (no execution): PTES phases, ROE + proof-for-clients, external→internal kill-chain, technique/tool map. Grounds the red-team-ops hunters. |
-| Infra + post-ex (network-pentest / host-privesc / cracking) | network-pentest, host-privesc, cracking | Non-web infra pentest (nmap/netexec/searchsploit), local Linux/Windows privesc (PEAS/GTFOBins/LOLBAS), offline hash cracking (hashcat/John). Gated by `red_team_ops.*` |
+| Infra + post-ex | network-pentest, host-privesc, cracking | Non-web infra pentest (nmap/netexec/searchsploit), local Linux/Windows privesc (PEAS/GTFOBins/LOLBAS), offline hash cracking (hashcat/John) |
+| RE + exploit | reverse-engineering, exploit-validation | Static+sandboxed RE (Ghidra/radare2/gdb/binwalk); confirm exploitability with vetted PoCs/pwntools (replica-first, benign proof) |
+| Human + RF | social-engineering, wireless | Phishing/awareness (Gophish; evilginx MFA-demo gated, separate consent); 802.11 survey + rogue-AP/awareness demos from a Linux capture host (VM passthrough / Raspberry Pi, never macOS). Gated by `red_team_ops.*` |
 
 **Authorization model.** Every skill reads `.claude/security-scope.yaml` before any outbound activity and halts if the file is missing, malformed, or contains only placeholder assets. The scope file is distributed as a template — it **must** be populated with real company-owned targets before live use. See the "Security Testing Scope and Authorization" section of `CLAUDE.md` for the full rules-of-engagement contract.
 
@@ -737,7 +739,8 @@ your-project/
 │   │   │                           # + executable: memory-forensics-hunter, disk-triage-hunter, log-timeline-hunter
 │   │   ├── redteam-ops/
 │   │   │   └── SKILL.md            # Red-team-ops reference: PTES, ROE, proof-for-clients, kill-chain (model: opus)
-│   │   │                           # + executable: network-pentest-hunter, host-privesc-hunter, cracking-hunter
+│   │   │                           # + executable: network-pentest, host-privesc, cracking, reverse-engineering,
+│   │   │                           #   exploit-validation, social-engineering, wireless (hunters)
 │   │   └── visual-explainer/        # HTML visualization skill (visual-explainer)
 │   │       ├── SKILL.md            # Workflow, diagram types, anti-slop rules (model: sonnet)
 │   │       ├── references/          # CSS patterns, libraries, slide patterns (~120KB)

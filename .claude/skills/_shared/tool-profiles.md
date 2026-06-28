@@ -326,6 +326,86 @@ only; no upload to third-party/online cracking services. Like
 (offline cracking is its purpose); `sqlmap`/`metasploit`/`hydra`/`nikto`
 remain banned.
 
+## Profile: reverse-eng
+
+For static + light-dynamic reverse engineering of authorized artifacts.
+Dynamic execution happens ONLY in an isolated sandbox (skill-enforced).
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(file:*), Bash(strings:*), Bash(binwalk:*), Bash(floss:*),
+  Bash(capa:*), Bash(yara:*), Bash(nm:*), Bash(objdump:*),
+  Bash(readelf:*), Bash(rabin2:*), Bash(r2:*), Bash(rizin:*),
+  Bash(ghidra:*), Bash(analyzeHeadless:*),
+  Bash(gdb:*), Bash(ltrace:*), Bash(strace:*),
+  Bash(sha256sum:*), Bash(md5sum:*), Bash(jq:*), Bash(python3:*)
+```
+
+Extra gating: scope MUST set `red_team_ops.reverse_engineering: approved`;
+record artifact SHA-256; any execution (gdb/ltrace/strace/running the
+sample) only in a disposable, network-isolated sandbox.
+
+## Profile: exploit-validation
+
+For confirming exploitability with vetted PoCs / controlled local
+exploit dev. `service_affecting` — replica-first, benign proof, stop at
+proof.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(searchsploit:*), Bash(python3:*), Bash(gdb:*),
+  Bash(ropper:*), Bash(one_gadget:*), Bash(checksec:*),
+  Bash(nc:*), Bash(ncat:*), Bash(socat:*), Bash(curl:*),
+  Bash(sha256sum:*), Bash(jq:*)
+```
+
+Extra gating: scope MUST set `red_team_ops.exploit_validation: approved`;
+per-invocation confirmation for live targets; prefer `red_team_ops.lab_replica`.
+Explicitly forbidden: `metasploit`/`msfvenom`, destructive/DoS payloads,
+persistence/weaponization beyond proof. (sqlmap/hydra/nikto stay banned.)
+
+## Profile: social-eng
+
+For authorized phishing / awareness campaigns. Targets people — requires
+separate written consent + an approved recipient list.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(gophish:*), Bash(evilginx:*), Bash(evilginx2:*),
+  Bash(python3:*), Bash(curl:*), Bash(dig:*), Bash(host:*),
+  Bash(openssl:s_client*), Bash(openssl:x509*), Bash(jq:*)
+```
+
+Extra gating: scope MUST set `red_team_ops.social_engineering: approved`,
+`se_consent_ref`, and `se_recipient_list`; evilginx requires
+`red_team_ops.se_evilginx: approved`. NEVER store real plaintext
+credentials (submission-fact only); send only to the consented list.
+
+## Profile: wireless
+
+For 802.11 assessment / awareness demos from a **Linux capture host**
+(VM with USB passthrough, or a Raspberry Pi). `service_affecting` (deauth/
+evil-twin disrupt RF). Requires monitor-mode hardware; cannot run on macOS.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(iw:*), Bash(iwconfig:*), Bash(airmon-ng:*), Bash(airodump-ng:*),
+  Bash(aireplay-ng:*), Bash(aircrack-ng:*), Bash(kismet:*),
+  Bash(hcxdumptool:*), Bash(hcxpcapngtool:*), Bash(wifite:*),
+  Bash(hostapd:*), Bash(hostapd-mana:*), Bash(dnsmasq:*), Bash(bettercap:*),
+  Bash(tshark:*), Bash(tcpdump:*), Bash(capinfos:*),
+  Bash(sha256sum:*), Bash(jq:*)
+```
+
+Extra gating: scope MUST set `red_team_ops.wireless: approved` and list
+`wireless_targets`; rogue-AP / attendee capture requires
+`red_team_ops.wireless_workshop_consent` + attendee signage; deauth limited
+to in-scope targets; WPA cracking is handed to `cracking-hunter` (offline).
+
 ## Per-Skill Override
 
 A skill may request a more restrictive subset of its profile by listing
