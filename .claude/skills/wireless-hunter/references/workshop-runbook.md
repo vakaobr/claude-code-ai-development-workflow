@@ -9,6 +9,21 @@ the "free wifi" awareness demo run by `wireless-hunter`.
 > verbal briefing). The point is to teach, not to embarrass — keep
 > everything aggregated and anonymous.
 
+> **Captive portal ≠ evilginx (important).** The "free wifi" splash /
+> awareness page in this workshop is a plain **captive portal** you build
+> yourself: `hostapd` (the open AP) + `dnsmasq` (DHCP/DNS) + a tiny web
+> server (`python3 -m http.server`, nginx, or `bettercap`'s `http-ui`)
+> serving **your own HTML/CSS** — so yes, the look & feel is 100%
+> yours (brand it as "Airport WiFi", a hotel portal, etc.).
+> **evilginx is a different tool for a different job**: it's a
+> reverse-proxy man-in-the-middle that *mirrors a real site* (e.g. a real
+> M365 login) to capture session cookies / MFA tokens — you do NOT design
+> its look (it proxies the genuine page); you configure it via *phishlets*
+> (YAML) + lures. Use evilginx (via `social-engineering-hunter`, separately
+> consented) only to PROVE MFA-phishing risk — not for the captive-portal
+> splash. For this awareness demo, keep the portal benign: it records the
+> *fact* of a submission for the teachable moment, never real credentials.
+
 ---
 
 ## 0. Pre-flight (the day before / morning of)

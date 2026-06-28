@@ -32,6 +32,10 @@ metadata:
 > `.claude/security-scope.yaml` (`red_team_ops.*`). Loading this
 > authorizes nothing.
 
+> **Operator VM:** the executable hunters (and the DFIR ones) run from a
+> Linux box. Reproducible build + full toolset install:
+> `references/kali-vm-setup.md`.
+
 > **Authorization and proof are the two pillars.** Every technique here
 > runs ONLY under a signed rules-of-engagement against in-scope assets.
 > And because the deliverable is client-facing proof, every action is
