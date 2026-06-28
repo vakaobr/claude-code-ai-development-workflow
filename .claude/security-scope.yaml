@@ -146,6 +146,26 @@ red_team_extension:
   mobsf_instance: "local"             # MUST be a local/self-hosted MobSF — never the public hosted instance
 
 # =====================================================================
+#  RED-TEAM OPS  (network/infra pentest, host privesc, offline cracking)
+# ---------------------------------------------------------------------
+#  Gates for the full-scope offensive engagement skills grounded by the
+#  redteam-ops reference: network-pentest-hunter (network-pentest
+#  profile), host-privesc-hunter (host-privesc), cracking-hunter
+#  (cracking). These prove impact for client deliverables and are more
+#  aggressive than the web `active` hunters. All gates default `denied`.
+#  (Reverse-engineering, exploit-dev, social-engineering, and wireless
+#  skills will add their own gates here in later batches.)
+# =====================================================================
+red_team_ops:
+  network_pentest: denied             # denied | approved — network-pentest-hunter
+  network_targets: []                 # in-scope ranges/hosts, e.g. ["10.0.0.0/24", "host.example"]
+  exploit_validation: denied          # denied | approved — run benign PoC to prove a CVE (no destructive/DoS exploits)
+  scan_rate: ""                       # optional ROE rate cap, e.g. "1000pps" / "min-rate 500"
+  host_privesc: denied                # denied | approved — host-privesc-hunter (needs an authorized foothold)
+  offline_cracking: denied            # denied | approved — cracking-hunter (offline only; vault-stored results)
+  crack_time_budget: "4h"             # bound mask/brute attacks so "uncracked" is meaningful
+
+# =====================================================================
 #  DFIR / INCIDENT RESPONSE
 # ---------------------------------------------------------------------
 #  Gates for the digital-forensics / incident-response extension

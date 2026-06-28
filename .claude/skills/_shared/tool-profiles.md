@@ -254,6 +254,78 @@ Explicitly forbidden:
   sandboxes without explicit `dfir_scope.external_sandbox: approved`
   (evidence may contain regulated data).
 
+## Profile: network-pentest
+
+For **authorized network / infrastructure penetration testing** of
+non-web services (external or internal). Active discovery + enumeration +
+least-damage exploit validation. More aggressive than `active` (full
+nmap, service enum), but NOT online brute force (`hydra`/`medusa` stay
+banned) and NOT destructive.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(nmap:*), Bash(rustscan:*), Bash(masscan:*),
+  Bash(netexec:*), Bash(nxc:*), Bash(enum4linux-ng:*), Bash(enum4linux:*),
+  Bash(smbmap:*), Bash(smbclient:*), Bash(rpcclient:*), Bash(showmount:*),
+  Bash(snmpwalk:*), Bash(snmp-check:*), Bash(onesixtyone:*),
+  Bash(dig:*), Bash(host:*), Bash(whois:*), Bash(nbtscan:*),
+  Bash(searchsploit:*), Bash(ssh-audit:*),
+  Bash(openssl:s_client*), Bash(openssl:x509*),
+  Bash(curl:*), Bash(jq:*)
+```
+
+Extra gating: scope MUST set `red_team_ops.network_pentest: approved`;
+exclude `out_of_scope` hosts from ranges; respect ROE scan window/rate;
+exploit validation only with `red_team_ops.exploit_validation: approved`
+and benign proof only.
+
+Explicitly forbidden: online brute force (`hydra`/`medusa`), DoS/stress
+options, destructive exploits.
+
+## Profile: host-privesc
+
+For **local privilege-escalation assessment** on an authorized host where
+a foothold already exists. Enumeration + interpretation + least-damage
+validation; no persistence.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(linpeas:*), Bash(linpeas.sh:*), Bash(LinEnum:*), Bash(LinEnum.sh:*),
+  Bash(pspy:*), Bash(pspy64:*), Bash(linux-exploit-suggester:*), Bash(les.sh:*),
+  Bash(winpeas:*), Bash(seatbelt:*), Bash(powerup:*),
+  Bash(sudo:-l), Bash(id:*), Bash(whoami:*), Bash(getcap:*),
+  Bash(uname:*), Bash(crontab:-l), Bash(systemctl:*),
+  Bash(find:*), Bash(ls:*), Bash(cat:*), Bash(grep:*), Bash(jq:*)
+```
+
+Extra gating: scope MUST set `red_team_ops.host_privesc: approved`; the
+foothold must have been obtained under prior authorization. Prove with
+`id`/`whoami` and STOP; revert any state change; no persistence; avoid
+kernel exploits on production unless explicitly approved.
+
+## Profile: cracking
+
+For **offline** password / hash cracking of material captured by other
+skills. Offline only — never online brute force.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(hashcat:*), Bash(john:*), Bash(hashid:*), Bash(hash-identifier:*),
+  Bash(cewl:*), Bash(crunch:*), Bash(jq:*),
+  Bash(sha256sum:*), Bash(md5sum:*)
+```
+
+Extra gating: scope MUST set `red_team_ops.offline_cracking: approved`
+(or the AD chain's `red_team_extension.offline_cracking`). Hashes/
+plaintext stay in the engagement vault; report counts + redacted samples
+only; no upload to third-party/online cracking services. Like
+`internal-ad`, this profile is exempt from the validator's `hashcat` ban
+(offline cracking is its purpose); `sqlmap`/`metasploit`/`hydra`/`nikto`
+remain banned.
+
 ## Per-Skill Override
 
 A skill may request a more restrictive subset of its profile by listing
