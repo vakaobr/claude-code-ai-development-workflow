@@ -1,21 +1,52 @@
 # Wireless Capture-Host Setup Checklist
 
-Support material for `wireless-hunter`. The agent cannot do 802.11
-monitor mode / injection on macOS (RTL8812AU is unsupported there, worse
-on Apple Silicon). It drives a **Linux capture host** instead. This doc
-is a runnable checklist for two hosts:
+Support material for `wireless-hunter`. macOS itself can't do 802.11
+monitor mode / injection, so the skill drives a **Linux capture host**.
+This doc is a runnable checklist for two hosts:
 
-- **A) VM + USB passthrough** — primary, supported setup.
-- **B) Raspberry Pi 4/5** — portable alternative (recommended for
-  workshops); the road is paved here so you can switch later with no
-  methodology change.
+- **A) VM + USB passthrough** — works on Apple Silicon (Fusion CAN pass
+  the adapter through); the real variable is whether the adapter's driver
+  builds for the guest kernel (see below).
+- **B) Raspberry Pi 4/5** — portable, most-reliable for workshops; the
+  road is paved here so you can switch with no methodology change.
 
-Reference adapter: **Alfa AWUS036ACH (Realtek RTL8812AU)**. Driver:
-`aircrack-ng/rtl8812au` (DKMS).
+> **What's actually hard (corrected):** USB passthrough is NOT the
+> blocker — VMware Fusion passes the adapter into the Linux guest fine
+> (Virtual Machine menu → USB & Bluetooth → Connect). The blocker is the
+> **out-of-tree Wi-Fi driver vs the guest kernel**. Verified 2026-06-28
+> on Kali arm64: the packaged `realtek-rtl88xxau-dkms` (RTL8812AU) has a
+> `BUILD_EXCLUSIVE` guard that **refuses to build on kernel 6.19** — so
+> monitor mode is unavailable until a 6.19-compatible driver lands,
+> regardless of passthrough. Pick an adapter whose driver is in the
+> **mainline kernel** to avoid this entirely.
 
 > Run nothing against networks you are not authorized for. The rogue-AP /
 > attendee-capture steps require `red_team_ops.wireless: approved` and
 > `wireless_workshop_consent` in `.claude/security-scope.yaml`.
+
+---
+
+## Adapter selection (read before buying)
+
+Monitor mode + injection depends on the **chipset + driver**. Prefer
+chipsets whose driver is **in the mainline Linux kernel** — they work out
+of the box on any recent kernel (incl. 6.19) and over VM passthrough,
+with no DKMS chase.
+
+| Adapter | Chipset | Driver | Bands | Verdict |
+|---|---|---|---|---|
+| **Alfa AWUS036ACM** | MediaTek MT7612U | `mt76x2u` (mainline) | 2.4 + 5 GHz | **Recommended** — dual-band AND mainline; no driver chasing |
+| Alfa AWUS036NHA | Atheros AR9271 | `ath9k_htc` (mainline) | 2.4 GHz only | Rock-solid "just works"; pick if 2.4 GHz is enough |
+| Alfa AWUS036ACHM | MediaTek MT7610U | `mt76x0u` (mainline) | 2.4 + 5 GHz (1×1) | Good mainline dual-band, lower throughput |
+| Alfa AWUS036ACH / AC | Realtek RTL8812AU | `rtl88xxau` (out-of-tree DKMS) | 2.4 + 5 GHz | Capable but **driver lags new kernels** (the 6.19 problem above) |
+| Alfa AWUS036NH | Ralink RT3070 | `rt2800usb` (mainline) | 2.4 GHz only | Classic, mainline, reliable |
+
+**Bottom line:** for a dual-band adapter that works in the VM today and on
+the Pi later with zero driver pain, get the **Alfa AWUS036ACM (MT7612U)**
+rather than the AWUS036ACH (RTL8812AU) you were considering. The ACH is
+fine on a Pi with a matched kernel, but the ACM avoids the out-of-tree
+driver entirely. If you only need 2.4 GHz, the AWUS036NHA (AR9271) is the
+most bulletproof.
 
 ---
 
@@ -37,22 +68,28 @@ Reference adapter: **Alfa AWUS036ACH (Realtek RTL8812AU)**. Driver:
        aircrack-ng kismet hostapd dnsmasq tshark hcxdumptool hcxtools bettercap`
 
 ### A2. Pass the adapter through to the guest
-- [ ] Plug the AWUS036ACH into the host.
-- [ ] **VMware**: VM Settings → USB Controller → enable USB 3.x; when the
-      adapter appears, "Connect to virtual machine". Or VM menu →
-      Removable Devices → Realtek 8812AU → Connect.
-- [ ] **VirtualBox**: Settings → USB → enable xHCI, add a USB filter for
-      the Realtek adapter (install the Extension Pack first).
-- [ ] In the guest, confirm the device is visible: `lsusb | grep -i realtek`
+- [ ] Plug the adapter into the Mac.
+- [ ] **VMware Fusion**: Settings → USB & Bluetooth → enable USB 3.x; then
+      VM running → **Virtual Machine menu → USB & Bluetooth → Connect
+      [adapter]**. (HID `config` tweaks are only for keyboard/mouse — not
+      needed for Wi-Fi.)
+- [ ] In the guest, confirm it's visible: `lsusb` (look for MediaTek /
+      Atheros / Realtek depending on your adapter).
 
-### A3. Install the RTL8812AU driver (DKMS)
-- [ ] ```
-      sudo apt install -y realtek-rtl88xxau-dkms   # Kali shortcut, OR build from source:
-      git clone https://github.com/aircrack-ng/rtl8812au
-      cd rtl8812au && sudo make dkms_install
+### A3. Driver
+- [ ] **Mainline-driver adapter (MT7612U / AR9271 / MT7610U / RT3070) —
+      RECOMMENDED:** nothing to install. The driver is in-kernel; plug in,
+      `iw dev` should already show the interface. Skip to A4.
+- [ ] **Only for Realtek RTL8812AU (AWUS036ACH):** out-of-tree DKMS —
       ```
-- [ ] Reboot the guest. Confirm interface: `ip link` / `iw dev` (expect
-      `wlan0` or similar).
+      sudo apt install -y realtek-rtl88xxau-dkms linux-headers-$(uname -r)
+      sudo dkms autoinstall && sudo modprobe 88XXau
+      ```
+      ⚠ On Kali kernel **6.19** this driver is `BUILD_EXCLUSIVE` and will
+      NOT build (verified 2026-06-28). Workarounds: use a mainline-driver
+      adapter (best), boot an older kernel the driver supports, or wait for
+      an updated package. This is the single reason to prefer MT7612U.
+- [ ] Confirm interface: `iw dev` (expect `wlan0`/`wlx...`).
 
 ### A4. Verify monitor mode + injection (DO NOT SKIP)
 - [ ] Kill interfering processes: `sudo airmon-ng check kill`
@@ -82,10 +119,11 @@ SSH; methodology is identical to (A) from A3 onward.
 - [ ] Install the same tool set as A1.
 
 ### B2. Adapter + driver
-- [ ] Attach the AWUS036ACH directly to a USB-3 (blue) port. On the Pi 5,
+- [ ] Attach the adapter directly to a USB-3 (blue) port. On the Pi 5,
       prefer the USB-3 ports; ensure a 5V/5A (Pi 5) / 5V/3A (Pi 4) PSU —
       Wi-Fi injection draws power, brownouts cause dropouts.
-- [ ] Install `rtl8812au` DKMS (as A3). Reboot.
+- [ ] Mainline-driver adapter (MT7612U/AR9271): nothing to install. Only
+      RTL8812AU needs the DKMS step from A3 (and a kernel it supports).
 
 ### B3. Verify (same as A4)
 - [ ] `sudo airmon-ng check kill && sudo airmon-ng start wlan0`
