@@ -1,6 +1,6 @@
 ---
 name: ssrf-cloud-metadata-hunter
-description: "Specialist skill for chaining confirmed SSRF into cloud-instance-metadata (IMDS) credential theft — AWS IMDSv1 direct probe, AWS IMDSv2 session-token bypass attempts, GCP v1beta1 legacy endpoint probe, Azure metadata probe with required-header bypass techniques, and credential-use handoff to aws-iam-hunter. Use AFTER ssrf-hunter confirms SSRF works and identifies the cloud provider; this skill deep-dives into metadata-service specifics that ssrf-hunter covers only broadly. Produces findings with CWE-918 / CWE-522 mapping, IAM-role JSON evidence, and IMDSv2-enforcement + egress-filtering remediation. Defensive testing only, STOP-AT-PROOF, no account-wide cloud exploration."
+description: "Specialist skill for chaining confirmed SSRF into cloud-instance-metadata (IMDS) credential theft - AWS IMDSv1 direct probe, AWS IMDSv2 session-token bypass attempts, GCP v1beta1 legacy endpoint probe, Azure metadata probe with required-header bypass techniques, and credential-use handoff to aws-iam-hunter. Use AFTER ssrf-hunter confirms SSRF works and identifies the cloud provider; this skill deep-dives into metadata-service specifics that ssrf-hunter covers only broadly. Produces findings with CWE-918 / CWE-522 mapping, IAM-role JSON evidence, and IMDSv2-enforcement + egress-filtering remediation. Defensive testing only, STOP-AT-PROOF, no account-wide cloud exploration."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -46,18 +46,18 @@ equivalent) with the captured credentials' scope summary.
 - `ssrf-hunter` CONFIRMED SSRF against an in-scope target AND the
   target is cloud-hosted (AWS / GCP / Azure).
 - `ssrf-hunter` Phase 3 step 4 attempted IMDS and succeeded with
-  basic probe — this skill takes over for the deeper bypass
+  basic probe - this skill takes over for the deeper bypass
   methodology.
 - The orchestrator selects this skill after `ssrf-hunter` flags
   "IMDS reachable, IMDSv2 enforced" to probe bypass paths.
 
 ## When NOT to Use
 
-- For finding SSRF in the first place — use `ssrf-hunter`.
+- For finding SSRF in the first place - use `ssrf-hunter`.
 - For exploring the captured credentials' permissions in the
-  cloud account — use `aws-iam-hunter` (or GCP/Azure
+  cloud account - use `aws-iam-hunter` (or GCP/Azure
   equivalent).
-- For non-cloud-hosted targets — no IMDS to probe.
+- For non-cloud-hosted targets - no IMDS to probe.
 - For SSRF scenarios where IMDS is explicitly out-of-scope in the
   scope file.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
@@ -163,11 +163,11 @@ The skill expects the caller to provide:
    `SecretAccessKey`, `Token`, `Expiration`.
 
    Record: FINDING-NNN Critical. Store the credentials HASHED
-   (first/last 4 chars + sha256) — NEVER plaintext.
+   (first/last 4 chars + sha256) - NEVER plaintext.
 
    **Immediate**: Hand off to `aws-iam-hunter` via
    `aws-iam-targets.md` with the hash reference. Do NOT call
-   `aws sts get-caller-identity` from this skill — that's
+   `aws sts get-caller-identity` from this skill - that's
    `aws-iam-hunter`'s job under its own authorization check.
 
 ### Phase 3: AWS IMDSv2 Session-Token Bypass
@@ -183,7 +183,7 @@ The skill expects the caller to provide:
    Header: X-aws-ec2-metadata-token-ttl-seconds: 21600
    ```
 
-   If the SSRF supports PUT with custom headers (rare — most
+   If the SSRF supports PUT with custom headers (rare - most
    SSRFs only support GET), the token step works.
 
    Vulnerable signal: SSRF returns a 56-byte token string.
@@ -204,7 +204,7 @@ The skill expects the caller to provide:
    ```
 
    Vulnerable response: Credentials returned even though IMDSv2
-   is "enforced" — because the SSRF supports headers.
+   is "enforced" - because the SSRF supports headers.
 
    Record: FINDING-NNN.
 
@@ -235,8 +235,7 @@ The skill expects the caller to provide:
 
    Do: For modern GCP that requires `Metadata-Flavor: Google`,
    try to inject the header via:
-   - URL query-param smuggling (`?Metadata-Flavor=Google`) —
-     usually ineffective but worth 30 seconds of testing
+   - URL query-param smuggling (`?Metadata-Flavor=Google`) -      usually ineffective but worth 30 seconds of testing
    - Header-injection via CRLF in the SSRF URL if SSRF has that
      sub-flaw
    - If SSRF supports custom headers directly, just add the
@@ -256,7 +255,7 @@ The skill expects the caller to provide:
    Header: Metadata: true
    ```
 
-   The `Metadata: true` header is required — tests similar to
+   The `Metadata: true` header is required - tests similar to
    GCP.
 
    Vulnerable response: JSON with instance metadata; check
@@ -314,13 +313,11 @@ Specific to this skill:
   enforcement.
 - **OWASP**: WSTG-INPV-19. For APIs, API7:2023 (SSRF). A10:2021
   (SSRF) in Top 10 2021.
-- **CVSS vectors**: credentials-obtained-via-IMDSv1 —
-  `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. IMDSv2-bypass when
-  SSRF supports headers — same severity. GCP v1beta1 legacy —
-  `...AC:L/S:C/C:H/I:H/A:H`.
+- **CVSS vectors**: credentials-obtained-via-IMDSv1 -   `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. IMDSv2-bypass when
+  SSRF supports headers - same severity. GCP v1beta1 legacy -   `...AC:L/S:C/C:H/I:H/A:H`.
 - **Evidence**: the SSRF request with the IMDS URL, the response
   containing the credentials (with the SecretAccessKey /
-  access_token REDACTED — first/last 4 + hash), the cloud
+  access_token REDACTED - first/last 4 + hash), the cloud
   provider fingerprinting, and the IMDSv2 status.
 - **Remediation framing**: platform / SRE engineer. Include:
   - AWS: enforce IMDSv2 via `HttpTokens: required` on every EC2
@@ -328,17 +325,17 @@ Specific to this skill:
     container-escape pivots
   - GCP: disable v1beta1 (it's already off by default post-2020
     but confirm)
-  - Azure: no simple "v2" equivalent — rely on egress filtering
+  - Azure: no simple "v2" equivalent - rely on egress filtering
   - Cross-cloud: egress filter blocking 169.254.169.254 from the
     application subnet except from the IMDS-client process
-  - Least-privilege IAM role — limits blast radius if creds are
+  - Least-privilege IAM role - limits blast radius if creds are
     ever stolen
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/aws-iam-targets.md` — credential
+- `.claude/planning/{issue}/aws-iam-targets.md` - credential
   handoff
 
 ## Quality Check (Self-Review)
@@ -347,13 +344,13 @@ Before marking complete, verify:
 
 - [ ] The upstream `ssrf-hunter` finding is cited in every
       finding
-- [ ] Captured credentials are stored HASHED — grep the audit
+- [ ] Captured credentials are stored HASHED - grep the audit
       for raw `AKIA...` or `ASIA...` patterns; should find zero
       outside the first/last 4 evidence format
 - [ ] No `aws sts`, `gcloud`, or `az` command was run with the
       captured credentials (those belong to the downstream
       skill)
-- [ ] Post-credential-capture halt was honored — a single
+- [ ] Post-credential-capture halt was honored - a single
       confirmation per vector
 - [ ] IMDSv2 status is documented (enforced / bypassable / not
       applicable)
@@ -373,13 +370,13 @@ Before marking complete, verify:
 
 - **WAF echo of metadata URL**: A WAF blocks the IMDS probe but
   reflects the `169.254.169.254` URL in its "blocked" error
-  message. Reflection is not a successful probe — confirm with a
+  message. Reflection is not a successful probe - confirm with a
   second probe that returns metadata-shape JSON.
 
 - **Client-side SSRF**: The SSRF parameter appears to be
   server-side but the URL is actually fetched by the user's
   browser (via an `<img>` or AJAX call). Client-side browsers
-  can't reach IMDS — no risk. Distinguish by checking whether
+  can't reach IMDS - no risk. Distinguish by checking whether
   the fetch appears to come from the target's server IP or the
   user's.
 
@@ -390,21 +387,20 @@ Before marking complete, verify:
   concluding IMDSv2 is effective.
 
 - **Expired credentials in the response**: The token has already
-  expired (`Expiration` in the past). File as finding anyway —
-  next attack attempt could succeed before rotation — but note
+  expired (`Expiration` in the past). File as finding anyway -   next attack attempt could succeed before rotation - but note
   reduced immediate impact.
 
 - **Role with no permissions**: The IAM role exists but has
   `AssumeRolePolicyDocument` that's unusable from the current
-  principal context. Still a finding — the credentials were
-  exposed — but `aws-iam-hunter`'s enumeration will show zero
+  principal context. Still a finding - the credentials were
+  exposed - but `aws-iam-hunter`'s enumeration will show zero
   actionable permissions.
 
 ## References
 
-- `references/payloads.md` — per-provider payload catalog with
+- `references/payloads.md` - per-provider payload catalog with
   encoding variants
-- `references/remediation.md` — IMDSv2 enforcement CLI snippets
+- `references/remediation.md` - IMDSv2 enforcement CLI snippets
   per provider
 
 External:

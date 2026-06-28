@@ -29,13 +29,13 @@ metadata:
 ## Goal
 
 Run authorized Wi-Fi assessments and, importantly for your workshops,
-security-awareness demonstrations that show people — concretely — what
+security-awareness demonstrations that show people - concretely - what
 leaks when they join an unknown open network. Capabilities: passive RF
 survey, WPA2/WPA3 handshake/PMKID capture for offline cracking (handed to
 `cracking-hunter`), rogue-AP / evil-twin + captive-portal demos, and
 post-association traffic analysis that surfaces the honest risk story
 (plaintext DNS, TLS SNI hostnames, device probe requests, cleartext HTTP)
-— and therefore why VPN + encrypted DNS matter.
+ - and therefore why VPN + encrypted DNS matter.
 
 > **This skill needs RF hardware and physical proximity and cannot run on
 > macOS directly.** It drives a **Linux capture host**. See Capture-Host
@@ -51,13 +51,13 @@ post-association traffic analysis that surfaces the honest risk story
 
 ## When NOT to Use
 
-- From macOS directly — RTL8812AU monitor mode/injection is unsupported
+- From macOS directly - RTL8812AU monitor mode/injection is unsupported
   on macOS (esp. Apple Silicon). Use the Linux capture host.
 - Against networks/SSIDs not in scope, or capturing real attendees'
   traffic without explicit workshop consent and signage.
-- WPA passphrase cracking itself — capture here, hand the handshake/PMKID
+- WPA passphrase cracking itself - capture here, hand the handshake/PMKID
   to `cracking-hunter` (offline).
-- Bluetooth/Zigbee/SDR or other RF — out of this skill's 802.11 scope.
+- Bluetooth/Zigbee/SDR or other RF - out of this skill's 802.11 scope.
 
 ## Capture-Host Setup (read before running)
 
@@ -71,7 +71,7 @@ post-association traffic analysis that surfaces the honest risk story
 - Linux guest (Kali/Ubuntu) in the VM; pass the USB Wi-Fi adapter through
   to the guest (VMware/VirtualBox USB passthrough on Intel hosts is most
   reliable; on Apple Silicon, USB Wi-Fi monitor-mode passthrough via
-  UTM/QEMU is unreliable — prefer an Intel host or the Pi path).
+  UTM/QEMU is unreliable - prefer an Intel host or the Pi path).
 - Install the RTL8812AU driver in the guest
   (`aircrack-ng/rtl8812au` DKMS). Verify monitor mode:
   `iw dev`, then `airmon-ng start wlan0` → confirm a `*mon` interface.
@@ -81,7 +81,7 @@ Pi 4/5.**
 - Kali/Raspberry Pi OS on the Pi; attach the adapter directly (no
   passthrough layer). Same driver + `airmon-ng` verification. The Pi is
   the most reliable + portable workshop rig; the agent drives it over SSH.
-- Keep the methodology identical across VM and Pi — only the host differs.
+- Keep the methodology identical across VM and Pi - only the host differs.
 
 Always confirm the adapter reports monitor mode + injection
 (`aireplay-ng --test`) before relying on capture results.
@@ -94,7 +94,7 @@ Always confirm the adapter reports monitor mode + injection
 3. **Rogue-AP / attendee capture requires consent**: confirm
    `red_team_ops.wireless_workshop_consent` (signed) and that attendees
    are informed (signage/briefing). This skill is `service_affecting:
-   true` — deauth/evil-twin disrupt RF; get per-invocation confirmation.
+   true` - deauth/evil-twin disrupt RF; get per-invocation confirmation.
 4. Pick a non-conflicting channel and bounded TX power; never jam or
    deauth networks outside scope.
 5. Append a `running` row to the Skills Run Log.
@@ -117,9 +117,9 @@ Always confirm the adapter reports monitor mode + injection
 2. **Capture for offline cracking.**
    Do: target the in-scope BSSID/channel with `airodump-ng -c {ch}
    --bssid {bssid} -w cap`; capture a WPA handshake (optionally a single,
-   scoped `aireplay-ng` deauth to speed it — only against in-scope
+   scoped `aireplay-ng` deauth to speed it - only against in-scope
    clients) or PMKID via `hcxdumptool`. Convert with `hcxpcapngtool`.
-   Hand the result to `cracking-hunter` (offline) — do NOT crack here.
+   Hand the result to `cracking-hunter` (offline) - do NOT crack here.
 
 ### Phase 3: Workshop Rogue-AP / Evil-Twin Demo (consent-gated)
 3. **Stand up the demo AP.**
@@ -148,7 +148,7 @@ Findings/report append to `.claude/planning/{issue}/07a_SECURITY_AUDIT.md`
 
 Specific to this skill:
 - **CWE**: CWE-319 (cleartext transmission), CWE-326/CWE-327 (weak Wi-Fi
-  crypto — WEP/WPA-TKIP/WPS), CWE-294 (auth bypass by capture-replay).
+  crypto - WEP/WPA-TKIP/WPS), CWE-294 (auth bypass by capture-replay).
 - **ATT&CK**: T1011 (exfil over other medium), T1557 (AiTM), T1040
   (network sniffing); rogue AP = T1557-style.
 - **Evidence**: survey table (SSID/enc/channel/clients), handshake/PMKID
@@ -172,7 +172,7 @@ Specific to this skill:
 
 ## Common Issues
 
-- **macOS dead-end**: RTL8812AU won't do monitor mode on macOS — always
+- **macOS dead-end**: RTL8812AU won't do monitor mode on macOS - always
   use the Linux host. Apple-Silicon USB passthrough is flaky; prefer Pi
   or an Intel VM host.
 - **Driver/monitor failures**: wrong/missing RTL8812AU DKMS driver →
@@ -180,7 +180,7 @@ Specific to this skill:
   before trusting results.
 - **Regulatory/Tx power + channels**: respect local RF regulations; don't
   exceed legal TX power or use disallowed channels.
-- **HTTPS reality for the demo**: most traffic is TLS — you will NOT show
+- **HTTPS reality for the demo**: most traffic is TLS - you will NOT show
   page contents. The honest, still-compelling story is DNS + SNI +
   probe-requests + cleartext HTTP. Set attendee expectations accordingly.
 - **Collateral disruption**: broad deauth harms bystander networks and
@@ -188,7 +188,7 @@ Specific to this skill:
 
 ## References
 
-- aircrack-ng: https://www.aircrack-ng.org/ — Kismet: https://www.kismetwireless.net/
+- aircrack-ng: https://www.aircrack-ng.org/ - Kismet: https://www.kismetwireless.net/
 - hostapd / dnsmasq; hcxdumptool/hcxtools; bettercap: https://www.bettercap.org/
 - Alfa AWUS036ACH (RTL8812AU) + aircrack-ng/rtl8812au driver
 - MITRE ATT&CK: T1557, T1040, T1011

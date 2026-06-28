@@ -1,4 +1,4 @@
-# remediation — ssti-hunter
+# remediation - ssti-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Testes e Mitigação de SSTI.md` (Section 8: REMEDIATION), cross-referenced with the two other SSTI source notes that compose this skill.
 
@@ -9,16 +9,16 @@
 The canonical rule: user input becomes a **VALUE** for a pre-compiled
 template, never a **TEMPLATE STRING** that the engine parses.
 
-### Wrong — user input IS the template
+### Wrong - user input IS the template
 
 ```python
-# WRONG — Jinja2
+# WRONG - Jinja2
 from jinja2 import Template
 tpl = Template(f"Hello {user_input}, welcome!")      # user_input becomes template source
 return tpl.render()
 ```
 
-### Right — user input is a VALUE in a trusted template
+### Right - user input is a VALUE in a trusted template
 
 ```python
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -39,7 +39,7 @@ If the feature explicitly allows users to author templates (CMS theme
 editor, email-template designer), run the engine in a locked-down
 sandbox.
 
-### Jinja2 — `SandboxedEnvironment`
+### Jinja2 - `SandboxedEnvironment`
 
 ```python
 from jinja2.sandbox import SandboxedEnvironment
@@ -53,11 +53,11 @@ tpl = env.from_string(user_template_source)
 return tpl.render(safe_vars)
 ```
 
-Still risky — SSTI bypasses of `SandboxedEnvironment` have been
+Still risky - SSTI bypasses of `SandboxedEnvironment` have been
 demonstrated historically. Treat the template as data and apply an
 additional content policy (size limit, tag-attribute allowlist).
 
-### Twig — Sandbox extension
+### Twig - Sandbox extension
 
 ```php
 use Twig\Extension\SandboxExtension;
@@ -74,7 +74,7 @@ $twig->addExtension(new SandboxExtension($policy, true /* sandbox globally */));
 $twig->render('user_supplied.twig', $context);
 ```
 
-### Freemarker — `TemplateClassResolver`
+### Freemarker - `TemplateClassResolver`
 
 ```java
 Configuration cfg = new Configuration(Configuration.VERSION_2_3_32);
@@ -84,7 +84,7 @@ cfg.setObjectWrapper(new DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_3
         .setExposeFields(false).build());
 ```
 
-### Velocity — uberspector allowlist
+### Velocity - uberspector allowlist
 
 ```java
 VelocityEngine ve = new VelocityEngine();
@@ -94,7 +94,7 @@ ve.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
 ve.init();
 ```
 
-### ERB — Switch to Liquid for user templates
+### ERB - Switch to Liquid for user templates
 
 Ruby ERB has no secure sandbox. If users MUST author templates, migrate
 to Liquid (Shopify's intentionally-restricted engine):
@@ -107,13 +107,13 @@ template.render("name" => user_name)
 
 Liquid does not expose Ruby objects, `eval`, or file system.
 
-### Handlebars — `noEscape: false` + restricted helpers
+### Handlebars - `noEscape: false` + restricted helpers
 
 ```javascript
 const Handlebars = require("handlebars");
 const tpl = Handlebars.compile(user_source, { strict: true });
 tpl(context);
-// Review registered helpers — any helper that shells out is a path to RCE.
+// Review registered helpers - any helper that shells out is a path to RCE.
 ```
 
 Do NOT ever `Handlebars.compile` user input without reviewing registered
@@ -151,7 +151,7 @@ def validate_template(source: str) -> str:
     return source
 ```
 
-Use generic error pages — do NOT reveal the template engine name in
+Use generic error pages - do NOT reveal the template engine name in
 stack traces. A verbose Jinja2 / Freemarker traceback tells an attacker
 exactly which payloads to try.
 
@@ -188,10 +188,10 @@ spec:
 ## 6. Keep Template Engines Patched
 
 Known CVEs in template engines:
-- Jinja2 — `SandboxedEnvironment` bypass via `str.format` (historical).
-- Twig — multiple escape bypasses through 1.x, 2.x lifecycle.
-- Freemarker < 2.3.30 — `setObjectWrapper` new()-instantiation.
-- Handlebars < 4.0.14 — prototype-pollution via `__proto__` access.
+- Jinja2 - `SandboxedEnvironment` bypass via `str.format` (historical).
+- Twig - multiple escape bypasses through 1.x, 2.x lifecycle.
+- Freemarker < 2.3.30 - `setObjectWrapper` new()-instantiation.
+- Handlebars < 4.0.14 - prototype-pollution via `__proto__` access.
 
 Keep dependencies current and monitor security advisories for the
 engine in use.

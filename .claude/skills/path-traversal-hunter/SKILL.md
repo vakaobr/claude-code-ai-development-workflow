@@ -1,6 +1,6 @@
 ---
 name: path-traversal-hunter
-description: "Tests file-reference inputs for directory traversal (`../../etc/passwd`), Local File Inclusion (read server source / config), and Remote File Inclusion (RFI → RCE if PHP `allow_url_include` or similar is enabled). Covers encoding bypasses (`%2e%2e%2f`, double-encoding, null-byte), filter-recursive bypass (`....//`), Unicode, and protocol wrappers (`file://`, `php://filter`). Use when parameters like `file=`, `page=`, `template=`, `item=`, `path=`, `doc=`, `download=` appear in the inventory; when features handle file uploads / downloads / user themes; or when the orchestrator identifies file-oriented features. Produces findings with CWE-22 / CWE-98 mapping and allowlist + canonicalization remediation. Defensive testing only — HARMLESS PROBES (read-only files), post-RCE halt if RFI triggers code execution."
+description: "Tests file-reference inputs for directory traversal (`../../etc/passwd`), Local File Inclusion (read server source / config), and Remote File Inclusion (RFI → RCE if PHP `allow_url_include` or similar is enabled). Covers encoding bypasses (`%2e%2e%2f`, double-encoding, null-byte), filter-recursive bypass (`....//`), Unicode, and protocol wrappers (`file://`, `php://filter`). Use when parameters like `file=`, `page=`, `template=`, `item=`, `path=`, `doc=`, `download=` appear in the inventory; when features handle file uploads / downloads / user themes; or when the orchestrator identifies file-oriented features. Produces findings with CWE-22 / CWE-98 mapping and allowlist + canonicalization remediation. Defensive testing only - HARMLESS PROBES (read-only files), post-RCE halt if RFI triggers code execution."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,14 +27,13 @@ metadata:
 ## Goal
 
 Test file-reference inputs for directory traversal (reading files
-outside the intended directory), Local File Inclusion (LFI —
-including a local file that the server then parses or executes),
-and Remote File Inclusion (RFI — fetching and executing an
+outside the intended directory), Local File Inclusion (LFI - including a local file that the server then parses or executes),
+and Remote File Inclusion (RFI - fetching and executing an
 attacker-controlled remote file). This skill implements
 WSTG-AUTHZ-01 / WSTG-INPV-11 adjacencies and maps findings to
 CWE-22 (Improper Limitation of a Pathname to a Restricted
-Directory — Path Traversal), CWE-98 (Improper Control of
-Filename for Include/Require Statement — RFI), and CWE-73 (File
+Directory - Path Traversal), CWE-98 (Improper Control of
+Filename for Include/Require Statement - RFI), and CWE-73 (File
 Manipulation). The goal is to hand the backend team a concrete
 list of file-reference inputs with safe-read evidence and
 canonicalization + allowlist remediation.
@@ -53,13 +52,12 @@ canonicalization + allowlist remediation.
 
 ## When NOT to Use
 
-- For SSRF (server fetches arbitrary URLs, not local files) —
-  use `ssrf-hunter`.
-- For command injection via filename parameters — use
+- For SSRF (server fetches arbitrary URLs, not local files) -   use `ssrf-hunter`.
+- For command injection via filename parameters - use
   `command-injection-hunter`.
-- For deserialization via file-based serialized objects — use
+- For deserialization via file-based serialized objects - use
   `deserialization-hunter`.
-- For XXE that happens to read files via XML entities — use
+- For XXE that happens to read files via XML entities - use
   `xxe-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -75,14 +73,14 @@ Before ANY outbound activity:
 3. Traversal probes use harmless READ-ONLY files (`/etc/passwd`,
    `/etc/hostname`, `Windows/boot.ini`, `/proc/version`). NEVER:
    - Read `/etc/shadow`, `/root/.ssh/id_rsa`, or other root-only
-     paths (even to prove reachability) — standard severity with
+     paths (even to prove reachability) - standard severity with
      world-readable files is enough
    - Use RFI payloads that execute code unless the scope
      explicitly approves `rfi_rce_testing: approved`
    - Write files via path traversal (e.g., path=`/var/www/...`)
-     — this is a read-side skill
+ - this is a read-side skill
 4. If RFI triggers code execution, treat as RCE and STOP at the
-   proof — same post-RCE halt as `ssti-hunter`, `command-injection-hunter`,
+   proof - same post-RCE halt as `ssti-hunter`, `command-injection-hunter`,
    `deserialization-hunter`.
 5. RFI testing uses the authorized OOB listener to host the
    "malicious" file; listener MUST be in scope.
@@ -96,7 +94,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific file parameters to focus
+- `{scope_context}`: optional - specific file parameters to focus
   on
 - `{user_a}`: authenticated session if endpoints are behind auth
 - `{oob_listener}`: authorized OOB listener URL for RFI testing
@@ -130,11 +128,11 @@ The skill expects the caller to provide:
    ```
 
    Vulnerable signal: The probe response is identical to the
-   baseline — the server resolves `..` and the traversal reaches
+   baseline - the server resolves `..` and the traversal reaches
    the same file. Indicates traversal is processed.
 
    Not-vulnerable signal: The probe response differs (error,
-   different content, 404) — the server may be blocking
+   different content, 404) - the server may be blocking
    traversal characters.
 
    Record: Per-param traversal-processing status.
@@ -227,7 +225,7 @@ The skill expects the caller to provide:
    The stripper removes the MIDDLE `..` but the outer `..` /
    `/` remain and form a valid traversal post-strip.
 
-### Phase 5: Local File Inclusion (LFI) — Code Disclosure
+### Phase 5: Local File Inclusion (LFI) - Code Disclosure
 
 10. **PHP config / source disclosure**
     [WAHH, Ch 10, p. 383]
@@ -240,7 +238,7 @@ The skill expects the caller to provide:
     ```
 
     Vulnerable response: PHP source is rendered as TEXT (not
-    executed) — indicates `include`/`require` without proper
+    executed) - indicates `include`/`require` without proper
     sanitization on a non-PHP-mode endpoint, or
     `file_get_contents`. Look for `<?php ... ?>` in the response.
 
@@ -309,7 +307,7 @@ The skill expects the caller to provide:
 
     Vulnerable signal: Any of these causes the server to read
     via the alternative scheme. `phar://` is particularly
-    dangerous — triggers deserialization (cross-reference
+    dangerous - triggers deserialization (cross-reference
     `deserialization-hunter`).
 
 ## Payload Library
@@ -338,10 +336,8 @@ Specific to this skill:
 - **OWASP**: WSTG-AUTHZ-01, WSTG-INPV-11. A03:2021 (Injection)
   includes file inclusion. For APIs, API8:2023 (Security
   Misconfiguration).
-- **CVSS vectors**: `/etc/passwd` read —
-  `AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N`. Config file read (DB
-  creds, API keys) — `...C:H/I:N/A:N`. RFI → RCE —
-  `...C:H/I:H/A:H`. `phar://` deserialization — `...C:H/I:H/A:H`.
+- **CVSS vectors**: `/etc/passwd` read -   `AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N`. Config file read (DB
+  creds, API keys) - `...C:H/I:N/A:N`. RFI → RCE -   `...C:H/I:H/A:H`. `phar://` deserialization - `...C:H/I:H/A:H`.
 - **Evidence**: the exact traversal / include payload, the
   response containing the read file (truncated if huge;
   hash-redacted if it contains secrets), and the bypass vector
@@ -361,7 +357,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -391,7 +387,7 @@ Before marking complete, verify:
 
 - **WAF blocks traversal strings**: An edge WAF blocks `../`
   before it reaches the app. The application itself might be
-  safe OR might be vulnerable — can't tell from external view.
+  safe OR might be vulnerable - can't tell from external view.
   Test whether encoded variants reach the app to distinguish
   WAF-only defense vs app-level.
 
@@ -405,8 +401,7 @@ Before marking complete, verify:
   the server headers match the target.
 
 - **RFI that looks successful but isn't executing**: The server
-  fetches the OOB file (listener hit) but doesn't execute it —
-  just includes the content as raw text. Still a finding (content
+  fetches the OOB file (listener hit) but doesn't execute it -   just includes the content as raw text. Still a finding (content
   injection if the file has HTML or JS) but not RCE. Distinguish
   by the response body: if PHP-source shows as text, not
   executed.
@@ -414,12 +409,12 @@ Before marking complete, verify:
 - **Symbolic-link traps**: Some apps dereference symlinks
   server-side but reject traversal in the raw input. The
   symlink attack requires the ability to create a symlink first
-  — usually not available to an unauthenticated attacker. Note
+ - usually not available to an unauthenticated attacker. Note
   as "post-authentication" if relevant.
 
 ## References
 
-- `references/payloads.md` — full encoding + wrapper catalog
+- `references/payloads.md` - full encoding + wrapper catalog
 
 External:
 - CWE-22: https://cwe.mitre.org/data/definitions/22.html

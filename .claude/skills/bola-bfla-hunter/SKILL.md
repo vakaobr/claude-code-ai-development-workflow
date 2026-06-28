@@ -1,6 +1,6 @@
 ---
 name: bola-bfla-hunter
-description: "Tests APIs for Broken Object-Level Authorization (API1:2023 BOLA — cross-user resource access by ID manipulation) and Broken Function-Level Authorization (API5:2023 BFLA — non-admin users reaching admin-only endpoints via URL guessing or HTTP-method swap). Complements idor-hunter for web apps; this is the API-specific sister skill with API-class methodology and OWASP API Top 10 mapping. Use when `api-recon` surfaced resource-ID parameters and multi-role endpoints; when the orchestrator identifies administrative paths; or when two test accounts at different privilege levels are available. Produces findings with CWE-639 / CWE-285 mapping and authorization-middleware remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Tests APIs for Broken Object-Level Authorization (API1:2023 BOLA - cross-user resource access by ID manipulation) and Broken Function-Level Authorization (API5:2023 BFLA - non-admin users reaching admin-only endpoints via URL guessing or HTTP-method swap). Complements idor-hunter for web apps; this is the API-specific sister skill with API-class methodology and OWASP API Top 10 mapping. Use when `api-recon` surfaced resource-ID parameters and multi-role endpoints; when the orchestrator identifies administrative paths; or when two test accounts at different privilege levels are available. Produces findings with CWE-639 / CWE-285 mapping and authorization-middleware remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,12 +27,12 @@ metadata:
 ## Goal
 
 Test APIs for the top two OWASP API Security risks: Broken Object-
-Level Authorization (API1:2023 — a user accesses another user's
+Level Authorization (API1:2023 - a user accesses another user's
 resources via ID manipulation) and Broken Function-Level
-Authorization (API5:2023 — a regular user reaches admin-only
+Authorization (API5:2023 - a regular user reaches admin-only
 functions via endpoint guessing or HTTP-method swap). This skill
 implements WSTG-ATHZ-04 and WSTG-ATHZ-03 and maps findings to
-CWE-639 (BOLA) and CWE-285 (Improper Authorization — BFLA). The
+CWE-639 (BOLA) and CWE-285 (Improper Authorization - BFLA). The
 goal is to hand the API team a concrete list of
 missing-authorization endpoints with paired test-account evidence
 and centralized-middleware remediation.
@@ -52,15 +52,15 @@ and centralized-middleware remediation.
 
 ## When NOT to Use
 
-- For web-app IDOR (non-API) — use `idor-hunter`. The two skills
+- For web-app IDOR (non-API) - use `idor-hunter`. The two skills
   overlap; `idor-hunter` focuses on web-app endpoints with IDs in
   URLs/forms, while this skill is API-first with OWASP API Top 10
   framing.
 - For mass-assignment-style privilege escalation via request
-  body — use `mass-assignment-hunter`.
+  body - use `mass-assignment-hunter`.
 - For auth-bypass at the identity layer (no valid session at all)
-  — use `auth-flaw-hunter`.
-- For excessive-data-exposure (BOPLA, API3) — use
+ - use `auth-flaw-hunter`.
+- For excessive-data-exposure (BOPLA, API3) - use
   `excessive-data-exposure-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -76,7 +76,7 @@ Before ANY outbound activity:
 3. BOLA/BFLA testing requires at least two test accounts; confirm
    both are approved (see `requires_auth_testing_credentials` and
    `test_credentials_vault_path`). NEVER test BOLA by attempting
-   to access real customers' resources — only test-to-test
+   to access real customers' resources - only test-to-test
    accounts.
 4. For BFLA tests against admin endpoints, if the regular-user
    token gets 200 on an admin endpoint, STOP at the first
@@ -93,10 +93,10 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints to focus on
+- `{scope_context}`: optional - specific endpoints to focus on
 - `{user_a}`: regular-user test credentials
 - `{user_b}`: second regular-user credentials (for A-B BOLA)
-- `{user_admin}`: admin-user credentials (for BFLA — captures the
+- `{user_admin}`: admin-user credentials (for BFLA - captures the
   admin request shape to compare / replay)
 
 ## Methodology
@@ -131,7 +131,7 @@ The skill expects the caller to provide:
 
    Record: Admin-endpoint matrix.
 
-### Phase 2: BOLA — Cross-User Object Access
+### Phase 2: BOLA - Cross-User Object Access
 
 3. **A-B token swap (horizontal BOLA)**
    [Hacking APIs, Ch 10, p. 225]
@@ -176,10 +176,10 @@ The skill expects the caller to provide:
    Not-vulnerable response: Identical response (usually 404 or
    generic 403) for both.
 
-   Record: Finding Medium — information disclosure via side
+   Record: Finding Medium - information disclosure via side
    channel.
 
-### Phase 3: BFLA — Function-Level Access
+### Phase 3: BFLA - Function-Level Access
 
 6. **Admin-endpoint probe with regular-user token**
    [OWASP API Security Top 10, API5:2019]
@@ -191,7 +191,7 @@ The skill expects the caller to provide:
    GET /api/admin/settings  Authorization: Bearer {user_a_token}
    ```
 
-   Vulnerable response: 200 — regular user reads admin data.
+   Vulnerable response: 200 - regular user reads admin data.
 
    Not-vulnerable response: 401 / 403.
 
@@ -203,14 +203,14 @@ The skill expects the caller to provide:
    Do: For a resource endpoint where GET is documented, try other
    methods:
    ```
-   DELETE /api/v1/users/123   — should require admin
-   PUT /api/v1/users/123      — should require admin or self
+   DELETE /api/v1/users/123 - should require admin
+   PUT /api/v1/users/123 - should require admin or self
    PATCH /api/v1/users/123/role
    ```
 
    Test with `{user_a}` (regular) token.
 
-   Vulnerable response: Unauthorized method executes — server only
+   Vulnerable response: Unauthorized method executes - server only
    checks auth on the primary documented method.
 
    Record: Per-method findings.
@@ -236,11 +236,11 @@ The skill expects the caller to provide:
      `description`)
    - As `{user_b}`, PUT/PATCH the same resource with a modified
      description
-   - As `{user_a}`, GET the resource — did user B's modification
+   - As `{user_a}`, GET the resource - did user B's modification
      persist?
 
    Vulnerable response: User B's modification visible in user A's
-   view — write access bypass.
+   view - write access bypass.
 
    Not-vulnerable response: 403 on user B's request, or user A
    sees unchanged resource.
@@ -271,7 +271,7 @@ The skill expects the caller to provide:
 
     Vulnerable response: 200 or 400-with-validation-error (either
     way, the endpoint accepted the request through the auth layer
-    — BFLA confirmed).
+ - BFLA confirmed).
 
     Not-vulnerable response: 401 / 403 (rejected at auth layer
     before validation).
@@ -307,10 +307,7 @@ Specific to this skill:
 - **OWASP**: For APIs: API1:2023 (BOLA). API5:2023 (BFLA).
   API3:2023 (BOPLA for property-level escalation; cross-reference
   mass-assignment-hunter).
-- **CVSS vectors**: read-BOLA on PII —
-  `AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N`. Write-BOLA —
-  `...C:H/I:H/A:N`. Admin-function BFLA with mass impact —
-  `...PR:L/S:C/C:H/I:H/A:H`.
+- **CVSS vectors**: read-BOLA on PII -   `AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N`. Write-BOLA -   `...C:H/I:H/A:N`. Admin-function BFLA with mass impact -   `...PR:L/S:C/C:H/I:H/A:H`.
 - **Evidence**: for BOLA, the A-baseline + B-with-A-ID
   request/response pair + diff. For BFLA, the regular-user token
   + admin-endpoint response. For write-BOLA, all 3 A-B-A steps.
@@ -326,7 +323,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -358,7 +355,7 @@ Before marking complete, verify:
   fields masked (`"email": "***@***.com"`). The caller sees
   "success" but no sensitive data. Distinguish by checking if
   non-sensitive fields (timestamps, IDs) match the target
-  account — redaction is a correct defense.
+  account - redaction is a correct defense.
 
 - **Cache-served responses**: A response may come from a CDN /
   proxy cache, not the origin. `Age:` or `X-Cache:` headers

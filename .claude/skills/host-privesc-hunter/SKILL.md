@@ -1,6 +1,6 @@
 ---
 name: host-privesc-hunter
-description: "Local privilege-escalation assessment on an authorized host where you already have a foothold (operator-provided shell/session). Runs and interprets enumeration — linpeas/LinEnum/pspy/linux-exploit-suggester on Linux; winPEAS/Seatbelt/PowerUp on Windows — and maps findings to concrete escalation paths via GTFOBins (sudo/SUID) and LOLBAS, plus writable services/cron/systemd/scheduled-tasks, kernel-exploit candidates, secrets in files/history, and token/capability abuse. Proves escalation with the least-damage check (id/whoami as root/SYSTEM) and stops. The post-exploitation companion to network-pentest-hunter and the AD chain. Requires .claude/security-scope.yaml red_team_ops.host_privesc: approved and the host in scope. Grounded in redteam-ops."
+description: "Local privilege-escalation assessment on an authorized host where you already have a foothold (operator-provided shell/session). Runs and interprets enumeration - linpeas/LinEnum/pspy/linux-exploit-suggester on Linux; winPEAS/Seatbelt/PowerUp on Windows - and maps findings to concrete escalation paths via GTFOBins (sudo/SUID) and LOLBAS, plus writable services/cron/systemd/scheduled-tasks, kernel-exploit candidates, secrets in files/history, and token/capability abuse. Proves escalation with the least-damage check (id/whoami as root/SYSTEM) and stops. The post-exploitation companion to network-pentest-hunter and the AD chain. Requires .claude/security-scope.yaml red_team_ops.host_privesc: approved and the host in scope. Grounded in redteam-ops."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -46,12 +46,12 @@ Escalation (TA0004).
 
 ## When NOT to Use
 
-- Domain/AD escalation (Kerberos, delegation, DCSync) — use
+- Domain/AD escalation (Kerberos, delegation, DCSync) - use
   `ad-kerberos-hunter` / `redteam-ad-ops`.
-- Network service testing — use `network-pentest-hunter`.
-- Offline cracking of hashes you recover here — hand to `cracking-hunter`.
+- Network service testing - use `network-pentest-hunter`.
+- Offline cracking of hashes you recover here - hand to `cracking-hunter`.
 - A host not in scope, or without an authorized foothold (this skill does
-  not gain initial access — it assumes one).
+  not gain initial access - it assumes one).
 
 ## Authorization Check (MANDATORY FIRST STEP)
 
@@ -84,7 +84,7 @@ Escalation (TA0004).
    Do: `linpeas.sh` (Linux) or `winPEAS` / `Seatbelt` / `PowerUp`
    (Windows), staged read-only and run from a writable temp path.
    Capture the high-signal sections; do not paste the whole dump into
-   findings — extract the actionable hits.
+   findings - extract the actionable hits.
 
 ### Phase 3: Linux Escalation Candidates
 3. **sudo + SUID/SGID via GTFOBins.**
@@ -97,13 +97,13 @@ Escalation (TA0004).
    sensitive files (CWE-732).
 5. **Kernel & secrets.**
    Do: `linux-exploit-suggester` for kernel-exploit candidates (validate
-   carefully — kernel exploits can crash; prefer config paths); grep for
+   carefully - kernel exploits can crash; prefer config paths); grep for
    creds in `~/.bash_history`, config files, `.env`, world-readable
    backups (CWE-522).
 
 ### Phase 4: Windows Escalation Candidates
 6. **Service & registry misconfig.**
-   Do: from winPEAS/PowerUp — unquoted service paths, weak service ACLs
+   Do: from winPEAS/PowerUp - unquoted service paths, weak service ACLs
    (can replace binary), AlwaysInstallElevated, modifiable autoruns,
    `SeImpersonate`/`SeBackup` tokens (Potato-class), stored creds
    (cmdkey, registry, GPP) (CWE-269/CWE-250). Cross-check binaries vs
@@ -127,12 +127,12 @@ Specific to this skill:
 - **CWE**: CWE-250 (execution with unnecessary privileges), CWE-269
   (improper privilege management), CWE-732 (incorrect permissions),
   CWE-522 (protected creds) as applicable.
-- **ATT&CK**: Privilege Escalation TA0004 — T1548 (sudo/SUID abuse),
+- **ATT&CK**: Privilege Escalation TA0004 - T1548 (sudo/SUID abuse),
   T1543 (service), T1053 (cron/task), T1068 (kernel exploit), T1078
   (valid accounts from looted creds).
 - **Evidence**: the enumeration hit + the validation command + `id`/
   `whoami` proof + cleanup note.
-- **Remediation framing**: sysadmin — drop unnecessary sudo/SUID, fix
+- **Remediation framing**: sysadmin - drop unnecessary sudo/SUID, fix
   file/service ACLs, patch kernel, quote service paths, remove stored
   creds, least-privilege.
 - Updates `STATUS.md` and the Skills Run Log.
@@ -152,7 +152,7 @@ Specific to this skill:
 
 - **PEAS false positives**: linpeas/winPEAS flag many "potential" items.
   Confirm exploitability (is the writable file actually root-run?) before
-  filing — rank, don't dump.
+  filing - rank, don't dump.
 - **Kernel-exploit risk**: a failed kernel exploit can panic the host.
   Treat as last resort, prefer misconfig paths, and require explicit
   approval on production.
@@ -164,9 +164,9 @@ Specific to this skill:
 
 ## References
 
-- GTFOBins: https://gtfobins.github.io/ — LOLBAS: https://lolbas-project.github.io/
+- GTFOBins: https://gtfobins.github.io/ - LOLBAS: https://lolbas-project.github.io/
 - PEASS-ng (linpeas/winpeas): https://github.com/peass-ng/PEASS-ng
-- HackTricks — Linux/Windows Local Privilege Escalation
+- HackTricks - Linux/Windows Local Privilege Escalation
 - MITRE ATT&CK: T1548, T1068, T1543, T1053
 
 ## Source Methodology

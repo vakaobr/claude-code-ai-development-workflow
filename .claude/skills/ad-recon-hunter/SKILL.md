@@ -1,6 +1,6 @@
 ---
 name: ad-recon-hunter
-description: "Enumerates an authorized internal Active Directory environment: network-service sweep (SMB/LDAP/MSSQL/SNMP), null/guest session harvesting, BloodHound graph collection, and low-noise LDAP queries for users, computers, SPNs, delegation flags, password-not-required accounts, GPP cpassword in SYSVOL, and LAPS-readable hosts. Produces an AD inventory and a prioritized quick-win list that feeds ad-kerberos-hunter. Use as the FIRST internal/AD skill once internal_pentest is approved and engagement credentials (or an anonymous foothold) are available. Maps findings to CWE-200/CWE-522/CWE-284. Internal pentest only — requires .claude/security-scope.yaml internal_pentest: approved and credentials from ad_credentials_vault_path. Grounded in redteam-ad-ops."
+description: "Enumerates an authorized internal Active Directory environment: network-service sweep (SMB/LDAP/MSSQL/SNMP), null/guest session harvesting, BloodHound graph collection, and low-noise LDAP queries for users, computers, SPNs, delegation flags, password-not-required accounts, GPP cpassword in SYSVOL, and LAPS-readable hosts. Produces an AD inventory and a prioritized quick-win list that feeds ad-kerberos-hunter. Use as the FIRST internal/AD skill once internal_pentest is approved and engagement credentials (or an anonymous foothold) are available. Maps findings to CWE-200/CWE-522/CWE-284. Internal pentest only - requires .claude/security-scope.yaml internal_pentest: approved and credentials from ad_credentials_vault_path. Grounded in redteam-ad-ops."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -46,11 +46,11 @@ descriptions), and CWE-284 (improper access control, e.g. null sessions).
 
 ## When NOT to Use
 
-- External / internet-facing web or API targets — use the web recon
+- External / internet-facing web or API targets - use the web recon
   tier (`web-recon-active`, `api-recon`).
-- Kerberoasting / AS-REP / delegation abuse — that is
+- Kerberoasting / AS-REP / delegation abuse - that is
   `ad-kerberos-hunter` (this skill only flags the candidates).
-- Credential dumping (LSASS/SAM/NTDS) or domain dominance — not in this
+- Credential dumping (LSASS/SAM/NTDS) or domain dominance - not in this
   skill; those need their own approvals and a human operator.
 - Any environment without `internal_pentest: approved`.
 
@@ -75,7 +75,7 @@ Before ANY outbound activity:
 - `{domain}`: target AD domain (e.g. `corp.local`)
 - `{dc_ip}`: a reachable domain controller IP
 - `{subnet}`: in-scope internal range(s)
-- `{creds}`: reference to vault entry (user/pass or NTLM hash) — optional
+- `{creds}`: reference to vault entry (user/pass or NTLM hash) - optional
   if testing the unauthenticated foothold first
 
 ## Methodology
@@ -112,13 +112,13 @@ Before ANY outbound activity:
    - `AdminCount=1` principals
    - User `description` fields containing credential-like strings
    - `TrustedForDelegation` / `msDS-AllowedToDelegateTo` (delegation)
-   Record: `ad-quickwins.md` — one row per candidate with the attack it
+   Record: `ad-quickwins.md` - one row per candidate with the attack it
    enables and which skill executes it.
 6. **GPP cpassword sweep** of SYSVOL.
    Do: `netexec smb {dc_ip} -u {user} -p {vault} -M gpp_password`.
    Vulnerable signal: a recoverable `cpassword` → AES-decrypts to a
    plaintext domain credential.
-   Record: FINDING Critical/High (CWE-522) — do NOT use the credential
+   Record: FINDING Critical/High (CWE-522) - do NOT use the credential
    here; hand it to the operator.
 7. **LAPS readability** check.
    Do: `netexec ldap {dc_ip} -u {user} -p {vault} -M laps`.
@@ -129,7 +129,7 @@ Before ANY outbound activity:
    Do: `certipy find -u {user}@{domain} -p {vault} -dc-ip {dc_ip}
    -stdout` (or `-vulnerable`).
    Record: list ESC1-ESC8 candidate templates as findings (CWE-284);
-   exploitation is out of scope for this skill — flag for the operator.
+   exploitation is out of scope for this skill - flag for the operator.
 
 ## Output Format
 
@@ -140,11 +140,11 @@ Specific to this skill:
 - **CWE**: CWE-200 (graph/info exposure), CWE-522 (GPP/description/LAPS
   credential exposure), CWE-284 (null session, anonymous LDAP, ESC
   templates).
-- **OWASP**: maps to MITRE ATT&CK rather than OWASP — tag Discovery
+- **OWASP**: maps to MITRE ATT&CK rather than OWASP - tag Discovery
   (TA0007) and Credential Access (TA0006) technique IDs in the finding.
 - **Evidence**: the exact command + the enumerated result (redact full
   credential values to `first2…last2`); the BloodHound zip path.
-- **Remediation framing**: AD admin — disable null/guest sessions,
+- **Remediation framing**: AD admin - disable null/guest sessions,
   enforce SMB signing, remove GPP cpassword and rotate, restrict LAPS
   read ACLs, set pre-auth on roastable accounts, remediate ESC templates.
 
@@ -156,7 +156,7 @@ Also produces (consumed downstream):
 
 - [ ] Authorization check passed (`internal_pentest: approved`, creds
       from vault, ROE window respected)
-- [ ] No credential attack run (no spray, no roast, no dump) — those are
+- [ ] No credential attack run (no spray, no roast, no dump) - those are
       downstream skills
 - [ ] All recovered credential material redacted in findings and handed
       to the operator, not reused
@@ -167,7 +167,7 @@ Also produces (consumed downstream):
 
 - **Lockout from RID-brute / userenum**: RID-brute over SMB does not
   authenticate, but some EDRs alert. `kerbrute userenum` is pre-auth and
-  lockout-safe — prefer it for name validation.
+  lockout-safe - prefer it for name validation.
 - **BloodHound clock skew**: Kerberos collection fails if local time is
   >5 min off the DC. Sync first.
 - **Stale graph**: collection is a point-in-time snapshot; note the
@@ -175,12 +175,12 @@ Also produces (consumed downstream):
 
 ## References
 
-- The Hacker Recipes — AD recon: https://www.thehacker.recipes/
+- The Hacker Recipes - AD recon: https://www.thehacker.recipes/
 - BloodHound CE docs: https://bloodhound.specterops.io/
 - MITRE ATT&CK Discovery (TA0007), Credential Access (TA0006)
 
 ## Source Methodology
 
 Grounded in `redteam-ad-ops` (sections 1-2), distilled from
-RedefiningReality/Cheatsheets (`Services Testing.md`, `RTO I`) — treated
+RedefiningReality/Cheatsheets (`Services Testing.md`, `RTO I`) - treated
 as MIT per author confirmation. Conversion date: 2026-06-27.

@@ -1,6 +1,6 @@
 ---
 name: excessive-data-exposure-hunter
-description: "Audits API response bodies and client-side code for sensitive fields returned to the client that shouldn't be exposed — hashed passwords, internal IDs, admin flags, PII beyond what the UI needs, stack traces in errors, hardcoded secrets in JavaScript bundles, and 'debug' parameters that reveal extra state. Covers OWASP API3:2019 / API3:2023 BOPLA (read-side). Use after `api-recon` captures full response shapes; when the UI renders only a subset of the JSON that's returned; or when error pages reveal technical detail. Produces findings with CWE-213 / CWE-200 mapping and server-side-filtering / schema-validation remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Audits API response bodies and client-side code for sensitive fields returned to the client that shouldn't be exposed - hashed passwords, internal IDs, admin flags, PII beyond what the UI needs, stack traces in errors, hardcoded secrets in JavaScript bundles, and 'debug' parameters that reveal extra state. Covers OWASP API3:2019 / API3:2023 BOPLA (read-side). Use after `api-recon` captures full response shapes; when the UI renders only a subset of the JSON that's returned; or when error pages reveal technical detail. Produces findings with CWE-213 / CWE-200 mapping and server-side-filtering / schema-validation remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,11 +27,11 @@ metadata:
 ## Goal
 
 Audit API responses and client-side code for fields the server
-exposes that the client shouldn't see — hashed passwords, internal
+exposes that the client shouldn't see - hashed passwords, internal
 IDs, admin flags, PII beyond what the UI actually renders, stack
 traces / software versions in error bodies, and hardcoded secrets
 in JavaScript bundles. This skill covers the READ side of
-API3:2023 (Broken Object Property Level Authorization — BOPLA);
+API3:2023 (Broken Object Property Level Authorization - BOPLA);
 the WRITE side (Mass Assignment) is covered by
 `mass-assignment-hunter`. Maps findings to CWE-213 (Exposure of
 Sensitive Information Due to Incompatible Policies) and CWE-200
@@ -56,12 +56,12 @@ filtering + schema-validation remediation.
 
 ## When NOT to Use
 
-- For WRITE-side property injection (Mass Assignment) — use
+- For WRITE-side property injection (Mass Assignment) - use
   `mass-assignment-hunter`. The two are sister skills for
   API3:2023 BOPLA.
-- For cross-user object access (BOLA) — use `idor-hunter` or
+- For cross-user object access (BOLA) - use `idor-hunter` or
   `bola-bfla-hunter`.
-- For actively exploiting exposed secrets — this skill flags them;
+- For actively exploiting exposed secrets - this skill flags them;
   `aws-iam-hunter` / `secrets-in-code-hunter` validate and
   enumerate impact.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
@@ -81,7 +81,7 @@ Before ANY outbound activity:
 4. If this skill discovers live credentials (API keys, AWS keys,
    DB strings) in responses, IMMEDIATELY note them in the
    finding with HASH-only storage (no plaintext) and flag for
-   rotation. Do NOT validate the credentials here — hand off to
+   rotation. Do NOT validate the credentials here - hand off to
    `aws-iam-hunter` / `secrets-in-code-hunter`.
 5. Log the authorization check to
    `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
@@ -93,9 +93,9 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints to focus on
+- `{scope_context}`: optional - specific endpoints to focus on
 - `{user_a}`: authenticated session to capture full response shapes
-- `{user_admin}`: optional — admin session to compare what an
+- `{user_admin}`: optional - admin session to compare what an
   admin sees vs a regular user (delta is sometimes a flag)
 
 ## Methodology
@@ -106,7 +106,7 @@ The skill expects the caller to provide:
    [OWASP API3:2019, p. 12]
 
    Do: Using `{user_a}` session, exercise each endpoint and
-   capture the COMPLETE response body — not what the UI renders,
+   capture the COMPLETE response body - not what the UI renders,
    what the server actually sends.
 
    Tools: browser DevTools Network tab, Burp Suite history,
@@ -266,7 +266,7 @@ The skill expects the caller to provide:
    the same record.
 
    Vulnerable signal: Admin sees fields (internalNotes,
-   mfaSecret, etc.) that a regular user shouldn't — and those
+   mfaSecret, etc.) that a regular user shouldn't - and those
    fields are ALSO visible in the regular-user response but just
    null / empty. The field's mere PRESENCE in the regular-user
    response can leak schema info.
@@ -299,13 +299,12 @@ Specific to this skill:
   Incompatible Policies). CWE-200 (Information Exposure).
   CWE-209 for errors with sensitive-info leakage. CWE-798 for
   hardcoded secrets in JS bundles.
-- **OWASP**: For APIs, API3:2023 (BOPLA — read side) + API3:2019
+- **OWASP**: For APIs, API3:2023 (BOPLA - read side) + API3:2019
   (legacy Excessive Data Exposure). For web apps, A04:2021
   (Insecure Design). WSTG-INFO-05 for JS/HTML review.
-- **CVSS vectors**: exposed admin-flag to regular user —
-  `AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N`. Exposed password hashes
-  — `...C:H/I:N/A:N`. Exposed live API keys — `...C:H/I:H/A:N`
-  depending on key's scope. Exposed stack trace — `...C:L/I:N/A:N`.
+- **CVSS vectors**: exposed admin-flag to regular user -   `AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N`. Exposed password hashes
+ - `...C:H/I:N/A:N`. Exposed live API keys - `...C:H/I:H/A:N`
+  depending on key's scope. Exposed stack trace - `...C:L/I:N/A:N`.
 - **Evidence**: the response body excerpt (with the sensitive
   field highlighted; if it's a secret, show only first/last 4
   chars + hash), the endpoint + user role, and a note on whether
@@ -325,11 +324,11 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/aws-iam-targets.md` — appends any
+- `.claude/planning/{issue}/aws-iam-targets.md` - appends any
   discovered AWS keys for `aws-iam-hunter` validation
-- `.claude/planning/{issue}/secrets-in-code-targets.md` — appends
+- `.claude/planning/{issue}/secrets-in-code-targets.md` - appends
   any bundle-leaked secrets for `secrets-in-code-hunter`
 
 ## Quality Check (Self-Review)

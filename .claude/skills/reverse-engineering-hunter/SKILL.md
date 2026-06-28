@@ -30,9 +30,9 @@ metadata:
 Understand and assess an authorized binary / firmware / sample: what it
 does, what secrets or dangerous behavior it contains, and which
 weaknesses it exposes. Work static-first (safest), escalate to controlled
-dynamic tracing only in an isolated sandbox. Produce findings — hardcoded
+dynamic tracing only in an isolated sandbox. Produce findings - hardcoded
 credentials/keys, unsafe APIs, weak crypto, auth/licensing bypass logic,
-exploitable patterns, version→CVE markers — mapped to CWE/ATT&CK, with
+exploitable patterns, version→CVE markers - mapped to CWE/ATT&CK, with
 reproducible analysis steps. Pairs with `mobile-android-hunter` (unpacked
 app code) and feeds `exploit-validation-hunter` when a flaw looks
 exploitable.
@@ -49,11 +49,11 @@ exploitable.
 
 ## When NOT to Use
 
-- Source code is available — review the source directly (and
+- Source code is available - review the source directly (and
   `secrets-in-code-hunter`); RE is for when you only have the artifact.
-- Building a working exploit from an RE finding — hand to
+- Building a working exploit from an RE finding - hand to
   `exploit-validation-hunter`.
-- Live malware detonation for IOC extraction at scale — that is a malware
+- Live malware detonation for IOC extraction at scale - that is a malware
   sandbox pipeline; this skill does controlled, single-sample triage.
 
 ## Authorization Check (MANDATORY FIRST STEP)
@@ -64,7 +64,7 @@ exploitable.
 3. Compute and record `sha256sum` of the artifact (provenance).
 4. **Dynamic analysis only in isolation**: any execution (gdb/ltrace/
    strace, running the sample) happens in a disposable, network-isolated
-   sandbox VM — never on the operator host or a production network.
+   sandbox VM - never on the operator host or a production network.
    If no sandbox is available, stay static-only.
 5. Append a `running` row to the Skills Run Log.
 
@@ -120,11 +120,11 @@ Specific to this skill:
 - **CWE**: CWE-798/CWE-321 (hardcoded creds/keys), CWE-78/CWE-120/CWE-787
   (unsafe calls/overflow), CWE-327 (weak crypto), CWE-489 (debug/backdoor),
   + the specific CVE's CWE.
-- **ATT&CK**: tag where relevant — T1027 (obfuscation), T1480 (guardrails/
+- **ATT&CK**: tag where relevant - T1027 (obfuscation), T1480 (guardrails/
   licensing), T1552 (unsecured credentials).
 - **Evidence**: artifact SHA-256, the command/decompiled snippet/address,
   and the controlled-dynamic proof if used.
-- **Remediation framing**: dev/vendor — remove hardcoded secrets, use
+- **Remediation framing**: dev/vendor - remove hardcoded secrets, use
   vetted crypto, bounds-safe APIs, server-side license/auth checks,
   strip debug backdoors.
 - Updates `STATUS.md` and the Skills Run Log.
@@ -140,8 +140,7 @@ Specific to this skill:
 
 ## Common Issues
 
-- **Packing/obfuscation**: UPX/custom packers blank out static analysis —
-  unpack (often `upx -d`) or dump from the sandbox before concluding
+- **Packing/obfuscation**: UPX/custom packers blank out static analysis -   unpack (often `upx -d`) or dump from the sandbox before concluding
   "nothing found".
 - **Stripped binaries**: no symbols → lean on Ghidra's analysis +
   string/xref pivots; name functions as you go.
@@ -153,8 +152,8 @@ Specific to this skill:
 
 ## References
 
-- Ghidra: https://ghidra-sre.org/ — radare2/rizin: https://rizin.re/
-- capa: https://github.com/mandiant/capa — FLOSS: https://github.com/mandiant/flare-floss
+- Ghidra: https://ghidra-sre.org/ - radare2/rizin: https://rizin.re/
+- capa: https://github.com/mandiant/capa - FLOSS: https://github.com/mandiant/flare-floss
 - pwndbg: https://github.com/pwndbg/pwndbg
 - MITRE ATT&CK: T1027, T1480, T1552
 

@@ -1,6 +1,6 @@
 ---
 name: cache-smuggling-hunter
-description: "Tests web caches for poisoning (unkeyed-header injection turning a benign header into cached malicious content for all visitors) and HTTP request smuggling (CL.TE / TE.CL desync between front-end proxy and back-end origin, smuggling a hidden request). Highly disruptive — only runs on staging with explicit `service_affecting: approved` AND `cache_smuggling_testing: approved`. Use when the target sits behind a CDN / load balancer, X-Cache / Age / CF-Cache-Status headers are present, or when the orchestrator identifies proxied architecture. Produces findings with CWE-444 / CWE-524 mapping and header-cache-key + HTTP/2 + strict-parsing remediation. Defensive testing only — POISONED-CACHE CLEANUP REQUIRED."
+description: "Tests web caches for poisoning (unkeyed-header injection turning a benign header into cached malicious content for all visitors) and HTTP request smuggling (CL.TE / TE.CL desync between front-end proxy and back-end origin, smuggling a hidden request). Highly disruptive - only runs on staging with explicit `service_affecting: approved` AND `cache_smuggling_testing: approved`. Use when the target sits behind a CDN / load balancer, X-Cache / Age / CF-Cache-Status headers are present, or when the orchestrator identifies proxied architecture. Produces findings with CWE-444 / CWE-524 mapping and header-cache-key + HTTP/2 + strict-parsing remediation. Defensive testing only - POISONED-CACHE CLEANUP REQUIRED."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -29,13 +29,13 @@ metadata:
 Test the target's caching layer + front-to-back HTTP parsing for
 two classes of high-severity flaws:
 
-1. **Web Cache Poisoning** — an attacker sends a request with an
+1. **Web Cache Poisoning** - an attacker sends a request with an
    unkeyed header (e.g., `X-Forwarded-Host: attacker`) that
    influences the response. The cache stores the poisoned
    response keyed on just the URL and serves it to unwitting
    visitors. Classic XSS-for-everyone scenario.
 
-2. **HTTP Request Smuggling** — the front-end proxy and the
+2. **HTTP Request Smuggling** - the front-end proxy and the
    back-end origin disagree on where one HTTP request ends and
    the next begins (usually because of mismatched
    `Content-Length` vs `Transfer-Encoding: chunked` handling).
@@ -64,18 +64,18 @@ header-cache-key + HTTP/2 + strict-parsing remediation.
 
 ## When NOT to Use
 
-- For non-cached, single-layer applications — no cache to
+- For non-cached, single-layer applications - no cache to
   poison.
-- For production environments — smuggling probes are
+- For production environments - smuggling probes are
   destructive. ONLY test on staging unless the scope file
   explicitly permits production (rare, requires dedicated
   incident-response coordination).
 - For generic CDN misconfig (missing HSTS, wrong cache-control)
-  — use `crypto-flaw-hunter` for TLS/HSTS and
+ - use `crypto-flaw-hunter` for TLS/HSTS and
   `excessive-data-exposure-hunter` for accidentally-cached
   sensitive data.
 - For client-side cache issues (browser cache of sensitive
-  data) — use `session-flaw-hunter`.
+  data) - use `session-flaw-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml`, not in
   staging, or missing the extra gating.
 
@@ -99,7 +99,7 @@ Before ANY outbound activity:
      poisoned cache entry
    - Use cache-busting query params (`?_=<timestamp>`) during
      discovery to avoid inter-user contamination
-   - Coordinate with platform team BEFORE testing — they may
+   - Coordinate with platform team BEFORE testing - they may
      need to purge the cache manually if cleanup fails
 5. Request-smuggling probes may cause transient 400/500 errors
    for other users during the test window. Same pre-test
@@ -115,7 +115,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier (staging host)
-- `{scope_context}`: optional — specific paths to probe
+- `{scope_context}`: optional - specific paths to probe
 - `{cdn_provider}`: Cloudflare / Akamai / Fastly / CloudFront /
   nginx / other (informs cleanup + probe variants)
 - `{platform_contact}`: the platform engineer to notify before
@@ -149,7 +149,7 @@ The skill expects the caller to provide:
    with the same URL.
 
    Vulnerable signal: A header influences the response but
-   DOESN'T influence the cache key — that's the unkeyed-input
+   DOESN'T influence the cache key - that's the unkeyed-input
    primitive for poisoning.
 
    Record: Per-header cache-key participation matrix.
@@ -166,7 +166,7 @@ The skill expects the caller to provide:
    X-Forwarded-Host: {oauth_callback_host}
    ```
 
-   (Note the cache-busting `_cb` param — prevents accidental
+   (Note the cache-busting `_cb` param - prevents accidental
    cross-user contamination during discovery.)
 
    Observe the response. If the page contains a `<script
@@ -233,7 +233,7 @@ The skill expects the caller to provide:
    ```
 
    Use a safe probe body that would produce a 400 if smuggling
-   worked — not an attack payload.
+   worked - not an attack payload.
 
    Vulnerable signal: Response behavior indicates desync
    (e.g., timeout on a subsequent request; unexpected
@@ -247,7 +247,7 @@ The skill expects the caller to provide:
 7. **TE.CL detection (safe probe)**
    [WSTG v4.2, WSTG-INPV-15]
 
-   Do: Inverse variant — front end honors TE, back end honors
+   Do: Inverse variant - front end honors TE, back end honors
    CL:
    ```
    POST / HTTP/1.1
@@ -300,7 +300,7 @@ The skill expects the caller to provide:
 
    Vulnerable signal: Edge accepts the HTTP/2 request but the
    downgrade emits an HTTP/1.1 request with conflicting headers
-   — classic desync primitive.
+ - classic desync primitive.
 
 ### Phase 6: Cleanup Verification (MANDATORY)
 
@@ -349,10 +349,9 @@ Specific to this skill:
 - **OWASP**: WSTG-INPV-15 (HTTP Splitting). WSTG-INPV-17 (HTTP
   Smuggling). A05:2021 (Security Misconfiguration) at the CDN
   layer.
-- **CVSS vectors**: widespread cache poisoning delivering XSS —
-  `AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:H/A:N`. Request smuggling
-  bypassing front-end auth — `...AC:H/PR:N/.../C:H/I:H/A:H`.
-  CRLF injection without exploit chain — `...AC:L/C:L/I:L/A:N`.
+- **CVSS vectors**: widespread cache poisoning delivering XSS -   `AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:H/A:N`. Request smuggling
+  bypassing front-end auth - `...AC:H/PR:N/.../C:H/I:H/A:H`.
+  CRLF injection without exploit chain - `...AC:L/C:L/I:L/A:N`.
 - **Evidence**: the raw HTTP request (exact bytes, including
   CRLF), the response with cache-hit/cache-miss indicator, the
   observed desync behavior, and the cleanup verification.
@@ -371,7 +370,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -400,12 +399,12 @@ Before marking complete, verify:
 
 - **WAF interference**: A WAF blocks the smuggling probe with
   403, but the underlying architecture might be safe OR
-  vulnerable — can't tell externally. Confirm with scope-approved
+  vulnerable - can't tell externally. Confirm with scope-approved
   internal-network probe if available.
 
 - **Dynamic-content reflection without cache**: The header-
   reflected response isn't cached (Cache-Control: no-store).
-  Reflection alone is a weak finding — confirm the cache
+  Reflection alone is a weak finding - confirm the cache
   actually stores the poisoned response (X-Cache: MISS followed
   by HIT from a different requester).
 
@@ -417,17 +416,17 @@ Before marking complete, verify:
 - **CDN-level smuggling protection**: Modern Cloudflare / Akamai
   normalize headers at the edge and may silently prevent
   downstream desync. If probes fail cleanly, the edge is
-  protecting — but the underlying origin config may still be
+  protecting - but the underlying origin config may still be
   flawed. Note as "edge-protected; origin-layer flaw exists".
 
 - **Smuggled request hijacks other users' auth**: If a desync
   probe surfaces another user's cookies or response, treat as
-  an incident — collect evidence, IMMEDIATELY notify platform
+  an incident - collect evidence, IMMEDIATELY notify platform
   team, DO NOT re-run the probe.
 
 ## References
 
-- `references/payloads.md` — full smuggling / CRLF / HTTP/2
+- `references/payloads.md` - full smuggling / CRLF / HTTP/2
   payload catalog
 
 External:

@@ -1,6 +1,6 @@
 ---
 name: command-injection-hunter
-description: "Tests inputs that reach OS shell / process-launching APIs for command injection — metacharacter-based separator injection (`;`, `|`, `&&`, backtick, `$()`), blind time-based / OOB injection, shell-escape bypass (`\\;ls`), output redirection (write to web root), and filename-parameter vectors. Use when the target has admin / diagnostic features (ping, nslookup, disk utility, log viewer), file-processing endpoints that accept paths, or HTTP headers (Referer / User-Agent) that logs process. Produces findings with CWE-78 mapping, harmless-PoC evidence, and parameterized-API remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml — HARMLESS PROBES ONLY."
+description: "Tests inputs that reach OS shell / process-launching APIs for command injection - metacharacter-based separator injection (`;`, `|`, `&&`, backtick, `$()`), blind time-based / OOB injection, shell-escape bypass (`\\;ls`), output redirection (write to web root), and filename-parameter vectors. Use when the target has admin / diagnostic features (ping, nslookup, disk utility, log viewer), file-processing endpoints that accept paths, or HTTP headers (Referer / User-Agent) that logs process. Produces findings with CWE-78 mapping, harmless-PoC evidence, and parameterized-API remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml - HARMLESS PROBES ONLY."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,7 +27,7 @@ metadata:
 ## Goal
 
 Test inputs that reach operating-system shell calls for command
-injection — flaws that let an attacker break out of the intended
+injection - flaws that let an attacker break out of the intended
 command string and execute arbitrary OS commands as the web
 process. This skill implements WSTG-INPV-12 and maps findings to
 CWE-78 (Improper Neutralization of Special Elements used in an OS
@@ -52,13 +52,13 @@ shell-reaching inputs with harmless PoC evidence and secure-API
 
 ## When NOT to Use
 
-- For SQL-interpreter injection — use `sqli-hunter`.
-- For template-engine injection — use `ssti-hunter` (may lead to
+- For SQL-interpreter injection - use `sqli-hunter`.
+- For template-engine injection - use `ssti-hunter` (may lead to
   RCE too, but via template constructs, not shell metacharacters).
-- For XXE or deserialization flaws that lead to RCE — use the
+- For XXE or deserialization flaws that lead to RCE - use the
   specific class's hunter.
 - For file-inclusion / path-traversal that doesn't reach a shell
-  — use `path-traversal-hunter`.
+ - use `path-traversal-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
 
@@ -96,7 +96,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints / parameters
+- `{scope_context}`: optional - specific endpoints / parameters
 - `{user_a}`: authenticated session if endpoints are behind auth
 - `{oob_listener}`: authorized OOB listener URL from scope
 
@@ -165,7 +165,7 @@ The skill expects the caller to provide:
    or rejection.
 
    Record: FINDING-NNN per confirmed injection. STOP after first
-   successful PoC per parameter — don't escalate.
+   successful PoC per parameter - don't escalate.
 
 4. **Windows-separator probes** [WAHH, Ch 21, p. 832]
 
@@ -255,13 +255,13 @@ The skill expects the caller to provide:
 
    Then check the file existence via the target's log viewer or
    a separate read path (do NOT create a new exploit path to find
-   it — use existing in-scope read functionality).
+   it - use existing in-scope read functionality).
 
    Vulnerable response: The file was created and is readable.
 
    **Cleanup**: Use a second injection to remove the file, or
    coordinate with platform team. Default behavior: SKIP this
-   phase unless scope explicitly permits — time-based + OOB is
+   phase unless scope explicitly permits - time-based + OOB is
    usually sufficient proof.
 
 ### Phase 7: Header-Based Injection
@@ -307,9 +307,7 @@ Specific to this skill:
 - **OWASP**: WSTG-INPV-12. For APIs, API8:2023 (Security
   Misconfiguration) and API8:2019 (Injection). A03:2021
   (Injection).
-- **CVSS vectors**: in-band RCE —
-  `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Blind RCE —
-  `...AC:H/C:H/I:H/A:H`. Privilege is set based on what account
+- **CVSS vectors**: in-band RCE -   `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Blind RCE -   `...AC:H/C:H/I:H/A:H`. Privilege is set based on what account
   the probe required to reach the endpoint.
 - **Evidence**: the exact injection request, the response with
   command output (or the OOB listener log for blind), the
@@ -322,7 +320,7 @@ Specific to this skill:
     (no `shell=True`); Node `child_process.execFile` (not
     `exec`); Java `ProcessBuilder` with list-form; Go
     `exec.Command("cmd", "arg")` list-form.
-  - Strict input allowlisting (per parameter type — hostname
+  - Strict input allowlisting (per parameter type - hostname
     regex, IPv4/IPv6 parsers, safe filename charset)
   - Principle of least privilege: run app under low-priv account
     without shell binary on PATH
@@ -330,7 +328,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -341,12 +339,12 @@ Before marking complete, verify:
       fingerprint, not just a 500 error
 - [ ] Every blind finding includes timing data (3 runs) or an OOB
       listener hit
-- [ ] No destructive commands were used — grep the Skills Run Log
+- [ ] No destructive commands were used - grep the Skills Run Log
       for `rm -`, `chmod`, `DELETE`, network scanning verbs;
       should be zero
 - [ ] Any output-redirection files created during testing were
       cleaned up or escalated for cleanup
-- [ ] Post-RCE halt was honored — no exploration beyond the
+- [ ] Post-RCE halt was honored - no exploration beyond the
       initial proof (grep the Skills Run Log for a single
       RCE-confirmation per parameter)
 - [ ] OOB listener used is in the scope's allowlist
@@ -357,7 +355,7 @@ Before marking complete, verify:
 
 - **Reflection mistaken for execution**: The probe string `;whoami`
   appears in the response body but `whoami` wasn't actually
-  executed — the app just echoed the input. Confirm execution by
+  executed - the app just echoed the input. Confirm execution by
   (a) seeing a real username like `www-data`, not the literal
   `whoami`, or (b) time-based / OOB evidence.
 
@@ -375,14 +373,14 @@ Before marking complete, verify:
 
 - **Command part escape that wasn't the issue**: Some apps
   escape shell metacharacters correctly but pass the FILENAME
-  through without validation — file-based injection (`foo.txt
+  through without validation - file-based injection (`foo.txt
   && whoami`) works even though generic-string injection doesn't.
   Test filename contexts specifically.
 
 - **Host / IP parsing that rejects injection**: If the input is
   a hostname parameter, a good hostname regex (strict RFC 1035)
   already rejects shell metacharacters as invalid. Confirm with
-  both a valid hostname and a valid hostname + injection — if
+  both a valid hostname and a valid hostname + injection - if
   both work identically, the parser is filtering.
 
 - **Containerized / sandboxed execution**: Command injection
@@ -393,8 +391,8 @@ Before marking complete, verify:
 
 ## References
 
-- `references/payloads.md` — full per-OS per-context payload set
-- `references/remediation.md` — language-specific secure-API
+- `references/payloads.md` - full per-OS per-context payload set
+- `references/remediation.md` - language-specific secure-API
   snippets
 
 External:

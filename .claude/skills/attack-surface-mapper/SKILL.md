@@ -1,6 +1,6 @@
 ---
 name: attack-surface-mapper
-description: "Consolidates outputs from web-recon-passive, web-recon-active, and api-recon into a single prioritized attack-surface picture — merging PASSIVE_RECON.md, ATTACK_SURFACE.md, API_INVENTORY.md, and AUTH_FLOWS.md into a deduplicated inventory ranked by risk (high-impact features, new/changed code, legacy /v1 endpoints, business-logic-rich flows). Use at the end of the recon phase to produce a single decision document that the orchestrator uses to select which class-specific hunters to run in what order. Passive-active hybrid — mostly reads prior outputs, adds minimal targeted probes for priority fingerprinting. Produces CONSOLIDATED_ATTACK_SURFACE.md with prioritization rationale. Defensive testing only."
+description: "Consolidates outputs from web-recon-passive, web-recon-active, and api-recon into a single prioritized attack-surface picture - merging PASSIVE_RECON.md, ATTACK_SURFACE.md, API_INVENTORY.md, and AUTH_FLOWS.md into a deduplicated inventory ranked by risk (high-impact features, new/changed code, legacy /v1 endpoints, business-logic-rich flows). Use at the end of the recon phase to produce a single decision document that the orchestrator uses to select which class-specific hunters to run in what order. Passive-active hybrid - mostly reads prior outputs, adds minimal targeted probes for priority fingerprinting. Produces CONSOLIDATED_ATTACK_SURFACE.md with prioritization rationale. Defensive testing only."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -31,8 +31,7 @@ Take the outputs of the three foundational recon skills
 `auth-flow-mapper` and produce a single consolidated,
 deduplicated, and PRIORITIZED attack-surface view. The
 orchestrator uses this document to select which class-specific
-hunters to run in what order. This skill does NOT re-run recon —
-it reads what the foundational skills already produced, identifies
+hunters to run in what order. This skill does NOT re-run recon - it reads what the foundational skills already produced, identifies
 gaps, adds a small number of targeted probes where priorities
 depend on fingerprinting, and produces
 `CONSOLIDATED_ATTACK_SURFACE.md`. Maps loosely to OWASP
@@ -53,11 +52,11 @@ prioritization decision document.
 
 ## When NOT to Use
 
-- Before the three foundational recon skills have run — this
+- Before the three foundational recon skills have run - this
   skill has nothing to consolidate.
-- For deep surface discovery on a single asset — use the
+- For deep surface discovery on a single asset - use the
   specific recon skill.
-- For active vulnerability testing — that's the class-specific
+- For active vulnerability testing - that's the class-specific
   hunters.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -104,7 +103,7 @@ The skill expects the caller to provide:
    Do: Parse each input into an intermediate Python / jq / awk
    structure. Extract:
    - Subdomains (from PASSIVE + ATTACK_SURFACE)
-   - Endpoints (from all four — deduplicate)
+   - Endpoints (from all four - deduplicate)
    - Parameters (from ATTACK_SURFACE + API_INVENTORY)
    - Auth endpoints (from AUTH_FLOWS)
    - Tech stack fingerprint (from ATTACK_SURFACE + PASSIVE)
@@ -142,7 +141,7 @@ The skill expects the caller to provide:
 
    Where ambiguous, issue a small number of targeted probes
    (`curl -sI {subdomain}` for liveness,
-   `curl -sI {endpoint}` for status) — cap total at ~20 probes
+   `curl -sI {endpoint}` for status) - cap total at ~20 probes
    to respect rate limits.
 
    Record: Gap list + probe results.
@@ -194,7 +193,7 @@ The skill expects the caller to provide:
    - Endpoints that lack modern headers (no HSTS, no CSP, no
      rate-limit headers)
 
-   Tag with `legacy: true` — these are highest-yield per effort.
+   Tag with `legacy: true` - these are highest-yield per effort.
 
 7. **Business-logic-rich flow tagging**
    [Bug Bounty Bootcamp, Ch 5]
@@ -207,7 +206,7 @@ The skill expects the caller to provide:
    - Subscription / plan changes
    - Multi-party transactions
 
-   Tag with `business_logic: true` — these are candidates for
+   Tag with `business_logic: true` - these are candidates for
    `business-logic-hunter`.
 
 ### Phase 4: Prioritized Inventory
@@ -273,7 +272,7 @@ The skill expects the caller to provide:
     `.claude/planning/{issue}/CONSOLIDATED_ATTACK_SURFACE.md`:
 
     ```markdown
-    # Consolidated Attack Surface — {issue} — {target}
+    # Consolidated Attack Surface - {issue} - {target}
 
     ## Executive Summary
     - Total subdomains: N (live / dangling / legacy breakdown)
@@ -295,13 +294,13 @@ The skill expects the caller to provide:
     ## Hunter Skill Dispatch Plan
     Grouped by priority:
 
-    ### P1 (critical — run first)
+    ### P1 (critical - run first)
     1. `auth-flaw-hunter` on /v1/auth/* (legacy auth + change
        recency)
     2. `bola-bfla-hunter` on /api/v2/accounts/{id}
     ...
 
-    ### P2 (high — run second)
+    ### P2 (high - run second)
     ...
 
     ## Class Coverage Matrix
@@ -319,7 +318,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No new payloads — consumes and prioritizes prior outputs. Any
+No new payloads - consumes and prioritizes prior outputs. Any
 new probes are single `curl -sI` liveness checks capped at ~20.
 
 ## Output Format
@@ -332,16 +331,15 @@ recon-level issues not already filed by the upstream skills:
   CWE-1059 (Incomplete Retirement of Resources),
   API9:2023 (Improper Inventory Management)
 - **Undocumented-but-live endpoints** (found in live spider,
-  not in spec) — typically Medium — cross-reference the class-
+  not in spec) - typically Medium - cross-reference the class-
   specific hunter once assigned.
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — marks recon complete
+- `.claude/planning/{issue}/STATUS.md` - marks recon complete
   + ranked dispatch plan
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/CONSOLIDATED_ATTACK_SURFACE.md` —
-  the primary artifact
+- `.claude/planning/{issue}/CONSOLIDATED_ATTACK_SURFACE.md` -   the primary artifact
 
 ## Quality Check (Self-Review)
 
@@ -367,13 +365,13 @@ Before marking complete, verify:
 
 - **Conflicting reports**: Two recon skills report different
   HTTP method support for the same endpoint. Usually the
-  authenticated scan was more thorough — prefer
+  authenticated scan was more thorough - prefer
   `api-recon` output over `web-recon-active` for API endpoints;
   prefer authenticated captures over unauthenticated.
 
 - **Prioritization arbitrariness**: The composite score is a
   heuristic, not a rule. Document the reasoning per top-10
-  entry so reviewers can sanity-check — especially when a
+  entry so reviewers can sanity-check - especially when a
   low-impact-class endpoint ranks high due to legacy + recent
   tags.
 
@@ -392,7 +390,7 @@ Before marking complete, verify:
 
 External:
 - OWASP WSTG v4.2 (Information Gathering phases)
-- OWASP API9:2023 — Improper Inventory Management:
+- OWASP API9:2023 - Improper Inventory Management:
   https://owasp.org/API-Security/editions/2023/en/0xa9-improper-inventory-management/
 
 ## Source Methodology

@@ -1,4 +1,4 @@
-# remediation — mass-assignment-hunter
+# remediation - mass-assignment-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Segurança_ HPP e Mass Assignment em APIs.md` (Section 8: REMEDIATION)
 
@@ -13,13 +13,13 @@ DTO / schema that mirrors ONLY the fields users are allowed to change.
 ### Django REST Framework
 
 ```python
-# WRONG — exposes ALL model fields, including is_staff, is_superuser
+# WRONG - exposes ALL model fields, including is_staff, is_superuser
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = "__all__"           # DANGEROUS
 
-# RIGHT — explicit allowlist
+# RIGHT - explicit allowlist
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -29,12 +29,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 Never use `fields = "__all__"` on any serializer that accepts writes.
 
-### Ruby on Rails — Strong Parameters
+### Ruby on Rails - Strong Parameters
 
 ```ruby
 class UsersController < ApplicationController
   def update
-    # WRONG — permits everything
+    # WRONG - permits everything
     # @user.update(params[:user])
 
     # RIGHT
@@ -55,8 +55,8 @@ end
 // Model
 class User extends Model
 {
-    // WRONG — $guarded = []; exposes everything
-    // RIGHT — either:
+    // WRONG - $guarded = []; exposes everything
+    // RIGHT - either:
     protected $fillable = ['first_name', 'last_name', 'email', 'bio'];
     // OR:
     protected $guarded = ['id', 'is_admin', 'role', 'created_at'];
@@ -75,10 +75,10 @@ public function update(Request $req, User $user)
 }
 ```
 
-### Spring Boot — DTO Pattern
+### Spring Boot - DTO Pattern
 
 ```java
-// DTO — narrow, no admin fields
+// DTO - narrow, no admin fields
 public record UserUpdateDto(
     @NotBlank String firstName,
     @NotBlank String lastName,
@@ -97,7 +97,7 @@ public User update(@PathVariable Long id,
 }
 ```
 
-Do NOT do `@RequestBody User user` — that binds the whole entity
+Do NOT do `@RequestBody User user` - that binds the whole entity
 including security-sensitive fields.
 
 ### Node.js / Express (TypeScript + zod)
@@ -159,14 +159,14 @@ public async Task<IActionResult> Update(int id, [FromBody] UserUpdateDto dto)
 
 ## 2. Prevent HTTP Parameter Pollution (HPP)
 
-### Express — `hpp` middleware
+### Express - `hpp` middleware
 
 ```javascript
 import hpp from "hpp";
 app.use(hpp({ whitelist: ["tag"] }));   // tag may appear multiple times
 ```
 
-### Node.js — manual query-string parsing
+### Node.js - manual query-string parsing
 
 ```javascript
 // Accept only the first occurrence
@@ -175,7 +175,7 @@ const userId = Array.isArray(req.query.user_id)
     : req.query.user_id;
 ```
 
-### Spring Boot — `@RequestParam` takes the first by default; for
+### Spring Boot - `@RequestParam` takes the first by default; for
 `@RequestParam List<String>` pass an explicit filter step.
 
 ### Laravel
@@ -221,7 +221,7 @@ This "CQRS lite" split is the most effective architectural defense.
 
 ## 4. Schema-Based Validation + `forbidNonWhitelisted`
 
-Reject — don't silently ignore — properties not in the allowlist. Silent
+Reject - don't silently ignore - properties not in the allowlist. Silent
 ignore masks genuine bugs and lets attackers probe for which properties
 ARE honoured.
 
@@ -256,19 +256,19 @@ const ajv = new Ajv({ strict: true, additionalProperties: false });
 ```ini
 ; php.ini
 allow_url_include = Off
-; PATH_INFO rarely needed — disable via framework router rather than server
+; PATH_INFO rarely needed - disable via framework router rather than server
 ```
 
 ---
 
 ## 6. Administrative Fields Require a Separate Endpoint + Separate Auth
 
-- User-editing endpoint: `/api/users/me` — accepts `firstName`, `email`.
-- Admin-editing endpoint: `/api/admin/users/{id}` — accepts `role`,
+- User-editing endpoint: `/api/users/me` - accepts `firstName`, `email`.
+- Admin-editing endpoint: `/api/admin/users/{id}` - accepts `role`,
   `is_admin`, requires admin role.
 
 Never have ONE endpoint that selectively honours fields based on the
-caller's role — it's error-prone and a single missed check = escalation.
+caller's role - it's error-prone and a single missed check = escalation.
 
 ---
 

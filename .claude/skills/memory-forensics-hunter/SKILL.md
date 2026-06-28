@@ -27,7 +27,7 @@ metadata:
 Extract, from an acquired RAM image, the evidence that confirms and
 scopes an intrusion: malicious/hidden processes, injected code, C2
 connections, persistence loaded in memory, and credential-access traces.
-Memory is the most volatile and often most revealing artifact — it holds
+Memory is the most volatile and often most revealing artifact - it holds
 unpacked malware, live network state, and command lines that disk does
 not. The skill works ONLY on a verified read-only copy and produces
 reproducible findings mapped to MITRE ATT&CK. It never contains or
@@ -37,21 +37,20 @@ remediates.
 
 - An incident is authorized (`dfir_scope.incident_response: approved`) and
   a RAM image has been acquired for an affected host.
-- Early in Detection & Analysis, before or alongside disk triage — memory
+- Early in Detection & Analysis, before or alongside disk triage - memory
   findings steer the rest of the investigation.
 - After EDR/alert triage indicates code injection, suspicious processes,
   or live C2 on a host whose memory you captured.
 
 ## When NOT to Use
 
-- No memory image (only disk/logs) — use `disk-triage-hunter` /
+- No memory image (only disk/logs) - use `disk-triage-hunter` /
   `log-timeline-hunter`.
-- Acquisition itself (capturing RAM from a live host) — that is an
+- Acquisition itself (capturing RAM from a live host) - that is an
   operator action with its own tooling and `allow_live_response`
   approval; this skill analyzes an already-acquired image.
-- Containment/eradication (killing the process, isolating the host) —
-  operator-driven, out of scope.
-- Deep malware reverse engineering — extract the sample and hand off; this
+- Containment/eradication (killing the process, isolating the host) -   operator-driven, out of scope.
+- Deep malware reverse engineering - extract the sample and hand off; this
   skill does triage (strings/YARA/behavioral), not RE.
 
 ## Authorization Check (MANDATORY FIRST STEP)
@@ -71,7 +70,7 @@ remediates.
 - `{case}`: case folder name (e.g. `IR-2026-0042`)
 - `{image}`: path to the RAM image copy (under evidence_store_path)
 - `{host}`: source hostname for the image
-- `{iocs}`: optional — known IOCs / YARA rules to sweep for
+- `{iocs}`: optional - known IOCs / YARA rules to sweep for
 
 ## Methodology
 
@@ -81,7 +80,7 @@ remediates.
 ### Phase 1: Image Context
 1. **Confirm image validity / OS.**
    Do: `vol -f {image} windows.info` (or `banners.Banners` /
-   `linux.<...>` for Linux). Record OS build — wrong symbol profile
+   `linux.<...>` for Linux). Record OS build - wrong symbol profile
    invalidates everything downstream.
 
 ### Phase 2: Process Landscape
@@ -120,7 +119,7 @@ remediates.
 9. **Credential-theft traces.**
    Do: check for lsass access patterns, `windows.registry.hashdump` /
    `lsadump` availability, Mimikatz-style strings.
-   Record evidence of credential dumping (ATT&CK T1003) — note for the
+   Record evidence of credential dumping (ATT&CK T1003) - note for the
    operator that affected credentials need rotation. Do NOT exfiltrate
    recovered secrets; record only that dumping occurred + which accounts.
 
@@ -143,7 +142,7 @@ Specific to this skill:
   PIDs; hash of any extracted sample.
 - **IOCs**: processes, hashes, IPs, domains, mutexes → the IOC table.
 - **Recommended response**: D3FEND-mapped (process termination, host
-  isolation, credential rotation) — framed for the operator; this skill
+  isolation, credential rotation) - framed for the operator; this skill
   does not execute it.
 - Updates the timeline (process-start times) and Skills Run Log.
 
@@ -153,7 +152,7 @@ Specific to this skill:
 - [ ] Correct OS symbol profile confirmed (`windows.info`) first
 - [ ] pslist vs psscan compared for hidden processes
 - [ ] Every finding has a reproducible `vol` command + ATT&CK tag
-- [ ] Recovered credentials NOT exfiltrated — only the fact-of-dumping recorded
+- [ ] Recovered credentials NOT exfiltrated - only the fact-of-dumping recorded
 - [ ] Extracted samples hashed and kept in-case (no external upload unless approved)
 - [ ] Skills Run Log row updated `running` → `complete`/`halted:{reason}`
 

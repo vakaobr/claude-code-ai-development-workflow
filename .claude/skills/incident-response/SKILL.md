@@ -9,7 +9,7 @@ description: >
   mapping model, and tool maps for memory / disk / log / network
   forensics. Load this skill before or during any incident to ground the
   executable memory-forensics-hunter, disk-triage-hunter, and
-  log-timeline-hunter skills. Knowledge only — no execution; the
+  log-timeline-hunter skills. Knowledge only - no execution; the
   responder runs the tools against evidence copies.
 model: opus
 metadata:
@@ -48,8 +48,7 @@ vocabulary the client uses; the work is the same.
 | Containment, Eradication & Recovery | **C**ontainment / **E**radication / **R**ecovery | Stop spread, remove the threat, restore to known-good |
 | Post-Incident Activity | **L**essons learned | Root cause, timeline, report, control improvements |
 
-The hunters in this extension live in **Detection & Analysis** —
-they examine acquired evidence to confirm, scope, and attribute. They
+The hunters in this extension live in **Detection & Analysis** - they examine acquired evidence to confirm, scope, and attribute. They
 do NOT contain or eradicate (those are operator-driven, change-
 controlled actions on live systems).
 
@@ -69,7 +68,7 @@ controlled actions on live systems).
 
 ## 2. Evidence Handling & Chain of Custody (NIST SP 800-86)
 
-Order of volatility — collect most-volatile first:
+Order of volatility - collect most-volatile first:
 1. CPU registers / cache, running process & memory (RAM)
 2. Network state (connections, ARP, routing), running services
 3. Disk (filesystem, slack, unallocated)
@@ -93,12 +92,12 @@ Rules:
 
 ## 3. Artifact Map (where the evidence lives)
 
-### Memory (RAM image) — see `memory-forensics-hunter`
+### Memory (RAM image) - see `memory-forensics-hunter`
 Running/hidden processes, injected code, network connections, loaded
 DLLs/drivers, command lines, cached credentials, rootkit traces,
 unpacked malware. Tool: **Volatility 3**.
 
-### Disk / filesystem — see `disk-triage-hunter`
+### Disk / filesystem - see `disk-triage-hunter`
 - **Windows**: `$MFT`, `$UsnJrnl`, registry hives (SYSTEM/SOFTWARE/
   NTUSER), Amcache/Shimcache, Prefetch, SRUM, scheduled tasks, services,
   WMI persistence, `$Recycle.Bin`, browser artifacts, LNK/jumplists.
@@ -108,7 +107,7 @@ unpacked malware. Tool: **Volatility 3**.
   Tools: **Sleuth Kit** (`fls`/`icat`/`mmls`), **plaso** (`log2timeline`/
   `psort`), registry parsers, **YARA**.
 
-### Logs / event records — see `log-timeline-hunter`
+### Logs / event records - see `log-timeline-hunter`
 - **Windows Event Logs** (Security/System/Sysmon): 4624/4625 (logon),
   4672 (priv), 4688 (proc create), 7045 (service install), 4720 (user
   create), Sysmon 1/3/7/11/13.
@@ -133,7 +132,7 @@ context; full cloud-IR tooling is a future extension.)
   ID (e.g., T1055 Process Injection, T1003 Credential Dumping, T1053
   Scheduled Task, T1021 Lateral Movement). ATT&CK gives a shared
   vocabulary and exposes gaps ("we saw initial access + execution but no
-  persistence yet — keep looking").
+  persistence yet - keep looking").
 - **Map response to MITRE D3FEND** for the recommendation side.
 - **Build the timeline**: a single super-timeline (plaso) correlating
   memory, disk, and logs in UTC is the backbone of the final report.
@@ -153,27 +152,27 @@ blocking, and prioritized remediation / hardening (D3FEND-mapped).
 ## 6. What this extension does NOT do
 
 - **Containment / eradication on live systems** (isolating hosts,
-  killing processes, resetting credentials) — change-controlled operator
+  killing processes, resetting credentials) - change-controlled operator
   actions, not automated.
 - **Live-response on production** without `dfir_scope.allow_live_response:
-  approved` — default is offline analysis of acquired evidence.
+  approved` - default is offline analysis of acquired evidence.
 - **Malware reverse engineering** beyond triage (strings/YARA/behavioral)
-  — deep RE is a separate discipline.
-- **Legal/regulatory notification decisions** — surfaced to the IR lead,
+ - deep RE is a separate discipline.
+- **Legal/regulatory notification decisions** - surfaced to the IR lead,
   never auto-actioned.
 
 ---
 
 ## References
 
-- NIST SP 800-61r2 — Computer Security Incident Handling Guide
-- NIST SP 800-86 — Guide to Integrating Forensic Techniques into IR
+- NIST SP 800-61r2 - Computer Security Incident Handling Guide
+- NIST SP 800-86 - Guide to Integrating Forensic Techniques into IR
 - SANS PICERL / DFIR cheat-sheets and posters
-- MITRE ATT&CK: https://attack.mitre.org/ — MITRE D3FEND: https://d3fend.mitre.org/
+- MITRE ATT&CK: https://attack.mitre.org/ - MITRE D3FEND: https://d3fend.mitre.org/
 - Volatility 3: https://volatility3.readthedocs.io/
 - The Sleuth Kit / Autopsy: https://www.sleuthkit.org/
 - plaso / log2timeline: https://plaso.readthedocs.io/
-- Chainsaw: https://github.com/WithSecureLabs/chainsaw — Hayabusa: https://github.com/Yamato-Security/hayabusa
+- Chainsaw: https://github.com/WithSecureLabs/chainsaw - Hayabusa: https://github.com/Yamato-Security/hayabusa
 
-Pairs with `offensive-security` (the attacker's-eye reference) — knowing
+Pairs with `offensive-security` (the attacker's-eye reference) - knowing
 how intrusions are built makes their artifacts easier to find.

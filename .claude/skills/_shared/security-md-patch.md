@@ -1,7 +1,7 @@
 # Integration with Existing /security Command
 
 The repo already has `.claude/commands/security.md` as Phase 7 of the
-SDLC workflow. Your 40 new skills should not replace it — they should
+SDLC workflow. Your 40 new skills should not replace it - they should
 be what it invokes when the scope warrants deeper testing.
 
 ## The change
@@ -69,8 +69,7 @@ With the orchestrator running, it should render as:
   - [ ] Phase 9: Report
 ```
 
-This requires a small edit to the orchestrator's progress reporting —
-already described in its spec.
+This requires a small edit to the orchestrator's progress reporting - already described in its spec.
 
 ## CLAUDE.md Learnings section
 
@@ -84,7 +83,7 @@ When Phase 7 used the security-orchestrator:
   the team's guardrails are weakest)
 - Summarize which skills consistently find nothing (signal for
   retiring or consolidating them)
-- Note any scope questions that came up — they likely indicate
+- Note any scope questions that came up - they likely indicate
   scope file staleness
 - Capture any false-positive patterns as learnings, so future runs
   of the same skill can reference them

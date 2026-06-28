@@ -26,7 +26,7 @@ metadata:
 
 ## Goal
 
-Test client-side JavaScript for DOM-based Cross-Site Scripting — flaws where
+Test client-side JavaScript for DOM-based Cross-Site Scripting - flaws where
 user-controllable data flows through client-side Sources (e.g.,
 `document.location`, `window.name`, `postMessage`, `document.referrer`)
 into dangerous Sinks (e.g., `eval`, `innerHTML`, `document.write`,
@@ -53,15 +53,14 @@ replacement, strict CSP, or origin-validated postMessage handlers.
 
 ## When NOT to Use
 
-- For XSS where the server-side response already contains the payload —
-  use `xss-hunter` (Reflected/Stored XSS).
+- For XSS where the server-side response already contains the payload -   use `xss-hunter` (Reflected/Stored XSS).
 - For flaws in client-side template engines (e.g., AngularJS expression
-  injection) — that's Client-Side Template Injection (handled by
+  injection) - that's Client-Side Template Injection (handled by
   `xss-hunter` with CSTI variant).
 - For issues requiring the victim to paste a payload into their own
-  browser console (Self-XSS) — not considered a deliverable attack unless
+  browser console (Self-XSS) - not considered a deliverable attack unless
   combined with UI redress.
-- For pure server-side injection — different class.
+- For pure server-side injection - different class.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
 
@@ -73,7 +72,7 @@ Before ANY outbound activity:
    parse, halt and report.
 2. Confirm the intended target appears in the `assets` list AND its
    `testing_level` is `active`.
-3. DOM-XSS testing fires JavaScript in the tester's own browser — there is
+3. DOM-XSS testing fires JavaScript in the tester's own browser - there is
    no service-affecting server load. However, findings that prove
    execution typically use a harmless `alert(document.domain)` or payload
    exfiltration to the authorized OOB listener. Confirm the listener is in
@@ -91,8 +90,8 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific SPA routes or JS bundles to focus on
-- `{user_a}`: optional — authenticated session (some DOM sinks only fire
+- `{scope_context}`: optional - specific SPA routes or JS bundles to focus on
+- `{user_a}`: optional - authenticated session (some DOM sinks only fire
   on logged-in views)
 - `{oob_listener}`: authorized OOB listener for exfil PoCs (from scope
   file)
@@ -106,7 +105,7 @@ The skill expects the caller to provide:
    Do: Fetch the target's main entry points (curl -o), enumerate all
    `<script src>` references and inline scripts. For each external
    bundle, download and beautify (`js-beautify`). Source-map bundles when
-   available — production builds often ship `.map` files.
+   available - production builds often ship `.map` files.
 
    Record: `.claude/planning/{issue}/dom-xss-sources/{bundle}.js`.
 
@@ -126,7 +125,7 @@ The skill expects the caller to provide:
 
    Do: `grep -nE "(eval\(|setTimeout\(|setInterval\(|Function\(|document\.write|innerHTML|outerHTML|insertAdjacentHTML|\.html\(|document\.writeln)"`.
    Also match jQuery selectors that look like HTML (`$('<div>' + ... + '</div>')`)
-   — those call `$.parseHTML` internally.
+ - those call `$.parseHTML` internally.
 
    Vulnerable candidates: Sinks that receive a Source value without an
    obvious sanitizer between them.
@@ -213,7 +212,7 @@ The skill expects the caller to provide:
 
    Do: If the target reads `window.name` (rare but present in legacy
    apps), open a test page that sets `window.name = "<img src=x
-   onerror=alert(1)>"` and then navigates to the target — the `name`
+   onerror=alert(1)>"` and then navigates to the target - the `name`
    property persists across the navigation.
 
 ### Phase 6: Probe Same-Origin Navigation Sinks
@@ -237,7 +236,7 @@ The skill expects the caller to provide:
 
     Do: For AngularJS-era apps (1.x), test `{{constructor.constructor('alert(1)')()}}`
     in user-controlled fields. For Vue/Svelte apps, try the engine's
-    expression syntax. Note: this is adjacent to DOM-XSS — if confirmed,
+    expression syntax. Note: this is adjacent to DOM-XSS - if confirmed,
     cross-reference `xss-hunter` for the full CSTI methodology.
 
 ## Payload Library
@@ -279,7 +278,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -306,8 +305,7 @@ Before marking complete, verify:
   `<img>` / `<script>` node was created.
 
 - **Browser XSS filters**: Legacy browsers (IE, older Chrome) had
-  auditor-style filters that blocked the attack. Modern browsers don't —
-  test in current Chrome/Firefox to avoid false negatives.
+  auditor-style filters that blocked the attack. Modern browsers don't -   test in current Chrome/Firefox to avoid false negatives.
 
 - **Self-XSS framing**: The vulnerability requires the victim to manually
   paste a complex payload into their own browser console or address bar.
@@ -327,9 +325,9 @@ Before marking complete, verify:
 
 ## References
 
-- `references/payloads.md` — full payload catalog (fragment, breakout,
+- `references/payloads.md` - full payload catalog (fragment, breakout,
   postMessage, framework)
-- `references/remediation.md` — framework-specific safe-API snippets
+- `references/remediation.md` - framework-specific safe-API snippets
 
 External:
 - WSTG-CLNT-01: https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-Based_Cross_Site_Scripting

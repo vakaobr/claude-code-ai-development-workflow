@@ -1,6 +1,6 @@
 #            .claude/security-scope.yaml
 # =====================================================================
-#  ⚠  TEMPLATE — REPLACE WITH REAL COMPANY ASSETS BEFORE RUNNING ANY
+#  ⚠  TEMPLATE - REPLACE WITH REAL COMPANY ASSETS BEFORE RUNNING ANY
 #     SECURITY SKILL OR THE security-orchestrator AGENT.
 # =====================================================================
 #
@@ -124,26 +124,26 @@ technique_restrictions:
 red_team_extension:
 
   # --- Internal Active Directory (ad-recon-hunter, ad-kerberos-hunter) ---
-  internal_pentest: denied            # denied | approved — master gate for internal-ad profile
-  ad_credentials_vault_path: ""       # e.g. "secret/pentest/ad-engagement" — creds loaded ONLY from here
-  ad_domains: []                      # e.g. ["corp.local"] — in-scope AD domains
-  ad_subnets: []                      # e.g. ["10.0.0.0/24"] — in-scope internal ranges
+  internal_pentest: denied            # denied | approved - master gate for internal-ad profile
+  ad_credentials_vault_path: ""       # e.g. "secret/pentest/ad-engagement" - creds loaded ONLY from here
+  ad_domains: []                      # e.g. ["corp.local"] - in-scope AD domains
+  ad_subnets: []                      # e.g. ["10.0.0.0/24"] - in-scope internal ranges
   scan_hours: "any"                   # ROE scan window, e.g. "Mon-Fri 18:00-06:00 UTC"
   # Sub-gates (each must be independently approved; all default denied):
   offline_cracking: denied            # hashcat/john on recovered AS-REP/TGS hashes
   impersonation_proof: denied         # mint/use S4U / RBCD / shadow-credential tickets (revert after proof)
-  credential_dumping: denied          # secretsdump / LSASS / NTDS — requires already-proven admin reach
+  credential_dumping: denied          # secretsdump / LSASS / NTDS - requires already-proven admin reach
   domain_dominance: denied            # golden/silver/diamond tickets, DCSync as DA, forged certs
 
   # --- LLM red-team (llm-redteam-hunter) ---
-  llm_redteam: denied                 # denied | approved — master gate for ai-redteam profile
+  llm_redteam: denied                 # denied | approved - master gate for ai-redteam profile
   llm_endpoints: []                   # FIRST-PARTY endpoints only, e.g. ["https://app.internal.example.com/api/chat"]
   llm_redteam_max_requests: 2000      # cost ceiling for garak/PyRIT probe batteries
 
   # --- Mobile static assessment (mobile-android-hunter) ---
-  mobile_testing: denied              # denied | approved — master gate for mobile-sast profile
+  mobile_testing: denied              # denied | approved - master gate for mobile-sast profile
   mobile_artifacts: []                # e.g. ["builds/app-release.apk (sha256:abc…)"]
-  mobsf_instance: "local"             # MUST be a local/self-hosted MobSF — never the public hosted instance
+  mobsf_instance: "local"             # MUST be a local/self-hosted MobSF - never the public hosted instance
 
 # =====================================================================
 #  RED-TEAM OPS  (network/infra pentest, host privesc, offline cracking)
@@ -157,12 +157,12 @@ red_team_extension:
 #  skills will add their own gates here in later batches.)
 # =====================================================================
 red_team_ops:
-  network_pentest: denied             # denied | approved — network-pentest-hunter
+  network_pentest: denied             # denied | approved - network-pentest-hunter
   network_targets: []                 # in-scope ranges/hosts, e.g. ["10.0.0.0/24", "host.example"]
-  exploit_validation: denied          # denied | approved — run benign PoC to prove a CVE (no destructive/DoS exploits)
+  exploit_validation: denied          # denied | approved - run benign PoC to prove a CVE (no destructive/DoS exploits)
   scan_rate: ""                       # optional ROE rate cap, e.g. "1000pps" / "min-rate 500"
-  host_privesc: denied                # denied | approved — host-privesc-hunter (needs an authorized foothold)
-  offline_cracking: denied            # denied | approved — cracking-hunter (offline only; vault-stored results)
+  host_privesc: denied                # denied | approved - host-privesc-hunter (needs an authorized foothold)
+  offline_cracking: denied            # denied | approved - cracking-hunter (offline only; vault-stored results)
   crack_time_budget: "4h"             # bound mask/brute attacks so "uncracked" is meaningful
   lab_replica: ""                     # optional replica env for exploit-validation (preferred over production)
 
@@ -171,17 +171,17 @@ red_team_ops:
   re_artifacts: []                    # in-scope binaries/firmware, e.g. ["fw/router-1.2.bin (sha256:…)"]
   # dynamic RE execution requires a disposable, network-isolated sandbox (skill-enforced)
 
-  # --- Social engineering / phishing (social-engineering-hunter) — targets PEOPLE ---
-  social_engineering: denied          # denied | approved — needs SEPARATE written consent
+  # --- Social engineering / phishing (social-engineering-hunter) - targets PEOPLE ---
+  social_engineering: denied          # denied | approved - needs SEPARATE written consent
   se_consent_ref: ""                  # signed authorization ref naming the campaign + population
   se_recipient_list: ""               # path to the APPROVED recipient list (no one outside it)
-  se_evilginx: denied                 # denied | approved — MFA-phishing demo (destroy session token after proof)
+  se_evilginx: denied                 # denied | approved - MFA-phishing demo (destroy session token after proof)
 
-  # --- Wireless (wireless-hunter) — needs RF hardware + Linux capture host ---
+  # --- Wireless (wireless-hunter) - needs RF hardware + Linux capture host ---
   wireless: denied                    # denied | approved
   wireless_targets: []                # in-scope SSIDs/BSSIDs, e.g. ["CorpWiFi (aa:bb:..)"]
   wireless_workshop_consent: ""       # signed consent + attendee signage ref for rogue-AP / capture demos
-  wireless_capture_host: "vm"         # "vm" (USB passthrough) | "pi" (Raspberry Pi 4/5) — never macOS directly
+  wireless_capture_host: "vm"         # "vm" (USB passthrough) | "pi" (Raspberry Pi 4/5) - never macOS directly
 
 # =====================================================================
 #  DFIR / INCIDENT RESPONSE
@@ -196,9 +196,9 @@ red_team_ops:
 #  eradicate. Gates default to `denied`.
 # =====================================================================
 dfir_scope:
-  incident_response: denied           # denied | approved — master gate for dfir-readonly profile
-  case_id: ""                         # e.g. "IR-2026-0042" — the active incident case
+  incident_response: denied           # denied | approved - master gate for dfir-readonly profile
+  case_id: ""                         # e.g. "IR-2026-0042" - the active incident case
   evidence_store_path: ""             # secure path to verified evidence COPIES, e.g. "/cases/IR-2026-0042/evidence"
   chain_of_custody_log: ""            # append-only custody log path, e.g. "/cases/IR-2026-0042/coc.md"
-  allow_live_response: denied         # denied | approved — analysis on a LIVE production host (default: offline images only)
-  external_sandbox: denied            # denied | approved — upload extracted samples to a third-party sandbox (evidence may be regulated)
+  allow_live_response: denied         # denied | approved - analysis on a LIVE production host (default: offline images only)
+  external_sandbox: denied            # denied | approved - upload extracted samples to a third-party sandbox (evidence may be regulated)

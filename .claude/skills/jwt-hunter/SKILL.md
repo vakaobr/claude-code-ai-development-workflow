@@ -41,7 +41,7 @@ for the JWT libraries in use (`pyjwt`, `jsonwebtoken`, `nimbus`,
 
 ## When to Use
 
-- The target uses JWTs for auth — strings starting with `ey` in
+- The target uses JWTs for auth - strings starting with `ey` in
   `Authorization: Bearer` headers, cookies, URL params, or
   response bodies.
 - Tokens have 3 parts separated by periods (`header.payload.signature`).
@@ -53,12 +53,12 @@ for the JWT libraries in use (`pyjwt`, `jsonwebtoken`, `nimbus`,
 
 ## When NOT to Use
 
-- For opaque / non-JWT session tokens — use `session-flaw-hunter`.
+- For opaque / non-JWT session tokens - use `session-flaw-hunter`.
 - For OAuth 2.0 / OIDC flow-level issues (PKCE missing, redirect-
-  URI validation, scope creep) — use `oauth-oidc-hunter`; this
+  URI validation, scope creep) - use `oauth-oidc-hunter`; this
   skill focuses on JWT cryptography and claim handling.
-- For SAML-based auth — scope doesn't overlap.
-- For encrypted JWT (JWE) — source methodology doesn't cover JWE;
+- For SAML-based auth - scope doesn't overlap.
+- For encrypted JWT (JWE) - source methodology doesn't cover JWE;
   file a gap in `references/gaps.md`.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -72,12 +72,12 @@ Before ANY outbound activity:
 2. Confirm the intended target appears in the `assets` list AND
    its `testing_level` is `active`.
 3. JWT secret-cracking (Phase 4, step 7) is compute-intensive
-   but only on the tester's machine — no traffic to the target.
+   but only on the tester's machine - no traffic to the target.
    The probes themselves (submitting forged tokens) are
    low-volume.
 4. If a forged token grants admin privileges, STOP probing once
    confirmation is obtained. Do not use the forged admin token
-   to explore admin-only endpoints — the initial auth-bypass
+   to explore admin-only endpoints - the initial auth-bypass
    proof is enough.
 5. Log the authorization check to
    `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
@@ -89,12 +89,12 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific JWT-protected endpoints
+- `{scope_context}`: optional - specific JWT-protected endpoints
 - `{user_a}`: credentials for test user A (issues a JWT to
   examine)
 - `{user_b}`: credentials for test user B (for cross-user claim
   tampering tests)
-- `{wordlist}`: optional — path to HS256 secret wordlist (default
+- `{wordlist}`: optional - path to HS256 secret wordlist (default
   `jwt-common-secrets.txt`)
 
 ## Methodology
@@ -136,7 +136,7 @@ The skill expects the caller to provide:
    `{header}.{payload}.` (note the trailing period, empty
    signature). Send as Authorization.
 
-   Vulnerable response: Server accepts the token — signature
+   Vulnerable response: Server accepts the token - signature
    validation is skipped when empty.
 
    Not-vulnerable response: 401 / 403 / "invalid signature" error.
@@ -171,8 +171,7 @@ The skill expects the caller to provide:
 
    Re-encode payload; keep original signature (now invalid).
 
-   Vulnerable response: Server accepts the tampered claims —
-   signature is not validated or was already bypassed in Phase 2.
+   Vulnerable response: Server accepts the tampered claims -    signature is not validated or was already bypassed in Phase 2.
 
    Not-vulnerable response: 401 / 403.
 
@@ -186,7 +185,7 @@ The skill expects the caller to provide:
    ID. Submit in user A's session context.
 
    Vulnerable response: Server returns user B's data for user A's
-   token — server trusted the claim without verifying the
+   token - server trusted the claim without verifying the
    signature was generated for that specific claim.
 
    Record: FINDING-NNN, severity depends on whose data is
@@ -206,14 +205,14 @@ The skill expects the caller to provide:
    ```
 
    Default wordlist: common JWT secrets (`jwt-common-secrets.txt`
-   — `secret`, `123456`, `your-256-bit-secret`, company-brand
+ - `secret`, `123456`, `your-256-bit-secret`, company-brand
    permutations).
 
    Vulnerable response: The wordlist cracks the secret within
    minutes. The tester can now sign arbitrary tokens.
 
    Not-vulnerable response: No match against common wordlists.
-   (Absence of a crack doesn't prove strong secret — may still be
+   (Absence of a crack doesn't prove strong secret - may still be
    weak against targeted attacks.)
 
    Record: If cracked, FINDING-NNN Critical with the discovered
@@ -253,7 +252,7 @@ The skill expects the caller to provide:
    Assemble and submit.
 
    Vulnerable response: Server verifies using the public key as an
-   HMAC symmetric secret — forged token accepted.
+   HMAC symmetric secret - forged token accepted.
 
    Not-vulnerable response: Server enforces strict algorithm
    matching.
@@ -287,7 +286,7 @@ The skill expects the caller to provide:
     Not-vulnerable response: `jku` domain validated against
     allowlist, or `jku` header ignored.
 
-    Record: Cross-reference `ssrf-hunter` — if `jku` fetches
+    Record: Cross-reference `ssrf-hunter` - if `jku` fetches
     internal URLs, there's also an SSRF vector here.
 
 ### Phase 7: Lifecycle Invalidation
@@ -298,8 +297,7 @@ The skill expects the caller to provide:
     logout endpoint. Replay the pre-logout token against a
     protected endpoint.
 
-    Vulnerable response: Token still accepted after logout —
-    there's no server-side revocation (stateless JWT without
+    Vulnerable response: Token still accepted after logout -     there's no server-side revocation (stateless JWT without
     denylist).
 
     Record: FINDING-NNN with severity based on how long tokens
@@ -312,10 +310,10 @@ The skill expects the caller to provide:
     token.
 
     Vulnerable response: Token still works even though password
-    changed — the app can't revoke active sessions after a
+    changed - the app can't revoke active sessions after a
     potential compromise.
 
-    Record: FINDING-NNN High — password-change failure to
+    Record: FINDING-NNN High - password-change failure to
     invalidate is a classic account-recovery weakness.
 
 ## Payload Library
@@ -347,11 +345,9 @@ Specific to this skill:
   unauth users forge admin tokens.
 - **OWASP**: WSTG-ATHN-09 (JSON Web Tokens). For APIs, API2:2023
   (Broken Authentication).
-- **CVSS vectors**: `alg: none` bypass —
-  `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H` (essentially full
-  auth bypass). RS256→HS256 — same. HS256 weak secret — same
-  once cracked. Post-logout validity —
-  `...AC:H/PR:N/.../C:H/I:H/A:N` (requires attacker to have
+- **CVSS vectors**: `alg: none` bypass -   `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H` (essentially full
+  auth bypass). RS256→HS256 - same. HS256 weak secret - same
+  once cracked. Post-logout validity -   `...AC:H/PR:N/.../C:H/I:H/A:N` (requires attacker to have
   intercepted a token previously).
 - **Evidence**: the decoded original token (header + payload),
   the tampered/forged token, the request/response showing
@@ -372,7 +368,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -403,7 +399,7 @@ Before marking complete, verify:
 
 - **Ignored claims**: The server accepts a modified payload
   (`is_admin: true`), but re-verifies permissions against a
-  backend database using the `sub` claim — the tampering is
+  backend database using the `sub` claim - the tampering is
   inert. Distinguish by checking whether the SERVER's response
   changes (e.g., returns admin-only data) or not. If the
   claim-swap elicits no behavioral change, the tampering is
@@ -418,12 +414,12 @@ Before marking complete, verify:
 
 - **JWKS cache poisoning**: Some libraries cache the JWKS
   response for hours. A `jku` attack might fail the first try
-  because the original JWKS is still cached — succeed on
+  because the original JWKS is still cached - succeed on
   second try after cache expiry. Note the caching behavior.
 
 - **Token-revocation UI without server-side backing**: The app
   shows a "log out of all sessions" button but the implementation
-  only clears the client-side storage — server still accepts
+  only clears the client-side storage - server still accepts
   all previously-issued tokens. Confirm by capturing a token
   before the logout event and replaying afterwards.
 
@@ -435,8 +431,8 @@ Before marking complete, verify:
 
 ## References
 
-- `references/payloads.md` — full JWT attack payload catalog
-- `references/remediation.md` — per-library secure-config
+- `references/payloads.md` - full JWT attack payload catalog
+- `references/remediation.md` - per-library secure-config
   snippets and denylist patterns
 
 External:

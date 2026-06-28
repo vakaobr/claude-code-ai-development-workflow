@@ -1,4 +1,4 @@
-# remediation — idor-hunter
+# remediation - idor-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Testes e Mitigação de IDOR.md` (Section 8: REMEDIATION)
 
@@ -13,7 +13,7 @@ object.
 ### The "who is asking + what do they want + do they have rights" pattern
 
 ```python
-# Django — explicit ownership check
+# Django - explicit ownership check
 def get_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     if order.user_id != request.user.id and not request.user.is_staff:
@@ -22,20 +22,19 @@ def get_order(request, order_id):
 ```
 
 ```python
-# Django — scoped queryset (CAN'T return someone else's record)
+# Django - scoped queryset (CAN'T return someone else's record)
 def get_order(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, "order.html", {"order": order})
 ```
 
-The second pattern is safer because the filter is baked into the query —
-there is no code path that returns the row before the check.
+The second pattern is safer because the filter is baked into the query - there is no code path that returns the row before the check.
 
 ---
 
 ## 2. Framework-Specific Patterns
 
-### Django REST Framework — per-object permissions
+### Django REST Framework - per-object permissions
 
 ```python
 from rest_framework.permissions import BasePermission
@@ -49,11 +48,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class  = OrderSerializer
 
     def get_queryset(self):
-        # Always scope to current user — never return other users' rows
+        # Always scope to current user - never return other users' rows
         return Order.objects.filter(user=self.request.user)
 ```
 
-### Spring Security — `@PreAuthorize` + SpEL
+### Spring Security - `@PreAuthorize` + SpEL
 
 ```java
 @Service
@@ -73,7 +72,7 @@ public class OrderSecurity {
 }
 ```
 
-### Laravel — Policies
+### Laravel - Policies
 
 ```php
 // app/Policies/OrderPolicy.php
@@ -110,7 +109,7 @@ app.get("/api/orders/:id", requireAuth, async (req, res) => {
 });
 ```
 
-### FastAPI — dependency-injected authorization
+### FastAPI - dependency-injected authorization
 
 ```python
 async def get_owned_order(
@@ -150,7 +149,7 @@ func getOrder(c *gin.Context) {
 ## 3. Use Non-Enumerable Identifiers (Defense in Depth)
 
 Replace sequential integers with UUIDv4 or other high-entropy opaque IDs.
-This is NOT a substitute for authorization — it raises the discovery cost,
+This is NOT a substitute for authorization - it raises the discovery cost,
 it doesn't eliminate the bug.
 
 ### PostgreSQL
@@ -188,7 +187,7 @@ When GET is protected but DELETE isn't, attackers find the gap. Enforce
 auth at the routing / middleware layer, not in each handler:
 
 ```python
-# Django urls.py — one guard for the whole viewset
+# Django urls.py - one guard for the whole viewset
 router.register(
     r"orders",
     OrderViewSet,          # all CRUD methods share IsOwner permission
@@ -197,7 +196,7 @@ router.register(
 ```
 
 ```yaml
-# API Gateway / Envoy — require the same policy for every verb
+# API Gateway / Envoy - require the same policy for every verb
 # Don't have "paths: /orders/{id}: get: auth: yes, post: auth: no"
 ```
 
@@ -226,16 +225,16 @@ logger.warning("unauthorized_access", extra={
 
 ---
 
-## 6. Bulk Endpoints — Per-Item Check
+## 6. Bulk Endpoints - Per-Item Check
 
 ```python
-# BAD — trusts the supplied list
+# BAD - trusts the supplied list
 def bulk_export(request):
     ids = request.data["order_ids"]
     orders = Order.objects.filter(id__in=ids)
     return JsonResponse([serialize(o) for o in orders])
 
-# GOOD — scope to the user
+# GOOD - scope to the user
 def bulk_export(request):
     ids = request.data["order_ids"]
     orders = Order.objects.filter(id__in=ids, user=request.user)

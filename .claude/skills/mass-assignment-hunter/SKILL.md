@@ -26,11 +26,10 @@ metadata:
 
 ## Goal
 
-Test API endpoints that accept request bodies for Mass Assignment —
-the flaw where the framework binds client-supplied properties to
+Test API endpoints that accept request bodies for Mass Assignment - the flaw where the framework binds client-supplied properties to
 backend data models without an allowlist, letting an attacker inject
 admin flags, role escalations, or financial-state fields that the UI
-never exposes. Also covers HTTP Parameter Pollution (HPP) — duplicate
+never exposes. Also covers HTTP Parameter Pollution (HPP) - duplicate
 parameters that bypass validation. This skill implements WSTG-INPV-04
 adjacencies and maps findings to CWE-915 (Improperly Controlled
 Modification of Dynamically-Determined Object Attributes) and CWE-235
@@ -57,13 +56,11 @@ object-state evidence and DTO / allowlist remediation.
 ## When NOT to Use
 
 - For object-level authorization bypass (user accessing another
-  user's object via ID) — use `idor-hunter` or `bola-bfla-hunter`.
-- For function-level authz (non-admin calling admin-only endpoint) —
-  use `bola-bfla-hunter` for BFLA specifically.
-- For reading too much data in responses — use
+  user's object via ID) - use `idor-hunter` or `bola-bfla-hunter`.
+- For function-level authz (non-admin calling admin-only endpoint) -   use `bola-bfla-hunter` for BFLA specifically.
+- For reading too much data in responses - use
   `excessive-data-exposure-hunter` (API3:2023 BOPLA counterpart).
-- For injection flaws in individual parameter values (SQLi, XSS) —
-  use the class-specific hunter.
+- For injection flaws in individual parameter values (SQLi, XSS) -   use the class-specific hunter.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
 
@@ -77,15 +74,14 @@ Before ANY outbound activity:
    `testing_level` is `active`.
 3. Mass-assignment testing triggers real write operations on real
    objects. Use ONLY controlled test objects (test accounts, test
-   products) — NEVER probe production user records, production
+   products) - NEVER probe production user records, production
    financial accounts, or admin objects of real people. If the only
    available resources are shared production data, halt and
    request a scoped test environment.
 4. If a probe appears to have elevated the test account's privileges
    (e.g., `isAdmin: true` stuck), IMMEDIATELY file the finding and
    coordinate with the team to revert. Do NOT use the elevated
-   account to exercise admin functions for "further exploration" —
-   the elevation itself is the proof.
+   account to exercise admin functions for "further exploration" -    the elevation itself is the proof.
 5. If the target is ambiguous, write it to
    `.claude/planning/{issue}/SCOPE_QUESTIONS.md` and halt for that
    target only.
@@ -99,9 +95,9 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific write endpoints to probe
+- `{scope_context}`: optional - specific write endpoints to probe
 - `{user_a}`: regular-user credentials for a test account
-- `{user_admin}`: optional — admin credentials (to see what
+- `{user_admin}`: optional - admin credentials (to see what
   properties the admin UI actually sets, baseline)
 
 ## Methodology
@@ -136,7 +132,7 @@ The skill expects the caller to provide:
    - `balance`, `credit`, `wallet`, `accountLimit`
    - `createdBy`, `tenantId`, `organizationId`
    - `apiKey`, `secret`, `internalNotes`
-   - `mfaEnabled`, `mfaRequired` — can DISABLE MFA via MA
+   - `mfaEnabled`, `mfaRequired` - can DISABLE MFA via MA
 
    Record: Per-endpoint list of candidate injection fields.
 
@@ -183,7 +179,7 @@ The skill expects the caller to provide:
    }
    ```
 
-   Vulnerable response: Stored and honored — a new account can
+   Vulnerable response: Stored and honored - a new account can
    skip verification / MFA.
 
    Record: Per-flag findings.
@@ -199,7 +195,7 @@ The skill expects the caller to provide:
    Vulnerable response: Balance / credit updated without a real
    transaction.
 
-   Record: FINDING-NNN Critical — direct monetary impact.
+   Record: FINDING-NNN Critical - direct monetary impact.
 
 6. **Ownership re-assignment** [Hacking APIs, Ch 11]
 
@@ -209,7 +205,7 @@ The skill expects the caller to provide:
     "ownerId": "{admin-user-id}"}
    ```
 
-   Vulnerable response: Object reassigned — can pivot into another
+   Vulnerable response: Object reassigned - can pivot into another
    tenant or impersonate ownership.
 
    Record: Severity High; cross-reference `idor-hunter` if the
@@ -228,10 +224,10 @@ The skill expects the caller to provide:
    ?role=user&role=admin
    ```
 
-   Observe which value is honored — first, last, or concatenated.
+   Observe which value is honored - first, last, or concatenated.
 
    Vulnerable response: Validation checks `user_id=attacker` (first
-   occurrence) but the DB query uses `user_id=victim` (last) — or
+   occurrence) but the DB query uses `user_id=victim` (last) - or
    vice versa.
 
    Record: Per-endpoint parsing-order fingerprint.
@@ -264,7 +260,7 @@ The skill expects the caller to provide:
    `POST /resource/:id` or `PUT /resource/:id` with a body
    containing sensitive fields.
 
-   Vulnerable response: 200 — and the body fields were applied
+   Vulnerable response: 200 - and the body fields were applied
    (check via a subsequent GET).
 
    Not-vulnerable response: 405 Method Not Allowed.
@@ -291,7 +287,7 @@ The skill expects the caller to provide:
     Vulnerable response: The injected field persists in the GET
     response.
 
-    Not-vulnerable response: GET shows the original value — the
+    Not-vulnerable response: GET shows the original value - the
     injection was echoed but not stored (false positive in Phase 2).
 
     Record: Every "confirmed" finding must have a GET-back that
@@ -326,9 +322,7 @@ Specific to this skill:
 - **OWASP**: For APIs, API6:2023 (Unrestricted Access to Sensitive
   Business Flows) or API3:2023 (BOPLA) depending on impact.
   WSTG-INPV-04 for HPP.
-- **CVSS vectors**: admin-flag injection —
-  `AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`. Balance manipulation —
-  `...C:H/I:H/A:N`. Email-verification-skip — `...C:L/I:H/A:N`.
+- **CVSS vectors**: admin-flag injection -   `AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H`. Balance manipulation -   `...C:H/I:H/A:N`. Email-verification-skip - `...C:L/I:H/A:N`.
 - **Evidence**: the injection request, the response, AND the
   subsequent GET-back proving persistence.
 - **Remediation framing**: backend engineer. Include
@@ -343,7 +337,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -353,7 +347,7 @@ Before marking complete, verify:
 - [ ] Every finding has a GET-back confirming persistence, not just
       a 200 status on the injection
 - [ ] Privilege-escalation findings were filed and coordinated for
-      revert — no admin account was used for exploration
+      revert - no admin account was used for exploration
 - [ ] No production user's record was mutated (only test accounts
       and test tenants)
 - [ ] HPP findings note the parser inconsistency (which layer saw
@@ -374,12 +368,11 @@ Before marking complete, verify:
 
 - **Silent field drop with 200**: The framework accepts the
   injection and returns 200, but internally stripped the extra
-  fields before storing. This is actually the correct defense —
-  don't file as a finding.
+  fields before storing. This is actually the correct defense -   don't file as a finding.
 
 - **Idempotent-update false negative**: The second GET-back shows
   the same value as before the injection because nothing changed
-  — BUT the injected field wasn't in the original object either.
+ - BUT the injected field wasn't in the original object either.
   Distinguish by observing whether the field EXISTS in the GET
   response after the injection that didn't exist before.
 
@@ -387,11 +380,11 @@ Before marking complete, verify:
   `organizationId` changes because they're legitimate for the
   admin-panel workflow; the check is at the CALLER level, not at
   the parameter level. If a regular user can use the endpoint
-  without admin role, the caller-check is what fails — cross-
+  without admin role, the caller-check is what fails - cross-
   reference `bola-bfla-hunter`.
 
 - **MFA-disable through account update**: Flipping `mfaEnabled`
-  through profile update is severe — attackers leverage it after a
+  through profile update is severe - attackers leverage it after a
   session hijack to prevent the legitimate user from regaining
   control. Always flag this specific pattern as Critical even if
   the finding "only" disables MFA.

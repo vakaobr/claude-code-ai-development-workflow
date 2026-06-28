@@ -1,6 +1,6 @@
 ---
 name: api-recon
-description: "Maps the attack surface of REST / GraphQL / gRPC APIs — OSINT for specs and endpoints, subdomain enumeration, active service fingerprinting, OpenAPI / Swagger / GraphQL-schema discovery, and hidden-parameter fuzzing. Use before any API-class hunter skill (bola-bfla-hunter, mass-assignment-hunter, owasp-api-top10-tester, jwt-hunter, graphql-hunter); they depend on its API_INVENTORY.md output. Run AFTER web-recon-passive and in parallel with or after web-recon-active. Produces API_INVENTORY.md with endpoints, methods, parameters, auth models, and versioning. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Maps the attack surface of REST / GraphQL / gRPC APIs - OSINT for specs and endpoints, subdomain enumeration, active service fingerprinting, OpenAPI / Swagger / GraphQL-schema discovery, and hidden-parameter fuzzing. Use before any API-class hunter skill (bola-bfla-hunter, mass-assignment-hunter, owasp-api-top10-tester, jwt-hunter, graphql-hunter); they depend on its API_INVENTORY.md output. Run AFTER web-recon-passive and in parallel with or after web-recon-active. Produces API_INVENTORY.md with endpoints, methods, parameters, auth models, and versioning. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -31,7 +31,7 @@ downstream API-class hunter skills (BOLA/BFLA, mass-assignment,
 GraphQL, JWT, rate-limit) have a precise list of endpoints, methods,
 parameters, and authentication models to work against. This skill
 implements WSTG-INFO-02 + API-specific OSINT and maps to OWASP
-API9:2023 (Improper Inventory Management) — inventory is the
+API9:2023 (Improper Inventory Management) - inventory is the
 prerequisite for every later API test. No vulnerability findings are
 produced by this skill; its output is the inventory document.
 
@@ -40,22 +40,21 @@ produced by this skill; its output is the inventory document.
 - The target exposes REST, GraphQL, gRPC, or SOAP APIs (confirmed by
   `Content-Type: application/json|xml|grpc-web` in responses, or by
   dedicated API subdomains like `api.*`).
-- Before any API-class hunter runs — these skills expect
+- Before any API-class hunter runs - these skills expect
   `API_INVENTORY.md` to exist.
 - When modernizing an assessment that was last run as a web-app-only
-  audit — API surface may have been added since.
+  audit - API surface may have been added since.
 - When the orchestrator identifies `api.`, `v1.`, `dev-api.`, or
   `graphql` subdomains during subdomain enumeration.
 
 ## When NOT to Use
 
-- For server-rendered HTML applications without an API layer — use
+- For server-rendered HTML applications without an API layer - use
   `web-recon-active` only.
 - For internal RPC buses not reachable from the assessed
-  perspective — scope-file boundary.
-- For re-running on surface already mapped in the last 7 days —
-  read the existing `API_INVENTORY.md` instead.
-- For exploit confirmation (BOLA, BFLA, mass-assignment) — those are
+  perspective - scope-file boundary.
+- For re-running on surface already mapped in the last 7 days -   read the existing `API_INVENTORY.md` instead.
+- For exploit confirmation (BOLA, BFLA, mass-assignment) - those are
   hunter skills that consume this skill's output.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -68,13 +67,13 @@ Before ANY outbound activity:
    doesn't parse, halt and report.
 2. Confirm the intended target appears in the `assets` list AND its
    `testing_level` is `active`.
-3. `service_affecting: true` — active parameter fuzzing and
+3. `service_affecting: true` - active parameter fuzzing and
    path-enumeration generate real traffic. Confirm the asset's
    `service_affecting` field is `approved`; otherwise halt and
    request approval.
 4. Apply the scope file's `rate_limit_rps`. For API recon, respect
    stricter per-endpoint rate limits if the target signals them via
-   `Retry-After` headers — back off immediately.
+   `Retry-After` headers - back off immediately.
 5. Log the authorization check to
    `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log with
    status `running`.
@@ -85,10 +84,10 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — known API base paths or subdomains
-- `{user_a}`: optional — authenticated token/session (enables
+- `{scope_context}`: optional - known API base paths or subdomains
+- `{user_a}`: optional - authenticated token/session (enables
   authenticated endpoint discovery, which typically reveals more)
-- `{user_admin}`: optional — admin-tier session for admin-surface
+- `{user_admin}`: optional - admin-tier session for admin-surface
   discovery (coordinate with `{user_a}` ownership)
 
 ## Methodology
@@ -104,7 +103,7 @@ The skill expects the caller to provide:
 
    Record: Any public spec URLs or repos in
    `.claude/planning/{issue}/api-recon/osint-sources.md`. Leaked spec
-   files are gold — they enumerate every endpoint the app intends.
+   files are gold - they enumerate every endpoint the app intends.
 
 2. **Wayback / historical URL harvest** [Hacking APIs, Ch 6, p. 131]
 
@@ -124,7 +123,7 @@ The skill expects the caller to provide:
    confirm liveness and content types.
 
    Vulnerable condition: Dev/staging/legacy API subdomains reachable
-   from the public internet — Improper Asset Management.
+   from the public internet - Improper Asset Management.
 
    Record: Subdomain matrix in `API_INVENTORY.md` under "API Hosts".
 
@@ -132,10 +131,10 @@ The skill expects the caller to provide:
    [Hacking APIs, Ch 6, p. 215]
 
    Do: `nmap -sC -sV -Pn --script=safe -p 80,443,8080,8443,8888,3000,4000,5000,8000,9000,9200
-   {target}` — APIs often run on non-standard ports.
+   {target}` - APIs often run on non-standard ports.
 
    Vulnerable condition: APIs on 8080/8443/etc. that return JSON
-   (`Content-Type: application/json`) on 401/404 — unauth APIs leaked
+   (`Content-Type: application/json`) on 401/404 - unauth APIs leaked
    through the edge.
 
    Record: Port/service matrix, cross-ref with web-recon-active's
@@ -165,8 +164,7 @@ The skill expects the caller to provide:
    /.well-known/openid-configuration
    ```
 
-   Vulnerable condition: Spec is reachable without authentication —
-   the tester (and anyone else) gets a full endpoint list.
+   Vulnerable condition: Spec is reachable without authentication -    the tester (and anyone else) gets a full endpoint list.
 
    Record: Available specs with URLs in `API_INVENTORY.md` under
    "API Specs". Download specs into
@@ -182,7 +180,7 @@ The skill expects the caller to provide:
      -d '{"query":"{ __schema { types { name fields { name type { name } } } } }"}'
    ```
 
-   Vulnerable condition: Introspection returns the full schema — every
+   Vulnerable condition: Introspection returns the full schema - every
    query, mutation, and subscription with types. Cross-reference for
    `graphql-hunter`.
 
@@ -220,7 +218,7 @@ The skill expects the caller to provide:
    ```
 
    Vulnerable condition: Mismatches between the spec's declared methods
-   and the server's accepted methods — `DELETE` accepted on a
+   and the server's accepted methods - `DELETE` accepted on a
    `GET`-only documented endpoint, or `PUT` on a list resource.
 
    Record: Per-endpoint method matrix in `API_INVENTORY.md` under
@@ -271,7 +269,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No exploit payloads — inventory only. Key probe patterns:
+No exploit payloads - inventory only. Key probe patterns:
 
 - **Google dorks for specs**: `site:github.com "{org}" swagger.json`
 - **Subdomain patterns**: `api.`, `v1.`, `v2.`, `dev-api.`,
@@ -288,7 +286,7 @@ No exploit payloads — inventory only. Key probe patterns:
 This skill does NOT directly produce vulnerability findings. Its
 output is **the** inventory document consumed by every API hunter:
 
-- `.claude/planning/{issue}/API_INVENTORY.md` — the primary artifact,
+- `.claude/planning/{issue}/API_INVENTORY.md` - the primary artifact,
   structured as:
   - **API Hosts** (subdomain matrix + liveness + tech stack)
   - **API Specs** (URL + local copy + version)
@@ -312,7 +310,7 @@ obvious discoveries:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -350,8 +348,7 @@ Before marking complete, verify:
   entries.
 
 - **GraphQL false-off signal**: Some GraphQL implementations return 400
-  on introspection but 200 on persisted/allowlisted queries —
-  introspection is off, but the surface is still enumerable via other
+  on introspection but 200 on persisted/allowlisted queries -   introspection is off, but the surface is still enumerable via other
   means (mutation-name fuzzing). Note both.
 
 - **Rate-limit false positives in inventory**: Aggressive enumeration

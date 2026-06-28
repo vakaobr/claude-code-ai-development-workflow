@@ -1,4 +1,4 @@
-# remediation — gitlab-cicd-hunter
+# remediation - gitlab-cicd-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Segurança e Auditoria em Pipelines CI_CD GitLab.md` (Section 8: REMEDIATION)
 
@@ -129,7 +129,7 @@ Plus a matching IAM trust policy with the GitLab OIDC provider:
 
 ### Use rootless builds
 
-Replace Docker-in-Docker (DinD) with Kaniko / Buildah / img — they build
+Replace Docker-in-Docker (DinD) with Kaniko / Buildah / img - they build
 container images without a privileged daemon:
 
 ```yaml
@@ -225,16 +225,16 @@ Removing the commit (`git filter-branch` / `git filter-repo`) does NOT
 remove it from forks / prior clones.
 
 ```bash
-# AWS — deactivate then delete
+# AWS - deactivate then delete
 aws iam update-access-key --access-key-id AKIA... --status Inactive --user-name bot
 aws iam delete-access-key --access-key-id AKIA... --user-name bot
 
-# GitLab — revoke personal access token
+# GitLab - revoke personal access token
 curl -X POST -H "PRIVATE-TOKEN: $ADMIN" \
   "https://gitlab.example/api/v4/personal_access_tokens/$TOKEN_ID/revoke"
 
-# Slack bot token — reinstall the app to rotate
-# Heroku API key — heroku authorizations:revoke <ID>
+# Slack bot token - reinstall the app to rotate
+# Heroku API key - heroku authorizations:revoke <ID>
 ```
 
 ---
@@ -298,7 +298,7 @@ CI-built tarball / container image as the deploy artifact).
 
 ## 10. Audit and Monitoring
 
-- GitLab Admin Area > Audit Events — alert on:
+- GitLab Admin Area > Audit Events - alert on:
   - `Project access granted (Owner)`
   - `Variable created/updated`
   - `Runner registered`

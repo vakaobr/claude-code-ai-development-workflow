@@ -50,16 +50,15 @@ references and vault-migration remediation.
 
 ## When NOT to Use
 
-- For general code-wide secret hunting (non-CI/CD, non-GitLab) —
-  use `secrets-in-code-hunter`, which has broader scope and
+- For general code-wide secret hunting (non-CI/CD, non-GitLab) -   use `secrets-in-code-hunter`, which has broader scope and
   trufflehog/gitleaks integration.
-- For GitHub Actions / Bitbucket Pipelines / CircleCI — those need
-  a platform-specific skill (not written yet — file a gap in
+- For GitHub Actions / Bitbucket Pipelines / CircleCI - those need
+  a platform-specific skill (not written yet - file a gap in
   `references/gaps.md`).
-- For AWS IAM posture on pipelines that authenticate to AWS — this
+- For AWS IAM posture on pipelines that authenticate to AWS - this
   skill flags the pipeline config leak; `aws-iam-hunter` validates
   any discovered keys and enumerates their permissions.
-- For webhook SSRF testing against arbitrary endpoints — use
+- For webhook SSRF testing against arbitrary endpoints - use
   `ssrf-hunter`; this skill's webhook testing is scoped to CI/CD
   trigger URLs only.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
@@ -73,8 +72,8 @@ Before ANY outbound activity:
    doesn't parse, halt and report.
 2. Confirm the GitLab host (e.g., `gitlab.internal.example.com`)
    appears in the `assets` list AND its `testing_level` is at least
-   `passive`. This skill uses read-only `glab` commands — workloads
-   are not touched — so passive is acceptable.
+   `passive`. This skill uses read-only `glab` commands - workloads
+   are not touched - so passive is acceptable.
 3. Confirm the `glab` CLI is configured with a read-only audit
    token, NOT a developer's personal token. Run `glab auth status`
    and log the principal. Halt if the token has `api` scope but
@@ -95,8 +94,8 @@ The skill expects the caller to provide:
 - `{target}`: the asset identifier (GitLab host)
 - `{org}`: the GitLab group/namespace to audit
 - `{glab_profile}`: named glab config profile with the audit token
-- `{focus_repos}`: optional — specific repos to prioritize
-- `{oob_listener}`: optional — authorized OOB listener for webhook
+- `{focus_repos}`: optional - specific repos to prioritize
+- `{oob_listener}`: optional - authorized OOB listener for webhook
   SSRF testing (only if scope explicitly permits)
 
 ## Methodology
@@ -105,7 +104,7 @@ The skill expects the caller to provide:
 
 1. **Enumerate accessible repos + default branches** [Hacking APIs, Ch 6, p. 230]
 
-   Do: `glab repo list --owner {org} --per-page 100` — list every
+   Do: `glab repo list --owner {org} --per-page 100` - list every
    repo visible to the audit token. Record project paths, default
    branches, visibility (public/internal/private), and last activity.
 
@@ -151,7 +150,7 @@ The skill expects the caller to provide:
    - `variables:` with values that look like secrets (API keys,
      passwords, URLs with embedded creds)
    - `services:` using privileged containers without isolation
-   - `image:` pinned to a moving tag (`latest`, `stable`) — supply
+   - `image:` pinned to a moving tag (`latest`, `stable`) - supply
      chain risk
    - `before_script` / `script` echoing `$SECRET_VAR` to logs
    - `artifacts:` publishing `.env`, `config.json`, or similar
@@ -184,13 +183,13 @@ The skill expects the caller to provide:
    /.git/refs/heads/main
    ```
 
-   Use only `curl` (part of `active` profile) — this skill's
+   Use only `curl` (part of `active` profile) - this skill's
    profile allows it for external HTTP checks. If this skill's
    profile is strict cicd-readonly without curl, delegate to
    `web-recon-active`'s output.
 
    Vulnerable response: Any of these paths returns 200 with Git
-   object content — the production host leaks the entire repo
+   object content - the production host leaks the entire repo
    history. Tooling like `git-dumper` could reconstruct the
    codebase.
 
@@ -203,7 +202,7 @@ The skill expects the caller to provide:
 
    Do: `glab api "projects/{repo}/hooks"` and
    `glab api "groups/{org}/hooks"` to enumerate webhooks. List
-   their URLs — are they pointing at internal-only systems?
+   their URLs - are they pointing at internal-only systems?
 
    Record: Webhook inventory in `gitlab-audit/webhooks.md`.
 
@@ -287,10 +286,9 @@ Specific to this skill:
 - **OWASP**: WSTG-CONF-02 for pipeline configs; API7:2019 for
   security misconfiguration; API9:2023 (Improper Inventory
   Management) for runner/webhook inventory gaps.
-- **CVSS vectors**: exposed production admin token —
-  `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Exposed `.git/` on
-  production — `...C:H/I:N/A:N`. Privileged runner with Docker-
-  socket mount — `...PR:L/C:H/I:H/A:H`.
+- **CVSS vectors**: exposed production admin token -   `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Exposed `.git/` on
+  production - `...C:H/I:N/A:N`. Privileged runner with Docker-
+  socket mount - `...PR:L/C:H/I:H/A:H`.
 - **Evidence**: repo path + commit SHA + line number for code
   leaks; policy/pipeline YAML excerpt for config leaks; runner ID
   + config for runner findings; HTTP request/response for `.git/`
@@ -305,7 +303,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -317,7 +315,7 @@ Before marking complete, verify:
 - [ ] Every secret finding is paired with a rotation
       recommendation and a vault-migration snippet
 - [ ] No pipeline was triggered during the audit (grep Skills Run
-      Log for any `glab ci run|retry` — should be zero)
+      Log for any `glab ci run|retry` - should be zero)
 - [ ] No MR was created, merged, or commented on
 - [ ] Runner-posture findings include the runner ID and the
       specific misconfig (privileged vs socket mount vs shared)
@@ -335,7 +333,7 @@ Before marking complete, verify:
 
 - **Already-rotated secrets**: The secret existed in a past commit
   and has since been rotated. The commit itself is still a
-  finding — anyone who cloned between the commit and the rotation
+  finding - anyone who cloned between the commit and the rotation
   has the old value. Severity depends on how long the exposure
   window was.
 
@@ -350,14 +348,14 @@ Before marking complete, verify:
   Filter by entropy and context.
 
 - **Shared runners pattern misread**: Some orgs explicitly use
-  shared runners for OSS projects — not a vulnerability when the
+  shared runners for OSS projects - not a vulnerability when the
   project itself is public and has no sensitive secrets. Confirm
   the project classification before filing.
 
 ## References
 
-- `references/signatures.md` — full secret-detection regex catalog
-- `references/remediation.md` — pipeline hardening + secret-vault
+- `references/signatures.md` - full secret-detection regex catalog
+- `references/remediation.md` - pipeline hardening + secret-vault
   migration snippets
 
 External:

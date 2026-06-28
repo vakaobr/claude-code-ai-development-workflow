@@ -1,9 +1,9 @@
-# payloads — clickjacking-hunter
+# payloads - clickjacking-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Segurança e Testes contra Clickjacking.md` (Section 5: PAYLOADS / PROBES)
 
 Clickjacking "payloads" are HTML pages hosted by the tester that iframe
-the target. They run on `http://localhost:8000` or a burner domain — not
+the target. They run on `http://localhost:8000` or a burner domain - not
 the target. The tester is the victim in their own browser to prove
 framability.
 
@@ -31,7 +31,7 @@ Expected result:
 - **Not framable**: The iframe is blank / a "This page cannot be
   displayed in a frame" console warning appears.
 
-Confirm via the browser's DevTools console — modern browsers log
+Confirm via the browser's DevTools console - modern browsers log
 `Refused to display '...' in a frame because it set 'X-Frame-Options'
 to 'DENY'`.
 
@@ -118,14 +118,14 @@ attribute disables the frame-buster while still allowing interaction:
 ```
 
 `sandbox` without `allow-scripts` means the frame-busting JS never runs
-— but form submissions still work.
+ - but form submissions still work.
 
 ---
 
 ## 5. Double-Click Hijack (browser quirk)
 
 When the first click of a sequence lands on an overlay and the second
-reaches the target — useful when the target has one confirmation dialog.
+reaches the target - useful when the target has one confirmation dialog.
 
 ```html
 <iframe id="t" src="https://target.example/sensitive-action"></iframe>
@@ -147,7 +147,7 @@ second click (a quick-follow-up) lands on the target.
 Clickjacking risk can often be confirmed from the response headers alone:
 
 ```bash
-# Passive — fetch headers only
+# Passive - fetch headers only
 curl -s -I "https://target.example/settings"
 
 # Look for:
@@ -201,7 +201,7 @@ Delegate to `subdomain-takeover-hunter` / `xss-hunter` for the chain.
 
 ## Test Execution Recipe
 
-1. `curl -sI <url>` — verify X-Frame-Options / CSP / SameSite.
+1. `curl -sI <url>` - verify X-Frame-Options / CSP / SameSite.
 2. If headers missing, write the Baseline Framing Probe (Section 1)
    to a local file and open in a browser pointed at the iframe URL.
 3. If framed, write the Transparent Overlay PoC (Section 2) and
@@ -216,9 +216,8 @@ Delegate to `subdomain-takeover-hunter` / `xss-hunter` for the chain.
 
 - The attack happens IN THE TESTER'S OWN BROWSER using the tester's own
   authenticated session. No victim is ever involved in testing.
-- Do NOT share a clickjacking PoC URL publicly (via Slack, Twitter) —
-  someone clicking it may perform a real state change on their account.
+- Do NOT share a clickjacking PoC URL publicly (via Slack, Twitter) -   someone clicking it may perform a real state change on their account.
 - Destructive actions (delete account) require `destructive_testing:
-  approved` even in a tester's own session — prefer lower-risk
+  approved` even in a tester's own session - prefer lower-risk
   state-changing actions (change display name, toggle email
   preferences) for the initial PoC.

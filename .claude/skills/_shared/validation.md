@@ -16,7 +16,7 @@ end. You're looking for:
 - [ ] Does the Authorization Check section match the template verbatim?
 
 If 1-2 of those fail on any skill, tune the batch prompt and re-run
-that skill. If 3+ fail, the prompt has a systemic issue — fix it
+that skill. If 3+ fail, the prompt has a systemic issue - fix it
 before accepting any output.
 
 ## Automated validation script
@@ -26,7 +26,7 @@ Save as `scripts/validate-skills.sh` in your repo, run from repo root.
 ```bash
 #!/usr/bin/env bash
 # Validates the structural correctness of all security skills.
-# Does NOT validate methodology accuracy — that's a human job.
+# Does NOT validate methodology accuracy - that's a human job.
 
 set -uo pipefail
 
@@ -182,5 +182,5 @@ The batch succeeded if:
 | Same error in many skills | Prompt bug | Fix prompt, re-run batch |
 | One skill fails structure | Note was atypical | Re-run that skill with notes about its structure |
 | Forbidden tool requested | Profile lookup wrong | Check mapping table, re-run |
-| Description mostly generic | Source note was thin | Manually tighten the description — don't blame the prompt |
+| Description mostly generic | Source note was thin | Manually tighten the description - don't blame the prompt |
 | attacker-voice warnings | Source note used attacker voice | Single-skill rerun with "enforce defensive voice" reminder |

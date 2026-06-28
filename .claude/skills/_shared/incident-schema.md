@@ -3,7 +3,7 @@
 All DFIR skills append to `.claude/planning/{case}/INCIDENT_REPORT.md`
 using the format below. This is the incident-response analogue of
 `finding-schema.md` (which the offensive hunters use). DFIR skills do NOT
-write to `SECURITY_AUDIT.md` — incidents and assessments are separate
+write to `SECURITY_AUDIT.md` - incidents and assessments are separate
 artifacts.
 
 ## File Structure
@@ -16,7 +16,7 @@ artifacts.
 **Opened:** 2026-06-28 09:00 UTC
 **Last updated:** 2026-06-28 14:32 UTC
 **Lead responder:** {name}
-**Classification:** {severity} — {functional/information/recoverability impact}
+**Classification:** {severity} - {functional/information/recoverability impact}
 **Skills run:** memory-forensics-hunter, disk-triage-hunter, log-timeline-hunter
 
 ## Executive Summary
@@ -96,7 +96,7 @@ Process injected: 4012 svch0st.exe  PAGE_EXECUTE_READWRITE  MZ header
 
 **Impact**
 
-{What it means for the environment — data at risk, blast radius, whether
+{What it means for the environment - data at risk, blast radius, whether
 the threat is active. If low, say so.}
 
 **Recommended response**
@@ -130,5 +130,5 @@ This skill does NOT perform these actions.}
    it against the same image.
 6. **Tag ATT&CK on every confirmed finding** and add its IOCs to the IOC
    table. Update the Skills Run Log and the timeline.
-7. **A clean skill run still logs.** "No injected processes in E01 — N
+7. **A clean skill run still logs.** "No injected processes in E01 - N
    plugins run" is meaningful negative evidence.

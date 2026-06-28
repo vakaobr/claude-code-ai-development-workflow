@@ -1,6 +1,6 @@
 ---
 name: subdomain-takeover-hunter
-description: "Audits DNS records for dangling subdomain takeover risk — CNAMEs pointing at unclaimed GitHub Pages / S3 buckets / Heroku apps / Azure / Fastly / Shopify; NS records delegating to expired nameservers; and dedicated-service signatures ('There isn't a GitHub Pages site here', 'NoSuchBucket'). Passive-only — only DNS lookups and HTTP fetches. Does NOT claim the subdomain (that's operator-level action requiring explicit scope approval). Use after `web-recon-passive` surfaces subdomain inventory from CT logs and passive DNS. Produces findings with CWE-350 mapping and 'remove-dangling-record' + lifecycle-management remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Audits DNS records for dangling subdomain takeover risk - CNAMEs pointing at unclaimed GitHub Pages / S3 buckets / Heroku apps / Azure / Fastly / Shopify; NS records delegating to expired nameservers; and dedicated-service signatures ('There isn't a GitHub Pages site here', 'NoSuchBucket'). Passive-only - only DNS lookups and HTTP fetches. Does NOT claim the subdomain (that's operator-level action requiring explicit scope approval). Use after `web-recon-passive` surfaces subdomain inventory from CT logs and passive DNS. Produces findings with CWE-350 mapping and 'remove-dangling-record' + lifecycle-management remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: Read, Grep, Glob, WebFetch(domain:*.in-scope-domain.com)
 metadata:
@@ -18,7 +18,7 @@ metadata:
 
 ## Goal
 
-Audit DNS records for dangling subdomain-takeover risk — CNAMEs
+Audit DNS records for dangling subdomain-takeover risk - CNAMEs
 pointing at third-party services (GitHub Pages, AWS S3, Heroku,
 Azure, Fastly, Shopify, Netlify, Webflow, etc.) where the
 underlying resource is deleted or unclaimed, letting an attacker
@@ -28,8 +28,7 @@ an expired domain). This skill implements WSTG-CONF-10 and maps
 findings to CWE-350 (Reliance on Reverse DNS Resolution) for the
 trust-model issue. The goal is to hand the platform team a
 concrete list of dangling records with remove-and-monitor
-remediation. This skill DOES NOT claim dangling subdomains —
-claiming requires scope-approved operator action.
+remediation. This skill DOES NOT claim dangling subdomains - claiming requires scope-approved operator action.
 
 ## When to Use
 
@@ -48,13 +47,13 @@ claiming requires scope-approved operator action.
 - For discovering new subdomains (that's `web-recon-passive` /
   `api-recon`).
 - For actively claiming dangling subdomains to prove exploitability
-  — that's operator-level action requiring explicit scope
+ - that's operator-level action requiring explicit scope
   approval; this skill only IDENTIFIES candidates.
-- For subdomain-takeover of internal DNS zones — this skill
+- For subdomain-takeover of internal DNS zones - this skill
   focuses on public DNS; internal zone review is a different
   engagement.
 - For non-DNS-based takeover (e.g., SSO-domain trust
-  relationships) — out of scope.
+  relationships) - out of scope.
 - Any asset not listed in `.claude/security-scope.yaml`.
 
 ## Authorization Check (MANDATORY FIRST STEP)
@@ -66,7 +65,7 @@ Before ANY outbound activity:
 2. Confirm the target apex domain appears in the `assets` list
    AND its `testing_level` is at least `passive`. This skill
    performs DNS queries and single HTTP GETs against subdomains
-   — standard passive activity.
+ - standard passive activity.
 3. **Never attempt to claim a dangling subdomain.** Claiming
    requires:
    - Registering on the third-party service
@@ -74,7 +73,7 @@ Before ANY outbound activity:
    - Leaving an auditable footprint
    These steps cross into exploitation and need explicit
    `subdomain_takeover_claim: approved` in scope. Without that,
-   this skill STOPS at the detection step — the finding is
+   this skill STOPS at the detection step - the finding is
    "dangling record pointing at {third-party-service}", not
    "takeover confirmed by claim".
 4. For subdomains showing unclaimed-service signatures, note the
@@ -93,7 +92,7 @@ The skill expects the caller to provide:
 - `{target}`: the apex domain (e.g., `example.com`)
 - `{subdomain_inventory}`: path to `web-recon-passive`'s
   subdomain list
-- `{scope_context}`: optional — specific subdomains to prioritize
+- `{scope_context}`: optional - specific subdomains to prioritize
 
 ## Methodology
 
@@ -200,7 +199,7 @@ The skill expects the caller to provide:
    Not-vulnerable response: Legitimate content, or a target-owned
    404 (no third-party signature).
 
-   Record: Per-subdomain — signature hit + service name.
+   Record: Per-subdomain - signature hit + service name.
 
 ### Phase 4: NS-Record Takeover
 
@@ -212,7 +211,7 @@ The skill expects the caller to provide:
    apex to see if it's:
    - Registered to a legitimate party (safe)
    - Available for purchase (critical takeover candidate)
-   - Registered to an unrelated party (suspicious — possible
+   - Registered to an unrelated party (suspicious - possible
      prior takeover)
 
    ```bash
@@ -222,7 +221,7 @@ The skill expects the caller to provide:
    Vulnerable response: The NS target's parent domain is
    available for registration.
 
-   Record: FINDING-NNN Critical — NS takeover lets the attacker
+   Record: FINDING-NNN Critical - NS takeover lets the attacker
    control the ENTIRE subdomain's DNS zone.
 
 ### Phase 5: Dormant-Service Detection
@@ -267,7 +266,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No payloads — passive enumeration. Key patterns:
+No payloads - passive enumeration. Key patterns:
 
 - **CNAME → service**: table mapping known takeover-prone CNAME
   targets to their service providers and unclaimed signatures
@@ -282,18 +281,17 @@ the schema in `.claude/skills/_shared/finding-schema.md`.
 
 Specific to this skill:
 
-- **CWE**: CWE-350 (Reliance on Reverse DNS Resolution — describes
+- **CWE**: CWE-350 (Reliance on Reverse DNS Resolution - describes
   the trust-model issue). CWE-672 (Operation on a Resource after
-  Expiration or Release — sometimes cited). For NS takeover,
+  Expiration or Release - sometimes cited). For NS takeover,
   CWE-20 (Improper Input Validation at the DNS level).
 - **OWASP**: WSTG-CONF-10. For APIs, API9:2023 (Improper
   Inventory Management). A05:2021 (Security Misconfiguration).
 - **CVSS vectors**: typical takeover of a main-product subdomain
-  (cookie-sharing with parent) —
-  `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N` (enables session
+  (cookie-sharing with parent) -   `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N` (enables session
   hijack via shared cookies). Takeover of a subdomain that
-  doesn't share cookies — `...C:L/I:L/A:N` (phishing potential
-  only). NS takeover — `...S:C/C:H/I:H/A:H` (full zone control).
+  doesn't share cookies - `...C:L/I:L/A:N` (phishing potential
+  only). NS takeover - `...S:C/C:H/I:H/A:H` (full zone control).
 - **Evidence**: the `dig` output showing CNAME/NS target, the
   HTTP response with the unclaimed-service signature, AND for NS
   cases, the whois output for the expired parent domain.
@@ -311,7 +309,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -337,8 +335,7 @@ Before marking complete, verify:
 
 - **Target infrastructure 404 mistaken for service-unclaimed**:
   The target's own load balancer returns a generic "404 Not
-  Found" for unknown hosts. That's not a takeover candidate —
-  the server IS the target, not a third party. Distinguish by
+  Found" for unknown hosts. That's not a takeover candidate -   the server IS the target, not a third party. Distinguish by
   checking whether the HTTP response comes from the third-party
   infrastructure (match `Server` header or service-branded
   styles) vs the target's own.
@@ -347,7 +344,7 @@ Before marking complete, verify:
   requires account-linked verification for custom-domain S3
   hosting. Similarly modern Heroku, Azure. A CNAME is dangling
   but the service prevents simple claim. Still file the finding
-  — the dangling record is a misconfiguration — but note
+ - the dangling record is a misconfiguration - but note
   severity based on whether verification is enforced.
 
 - **Internal / VPN-only subdomains**: A subdomain resolves only
@@ -357,8 +354,8 @@ Before marking complete, verify:
 
 - **Honeytoken subdomains**: Some orgs deliberately dangle
   subdomains with monitoring to detect attacker claims. Claiming
-  them (if this skill were to — it doesn't) would trigger an
-  alert. The detection is still useful — even if it's a
+  them (if this skill were to - it doesn't) would trigger an
+  alert. The detection is still useful - even if it's a
   honeypot, sharing it across the skills library reduces noise.
 
 - **Service-provider false signatures**: Some service providers

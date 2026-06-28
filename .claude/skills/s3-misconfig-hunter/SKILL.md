@@ -1,6 +1,6 @@
 ---
 name: s3-misconfig-hunter
-description: "Audits Amazon S3 buckets for public-list / public-read / public-write ACLs, permissive bucket policies, and block-public-access gaps. Uses AWS CLI read operations (list-objects-v2, get-bucket-acl, get-bucket-policy, get-public-access-block) — NO uploads, no deletes. Distinct from aws-iam-hunter (account-wide IAM) — this skill deep-dives per-bucket posture. Use when the target uses S3 for storage; when `web-recon-passive` surfaces `s3.amazonaws.com` URLs; or when `aws-iam-hunter` flags buckets for deeper review. Produces findings with CWE-732 / CWE-200 mapping and Block-Public-Access + bucket-policy remediation. Defensive testing only — READ-ONLY AWS CLI."
+description: "Audits Amazon S3 buckets for public-list / public-read / public-write ACLs, permissive bucket policies, and block-public-access gaps. Uses AWS CLI read operations (list-objects-v2, get-bucket-acl, get-bucket-policy, get-public-access-block) - NO uploads, no deletes. Distinct from aws-iam-hunter (account-wide IAM) - this skill deep-dives per-bucket posture. Use when the target uses S3 for storage; when `web-recon-passive` surfaces `s3.amazonaws.com` URLs; or when `aws-iam-hunter` flags buckets for deeper review. Produces findings with CWE-732 / CWE-200 mapping and Block-Public-Access + bucket-policy remediation. Defensive testing only - READ-ONLY AWS CLI."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -30,8 +30,7 @@ metadata:
 
 ## Goal
 
-Deep-dive per-bucket audit of Amazon S3 bucket configurations —
-Access Control Lists (ACLs), bucket policies, public-access
+Deep-dive per-bucket audit of Amazon S3 bucket configurations - Access Control Lists (ACLs), bucket policies, public-access
 blocks, encryption, versioning, logging, and MFA-delete settings.
 Complements `aws-iam-hunter`'s account-wide IAM review with
 bucket-specific posture. Implements WSTG-CONF-11 and maps
@@ -39,7 +38,7 @@ findings to CWE-732 (Incorrect Permission Assignment for
 Critical Resource) + CWE-200 (Information Exposure). The goal is
 to hand the platform team a concrete list of misconfigured
 buckets with Block-Public-Access + restrictive-policy
-remediation. READ-ONLY audit — no `cp`, `sync`, or `rm`.
+remediation. READ-ONLY audit - no `cp`, `sync`, or `rm`.
 
 ## When to Use
 
@@ -53,13 +52,13 @@ remediation. READ-ONLY audit — no `cp`, `sync`, or `rm`.
 
 ## When NOT to Use
 
-- For account-wide IAM posture — use `aws-iam-hunter`.
+- For account-wide IAM posture - use `aws-iam-hunter`.
 - For bucket-takeover scenarios (dangling CNAME to deleted
-  bucket) — use `subdomain-takeover-hunter`.
-- For data-exfiltration confirmation — this skill only checks
+  bucket) - use `subdomain-takeover-hunter`.
+- For data-exfiltration confirmation - this skill only checks
   CONFIGURATION; verifying that an attacker could download
   specific objects is a gated operator-level action.
-- For non-AWS cloud storage (GCS, Azure Blob) — file a gap;
+- For non-AWS cloud storage (GCS, Azure Blob) - file a gap;
   this skill is AWS-specific.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not at least `passive`.
@@ -84,7 +83,7 @@ Before ANY outbound activity:
    blocks these but this skill must not attempt).
 5. For buckets where listing is denied but individual-object
    access might be possible, DO NOT attempt to guess object
-   names — that's data-exfiltration, not configuration audit.
+   names - that's data-exfiltration, not configuration audit.
 6. Log the authorization check to
    `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
    with status `running`.
@@ -96,7 +95,7 @@ The skill expects the caller to provide:
 - `{issue}`: the planning folder name
 - `{target}`: the AWS account ID or asset pattern
 - `{aws_profile}`: named AWS profile with audit credentials
-- `{bucket_list}`: optional — specific buckets to scan (if
+- `{bucket_list}`: optional - specific buckets to scan (if
   empty, enumerates via `list-buckets`)
 
 ## Methodology
@@ -139,9 +138,9 @@ The skill expects the caller to provide:
 
    Flag Grantees of:
    - `URI: http://acs.amazonaws.com/groups/global/AllUsers`
-     — public (anyone on the internet)
+ - public (anyone on the internet)
    - `URI: http://acs.amazonaws.com/groups/global/AuthenticatedUsers`
-     — "any AWS user" (essentially public — any AWS account
+ - "any AWS user" (essentially public - any AWS account
      can assume)
 
    Plus Permission ≥ `READ`.
@@ -215,7 +214,7 @@ The skill expects the caller to provide:
    ```
 
    (Limit to 5 items to avoid downloading an entire enumeration
-   — `--max-items 5` caps the response.)
+ - `--max-items 5` caps the response.)
 
    Vulnerable signal: Bucket lists contents despite audit
    principal having no explicit list grant (means public-list
@@ -241,7 +240,7 @@ The skill expects the caller to provide:
    ```
 
    Vulnerable condition: `NoSuchEncryptionConfiguration` (bucket
-   has no default encryption — data at rest is unencrypted).
+   has no default encryption - data at rest is unencrypted).
 
    Not-vulnerable: SSE-S3 / SSE-KMS / SSE-C default set.
 
@@ -269,7 +268,7 @@ The skill expects the caller to provide:
    aws s3api get-bucket-logging --bucket {name} --profile {aws_profile}
    ```
 
-   Vulnerable condition: No `LoggingEnabled` config — any
+   Vulnerable condition: No `LoggingEnabled` config - any
    access to the bucket is unlogged (no forensic trail after
    incident).
 
@@ -286,7 +285,7 @@ The skill expects the caller to provide:
     ```
 
     Vulnerable condition: Website hosting is enabled AND
-    public-read is enabled — means the bucket is intentionally
+    public-read is enabled - means the bucket is intentionally
     serving public content. Verify that ALL bucket contents are
     intended as public (not mixed with sensitive internal
     files).
@@ -296,7 +295,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No payloads — AWS CLI read calls. Key probes:
+No payloads - AWS CLI read calls. Key probes:
 
 - **list-buckets**: account-wide enumeration
 - **head-bucket**: existence confirmation
@@ -321,12 +320,10 @@ Specific to this skill:
   defaults.
 - **OWASP**: WSTG-CONF-11. For APIs, API7:2023 (Security
   Misconfiguration). A05:2021.
-- **CVSS vectors**: public read of a bucket with PII —
-  `AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N`. Public write (arbitrary
-  upload → potential malware hosting / data poisoning) —
-  `...I:H/A:L`. Public list with internally-sensitive file
-  names — `...C:L/I:N/A:N` (info disclosure about structure).
-  Missing encryption — compliance-driven severity.
+- **CVSS vectors**: public read of a bucket with PII -   `AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N`. Public write (arbitrary
+  upload → potential malware hosting / data poisoning) -   `...I:H/A:L`. Public list with internally-sensitive file
+  names - `...C:L/I:N/A:N` (info disclosure about structure).
+  Missing encryption - compliance-driven severity.
 - **Evidence**: the ACL / policy JSON excerpt, the
   PAB status, the list-objects-v2 result (if list succeeded),
   and a classification of the bucket's contents based on
@@ -335,8 +332,8 @@ Specific to this skill:
   - Block Public Access at account level
     (`aws s3control put-public-access-block --account-id
     {ACCOUNT_ID} --public-access-block-configuration ...`)
-  - Per-bucket PAB — same flags all `true`
-  - Restrictive bucket policy — deny `s3:*` for
+  - Per-bucket PAB - same flags all `true`
+  - Restrictive bucket policy - deny `s3:*` for
     `Principal: "*"`
   - Enable SSE-KMS with customer-managed key for sensitive
     data
@@ -347,7 +344,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -362,8 +359,7 @@ Before marking complete, verify:
       public-list confirmation, not for data download
 - [ ] Per-bucket finding distinguishes "intended-public"
       (websites) from "accidentally-public"
-- [ ] Cross-reference with `aws-iam-hunter`'s principal list —
-      any discovered role has an IAM review?
+- [ ] Cross-reference with `aws-iam-hunter`'s principal list -       any discovered role has an IAM review?
 - [ ] Skills Run Log row updated from `running` to `complete` or
       `halted:{reason}`
 
@@ -388,7 +384,7 @@ Before marking complete, verify:
   grants access to an AWS account ID that looks like a partner
   or vendor. Verify the account belongs to the expected third
   party. An unexpected cross-account grant is a finding even
-  if it's a legitimate partner — wrong grants happen.
+  if it's a legitimate partner - wrong grants happen.
 
 - **PAB present but policy overrides**: PAB at the account level
   was enabled, but a specific bucket has an explicit override.
@@ -397,7 +393,7 @@ Before marking complete, verify:
 
 - **Stale IAM role attached**: A bucket's access policy grants
   a role that no longer exists. Not a current vulnerability
-  but indicates drift — note for cleanup.
+  but indicates drift - note for cleanup.
 
 ## References
 

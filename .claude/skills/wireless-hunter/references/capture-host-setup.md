@@ -4,18 +4,18 @@ Support material for `wireless-hunter`. macOS itself can't do 802.11
 monitor mode / injection, so the skill drives a **Linux capture host**.
 This doc is a runnable checklist for two hosts:
 
-- **A) VM + USB passthrough** — works on Apple Silicon (Fusion CAN pass
+- **A) VM + USB passthrough** - works on Apple Silicon (Fusion CAN pass
   the adapter through); the real variable is whether the adapter's driver
   builds for the guest kernel (see below).
-- **B) Raspberry Pi 4/5** — portable, most-reliable for workshops; the
+- **B) Raspberry Pi 4/5** - portable, most-reliable for workshops; the
   road is paved here so you can switch with no methodology change.
 
 > **What's actually hard (corrected):** USB passthrough is NOT the
-> blocker — VMware Fusion passes the adapter into the Linux guest fine
+> blocker - VMware Fusion passes the adapter into the Linux guest fine
 > (Virtual Machine menu → USB & Bluetooth → Connect). The blocker is the
 > **out-of-tree Wi-Fi driver vs the guest kernel**. Verified 2026-06-28
 > on Kali arm64: the packaged `realtek-rtl88xxau-dkms` (RTL8812AU) has a
-> `BUILD_EXCLUSIVE` guard that **refuses to build on kernel 6.19** — so
+> `BUILD_EXCLUSIVE` guard that **refuses to build on kernel 6.19** - so
 > monitor mode is unavailable until a 6.19-compatible driver lands,
 > regardless of passthrough. Pick an adapter whose driver is in the
 > **mainline kernel** to avoid this entirely.
@@ -29,13 +29,13 @@ This doc is a runnable checklist for two hosts:
 ## Adapter selection (read before buying)
 
 Monitor mode + injection depends on the **chipset + driver**. Prefer
-chipsets whose driver is **in the mainline Linux kernel** — they work out
+chipsets whose driver is **in the mainline Linux kernel** - they work out
 of the box on any recent kernel (incl. 6.19) and over VM passthrough,
 with no DKMS chase.
 
 | Adapter | Chipset | Driver | Bands | Verdict |
 |---|---|---|---|---|
-| **Alfa AWUS036ACM** | MediaTek MT7612U | `mt76x2u` (mainline) | 2.4 + 5 GHz | **Recommended** — dual-band AND mainline; no driver chasing |
+| **Alfa AWUS036ACM** | MediaTek MT7612U | `mt76x2u` (mainline) | 2.4 + 5 GHz | **Recommended** - dual-band AND mainline; no driver chasing |
 | Alfa AWUS036NHA | Atheros AR9271 | `ath9k_htc` (mainline) | 2.4 GHz only | Rock-solid "just works"; pick if 2.4 GHz is enough |
 | Alfa AWUS036ACHM | MediaTek MT7610U | `mt76x0u` (mainline) | 2.4 + 5 GHz (1×1) | Good mainline dual-band, lower throughput |
 | Alfa AWUS036ACH / AC | Realtek RTL8812AU | `rtl88xxau` (out-of-tree DKMS) | 2.4 + 5 GHz | Capable but **driver lags new kernels** (the 6.19 problem above) |
@@ -71,17 +71,15 @@ most bulletproof.
 - [ ] Plug the adapter into the Mac.
 - [ ] **VMware Fusion**: Settings → USB & Bluetooth → enable USB 3.x; then
       VM running → **Virtual Machine menu → USB & Bluetooth → Connect
-      [adapter]**. (HID `config` tweaks are only for keyboard/mouse — not
+      [adapter]**. (HID `config` tweaks are only for keyboard/mouse - not
       needed for Wi-Fi.)
 - [ ] In the guest, confirm it's visible: `lsusb` (look for MediaTek /
       Atheros / Realtek depending on your adapter).
 
 ### A3. Driver
-- [ ] **Mainline-driver adapter (MT7612U / AR9271 / MT7610U / RT3070) —
-      RECOMMENDED:** nothing to install. The driver is in-kernel; plug in,
+- [ ] **Mainline-driver adapter (MT7612U / AR9271 / MT7610U / RT3070) -       RECOMMENDED:** nothing to install. The driver is in-kernel; plug in,
       `iw dev` should already show the interface. Skip to A4.
-- [ ] **Only for Realtek RTL8812AU (AWUS036ACH):** out-of-tree DKMS —
-      ```
+- [ ] **Only for Realtek RTL8812AU (AWUS036ACH):** out-of-tree DKMS -       ```
       sudo apt install -y realtek-rtl88xxau-dkms linux-headers-$(uname -r)
       sudo dkms autoinstall && sudo modprobe 88XXau
       ```
@@ -120,8 +118,7 @@ SSH; methodology is identical to (A) from A3 onward.
 
 ### B2. Adapter + driver
 - [ ] Attach the adapter directly to a USB-3 (blue) port. On the Pi 5,
-      prefer the USB-3 ports; ensure a 5V/5A (Pi 5) / 5V/3A (Pi 4) PSU —
-      Wi-Fi injection draws power, brownouts cause dropouts.
+      prefer the USB-3 ports; ensure a 5V/5A (Pi 5) / 5V/3A (Pi 4) PSU -       Wi-Fi injection draws power, brownouts cause dropouts.
 - [ ] Mainline-driver adapter (MT7612U/AR9271): nothing to install. Only
       RTL8812AU needs the DKMS step from A3 (and a kernel it supports).
 
@@ -130,7 +127,7 @@ SSH; methodology is identical to (A) from A3 onward.
 - [ ] `sudo aireplay-ng --test wlan0mon` → "Injection is working!"
 
 > Keep the Pi's onboard Wi-Fi (`wlan0` built-in) for management/SSH and
-> use the **Alfa** as the monitor/AP interface, or vice-versa — just don't
+> use the **Alfa** as the monitor/AP interface, or vice-versa - just don't
 > put your SSH link on the interface you flip into monitor mode.
 
 ---
@@ -146,7 +143,7 @@ Only with `red_team_ops.wireless: approved` + `wireless_workshop_consent`
       DHCP/DNS. (Or `bettercap` to orchestrate.)
 - [ ] Optional captive portal → benign awareness page (and, for the
       credential-awareness demo, a fake login that records only the FACT
-      of submission — NEVER the real password).
+      of submission - NEVER the real password).
 - [ ] The teachable capture (run on the AP uplink):
       ```
       sudo tshark -i <uplink> -Y "dns.flags.response==0" -T fields -e dns.qry.name      # plaintext DNS
@@ -156,7 +153,7 @@ Only with `red_team_ops.wireless: approved` + `wireless_workshop_consent`
       sudo airodump-ng wlan0mon                                                          # probe requests (preferred SSIDs)
       ```
 - [ ] Present: "without a VPN / encrypted DNS, this is what an open network
-      sees." Set expectations — HTTPS bodies are NOT visible; DNS, SNI,
+      sees." Set expectations - HTTPS bodies are NOT visible; DNS, SNI,
       probe requests, and cleartext HTTP are.
 - [ ] **Teardown:** stop hostapd/dnsmasq, `airmon-ng stop`, purge captured
       attendee traffic beyond the anonymized teaching examples (per

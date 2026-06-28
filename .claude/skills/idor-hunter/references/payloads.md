@@ -1,14 +1,14 @@
-# payloads — idor-hunter
+# payloads - idor-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Testes e Mitigação de IDOR.md` (Section 5: PAYLOADS / PROBES)
 
-IDOR is not a string-payload vulnerability like XSS — it's a parameter-
+IDOR is not a string-payload vulnerability like XSS - it's a parameter-
 manipulation vulnerability. "Payloads" here are systematic alterations
 of existing request parameters.
 
 ---
 
-## Step 0 — Establish Two Accounts
+## Step 0 - Establish Two Accounts
 
 Create two test accounts with IDENTICAL permission levels (Alice and Bob).
 Capture their baseline authenticated requests with a proxy. The test is
@@ -18,7 +18,7 @@ whether Alice's session can access Bob's resources via parameter change.
 
 ## 1. Sequential Integer Probes
 
-Most common — user IDs, invoice IDs, message IDs, document IDs are numeric
+Most common - user IDs, invoice IDs, message IDs, document IDs are numeric
 and sequential.
 
 ```
@@ -59,18 +59,18 @@ Decode the ID, increment/decrement, re-encode, replay.
 
 ## 4. Parameter Injection (ID-less requests)
 
-The request normally has no ID — identity is inferred from the session.
+The request normally has no ID - identity is inferred from the session.
 Add an ID parameter explicitly:
 
 ```http
-# Baseline — no ID in body, session-bound
+# Baseline - no ID in body, session-bound
 POST /api/profile/update HTTP/1.1
 Cookie: sess=alice_session
 Content-Type: application/json
 
 {"name": "Alice"}
 
-# Test — add user_id, see if server prefers the body value
+# Test - add user_id, see if server prefers the body value
 POST /api/profile/update HTTP/1.1
 Cookie: sess=alice_session
 Content-Type: application/json
@@ -100,7 +100,7 @@ POST /api/admin/users/1002 _method=DELETE
 
 ## 6. File-Extension Fuzz
 
-Some APIs switch controllers based on extension — bypasses auth middleware:
+Some APIs switch controllers based on extension - bypasses auth middleware:
 
 ```
 GET /api/receipts/2983              → 403
@@ -120,7 +120,7 @@ GET /api/docs?user_id=1001&user_id=1002           → server uses 1001 or 1002?
 GET /api/docs?user_id[]=1001&user_id[]=1002       → array form
 ```
 
-See also `mass-assignment-hunter` — HPP and IDOR overlap here.
+See also `mass-assignment-hunter` - HPP and IDOR overlap here.
 
 ## 8. Unauthenticated Access
 
@@ -136,10 +136,10 @@ If it returns data, the auth check was session-side only, not endpoint-side.
 ## 9. Horizontal Priv-Esc Automation
 
 When you've confirmed an IDOR, run a brute-enumeration to estimate blast
-radius (NOT for mass exfiltration — for counting affected records only).
+radius (NOT for mass exfiltration - for counting affected records only).
 
 ```bash
-# wfuzz — enumerate valid IDs in a range
+# wfuzz - enumerate valid IDs in a range
 wfuzz -c \
   -w ids.txt \
   -b "sess=alice_session" \
@@ -168,7 +168,7 @@ Cookie: sess=alice_session
 
 GraphQL queries take `id` as an argument or use relay global IDs
 (`base64(type:id)`). Alice's query for `user(id: "<bob-id>")` is still an
-IDOR — the graphql-hunter skill covers the relay-ID decoding in detail.
+IDOR - the graphql-hunter skill covers the relay-ID decoding in detail.
 
 ## 12. Cross-Resource IDOR
 
@@ -191,8 +191,8 @@ GET /api/users/17/messages           → private
 | 200 + Bob's resource content                             | Confirmed IDOR        |
 | 200 + generic "Resource Not Found" body                  | Probably not IDOR (but suspicious; verify the error fidelity) |
 | 403 / 401                                                | Properly authorized   |
-| 200 + empty list / null                                  | Ambiguous — test with known-public object to confirm endpoint semantics |
-| 500                                                      | Investigate — leaks via error messages are secondary findings |
+| 200 + empty list / null                                  | Ambiguous - test with known-public object to confirm endpoint semantics |
+| 500                                                      | Investigate - leaks via error messages are secondary findings |
 
 ---
 

@@ -9,7 +9,7 @@ description: >
   SAM/LSA, NTDS.dit, ticket dumping), C2 infrastructure / EDR-evasion
   patterns, and pentest output-parsing helpers. Load this skill before
   or during any internal/AD engagement to ground the executable
-  ad-recon-hunter and ad-kerberos-hunter skills. Knowledge only — no
+  ad-recon-hunter and ad-kerberos-hunter skills. Knowledge only - no
   execution. The human operator runs the tools.
 model: opus
 metadata:
@@ -20,7 +20,7 @@ metadata:
   grounds_skills: [ad-recon-hunter, ad-kerberos-hunter]
 ---
 
-# Red Team — Internal & Active Directory Operations Reference
+# Red Team - Internal & Active Directory Operations Reference
 
 > **Knowledge skill.** This file carries no `allowed-tools` and runs no
 > commands. It is the methodology layer that grounds the executable
@@ -65,11 +65,11 @@ Pair with `ad-recon-hunter` for execution.
 | 25/465/587 | SMTP | open relay, sender spoof, user enum | `swaks`, `smtp-user-enum` |
 | 161/udp | SNMP | community brute, read/write detect | `snmp-check`, `nmap` |
 | 3389 | RDP | NLA state, weak creds | `netexec rdp`, `xfreerdp` |
-| — | Cisco | Smart Install abuse, type-7 decrypt | `SIET`, `ciscot7.py` |
+| - | Cisco | Smart Install abuse, type-7 decrypt | `SIET`, `ciscot7.py` |
 
 SMB is the highest-value first target on a Windows network: a null or
 guest session frequently yields the domain name, user list (RID brute),
-password policy, and reachable shares — the seed data for everything in
+password policy, and reachable shares - the seed data for everything in
 section 2.
 
 ---
@@ -78,7 +78,7 @@ section 2.
 
 The order below mirrors a real internal engagement: enumerate, then
 escalate by abusing the cheapest misconfiguration available. Execution
-of phases 2.1–2.3 lives in `ad-recon-hunter`; 2.4 in
+of phases 2.1 - 2.3 lives in `ad-recon-hunter`; 2.4 in
 `ad-kerberos-hunter`.
 
 ### 2.1 Domain reconnaissance (low-noise, do first)
@@ -88,7 +88,7 @@ of phases 2.1–2.3 lives in `ad-recon-hunter`; 2.4 in
   password-not-required, AdminCount, descriptions with creds.
   Tools: `netexec ldap`, `ldapsearch`, `ADSearch`, `PowerView`.
 - User enumeration without creds: `kerbrute userenum` against a name
-  list (no lockout — pre-auth probing).
+  list (no lockout - pre-auth probing).
 
 ### 2.2 Quick wins from enumeration
 - **AS-REP roastable** users (no Kerberos pre-auth) → offline crack.
@@ -97,7 +97,7 @@ of phases 2.1–2.3 lives in `ad-recon-hunter`; 2.4 in
 - **GPP cpassword** in SYSVOL (`Groups.xml`) → AES-decrypts to plaintext.
 - **LAPS-readable** computers (you can read `ms-Mcs-AdmPwd`).
 
-### 2.3 Credential access (gated — engagement-approved only)
+### 2.3 Credential access (gated - engagement-approved only)
 - **Password spray** a single weak password across the user list,
   respecting lockout policy (read it first). Tools: `netexec`, `kerbrute`.
 - **SMB/LDAP credential validation** to find local-admin reach
@@ -105,19 +105,19 @@ of phases 2.1–2.3 lives in `ad-recon-hunter`; 2.4 in
 - **secretsdump** for SAM/LSA/NTDS once admin reach is proven.
 
 ### 2.4 Kerberos abuse (see ad-kerberos-hunter)
-- **Kerberoasting** — request TGS for SPN accounts, crack offline.
+- **Kerberoasting** - request TGS for SPN accounts, crack offline.
   `GetUserSPNs.py`, `Rubeus kerberoast`.
-- **AS-REP roasting** — `GetNPUsers.py`, `Rubeus asreproast`.
-- **Unconstrained delegation** — capture TGTs from connecting privileged
+- **AS-REP roasting** - `GetNPUsers.py`, `Rubeus asreproast`.
+- **Unconstrained delegation** - capture TGTs from connecting privileged
   accounts; coerce auth (`PrinterBug`/`PetitPotam`) to a host you control.
-- **Constrained delegation / S4U2Self+S4U2Proxy** — impersonate users to
+- **Constrained delegation / S4U2Self+S4U2Proxy** - impersonate users to
   configured SPNs. `Rubeus s4u`.
-- **Resource-Based Constrained Delegation (RBCD)** — write
+- **Resource-Based Constrained Delegation (RBCD)** - write
   `msDS-AllowedToActOnBehalfOfOtherIdentity` on a target you control.
-- **Shadow credentials** — add a `msDS-KeyCredentialLink` (`Whisker`),
+- **Shadow credentials** - add a `msDS-KeyCredentialLink` (`Whisker`),
   then PKINIT for a TGT (`Rubeus`/`gettgtpkinit`).
 
-### 2.5 ADCS (certificate services) — ESC1-ESC8
+### 2.5 ADCS (certificate services) - ESC1-ESC8
 - Enumerate templates and CA config. Tools: `Certipy find`, `Certify`.
 - Common escalations: ESC1 (SAN in low-priv-enrollable template), ESC8
   (NTLM relay to the CA web-enrollment endpoint), ESC4 (template ACL).
@@ -135,7 +135,7 @@ Map each MS-RPC protocol to a tool; pick the quietest that proves access:
 ### 2.7 Domain dominance (engagement sign-off required)
 Silver / Golden / Diamond tickets, forged certificates (`ForgeCert`),
 DCSync (`secretsdump -just-dc`), malicious GPO. These are
-full-compromise proofs — only with explicit written authorization, and
+full-compromise proofs - only with explicit written authorization, and
 documented for cleanup.
 
 ---
@@ -169,7 +169,7 @@ engagement's detection requirements call for.
 
 ## 4. C2 Infrastructure & EDR Evasion Patterns
 
-From the RTO II material. Reference only — these support a Cobalt Strike
+From the RTO II material. Reference only - these support a Cobalt Strike
 (or equivalent) operation with a signed ROE.
 
 - **Redirector infra**: Apache2 + valid TLS, `mod_rewrite` rules to
@@ -177,7 +177,7 @@ From the RTO II material. Reference only — these support a Cobalt Strike
   egress, startup services for persistence of the tunnel.
 - **Payload evasion**: reflective-DLL theory, sleep masking, thread-stack
   spoofing, direct syscalls; customize Artifact/Sleep-Mask/Mutator/UDRL
-  kits — never ship defaults (the source explicitly warns
+  kits - never ship defaults (the source explicitly warns
   "DO NOT USE AS IS").
 - **Post-ex evasion**: BOF memory allocation hygiene, Process Injection
   Kit, ETW patching, inline .NET, PPID spoofing, sane spawn-to targets.
@@ -188,8 +188,7 @@ From the RTO II material. Reference only — these support a Cobalt Strike
   API hooks (`HookDetector`), `c2lint` your profile, watch for
   `Hunt-Sleeping-Beacons`.
 
-This section is intentionally a pointer map, not a copy-paste arsenal —
-operationalize it only within the engagement's evasion requirements.
+This section is intentionally a pointer map, not a copy-paste arsenal - operationalize it only within the engagement's evasion requirements.
 
 ---
 
@@ -214,9 +213,9 @@ Glue that supports every section above. Keep tool output readable.
 
 External:
 - OWASP WSTG (network/service testing methodology)
-- The Hacker Recipes — Active Directory: https://www.thehacker.recipes/
-- HackTricks — AD methodology: https://book.hacktricks.xyz/
-- MITRE ATT&CK — Credential Access (TA0006), Lateral Movement (TA0008)
+- The Hacker Recipes - Active Directory: https://www.thehacker.recipes/
+- HackTricks - AD methodology: https://book.hacktricks.xyz/
+- MITRE ATT&CK - Credential Access (TA0006), Lateral Movement (TA0008)
 - Certipy / ADCS ESC catalog (SpecterOps "Certified Pre-Owned")
 
 Internal:

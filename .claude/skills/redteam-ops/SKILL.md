@@ -12,7 +12,7 @@ description: >
   it before or during any engagement to ground the executable
   network-pentest-hunter, host-privesc-hunter, and cracking-hunter skills
   (and the RE / exploit / social / wireless skills as they land).
-  Knowledge only — no execution; the operator runs the tools under signed
+  Knowledge only - no execution; the operator runs the tools under signed
   authorization.
 model: opus
 metadata:
@@ -86,16 +86,16 @@ Reporting. Whichever the client uses, the rigor is identical.
 
 ## 3. The Kill-Chain (external → impact)
 
-1. **Recon** — external footprint, exposed services, leaked creds.
-2. **Initial access** — exposed service exploit, valid creds, phishing
+1. **Recon** - external footprint, exposed services, leaked creds.
+2. **Initial access** - exposed service exploit, valid creds, phishing
    (social-engineering skill, separately authorized).
-3. **Execution / foothold** — prove code exec on one host (least-damage).
-4. **Privilege escalation** — local root/SYSTEM (`host-privesc-hunter`).
-5. **Credential access** — dump + crack offline (`cracking-hunter`),
+3. **Execution / foothold** - prove code exec on one host (least-damage).
+4. **Privilege escalation** - local root/SYSTEM (`host-privesc-hunter`).
+5. **Credential access** - dump + crack offline (`cracking-hunter`),
    then reuse (within scope).
-6. **Lateral movement** — pivot to higher-value hosts (`redteam-ad-ops`
+6. **Lateral movement** - pivot to higher-value hosts (`redteam-ad-ops`
    for AD; `network-pentest-hunter` for service pivots).
-7. **Impact / objective** — reach the agreed crown jewels; prove and stop.
+7. **Impact / objective** - reach the agreed crown jewels; prove and stop.
 
 ## 4. Technique → Skill / Tool Map
 
@@ -117,16 +117,16 @@ Red-team-ops findings use the offensive finding schema
 for the engagement narrative). Each finding carries the proof chain,
 CWE/ATT&CK mapping, business impact in the client's terms, and
 remediation. Build the cross-finding **attack narrative** for the exec
-summary — that is what proves value to the client.
+summary - that is what proves value to the client.
 
 ## 6. Hard Boundaries (what stays out / reference-only)
 
-- **AV/EDR evasion** — intentionally NOT built (operator tradecraft,
+- **AV/EDR evasion** - intentionally NOT built (operator tradecraft,
   out of this stack's assessment model).
-- **Physical, lock-picking, side-channel, ICS/SCADA** — need hardware /
+- **Physical, lock-picking, side-channel, ICS/SCADA** - need hardware /
   on-site presence; treat as reference + a human operator, not agent
   hunters.
-- **Social engineering & wireless** — require separate written consent
+- **Social engineering & wireless** - require separate written consent
   (human targets) and physical hardware/a Linux capture host
   respectively; the agent supports analysis, the operator runs the live
   part.
@@ -136,9 +136,9 @@ summary — that is what proves value to the client.
 ## References
 
 - PTES: http://www.pentest-standard.org/
-- NIST SP 800-115 — Technical Guide to Information Security Testing
+- NIST SP 800-115 - Technical Guide to Information Security Testing
 - MITRE ATT&CK: https://attack.mitre.org/
-- HackTricks: https://book.hacktricks.xyz/ — GTFOBins: https://gtfobins.github.io/ — LOLBAS: https://lolbas-project.github.io/
+- HackTricks: https://book.hacktricks.xyz/ - GTFOBins: https://gtfobins.github.io/ - LOLBAS: https://lolbas-project.github.io/
 - OSSTMM: https://www.isecom.org/OSSTMM.3.pdf
 
 Tool names cross-checked against `enaqx/awesome-pentest` (CC-BY-4.0) as a

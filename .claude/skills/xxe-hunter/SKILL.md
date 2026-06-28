@@ -1,6 +1,6 @@
 ---
 name: xxe-hunter
-description: "Tests XML-accepting endpoints for XML External Entity (XXE) injection — classic in-band file disclosure, blind out-of-band exfiltration via external DTDs, SSRF via entity URLs, and XInclude variants. Use when an endpoint accepts `application/xml`, `text/xml`, SOAP, SVG, DOCX, XLSX, or RSS/Atom payloads; when upload handlers parse XML; or when the orchestrator surfaces XML prologs in request bodies. Produces findings with CWE-611 mapping, per-endpoint request/response evidence, and parser-config remediation snippets. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Tests XML-accepting endpoints for XML External Entity (XXE) injection - classic in-band file disclosure, blind out-of-band exfiltration via external DTDs, SSRF via entity URLs, and XInclude variants. Use when an endpoint accepts `application/xml`, `text/xml`, SOAP, SVG, DOCX, XLSX, or RSS/Atom payloads; when upload handlers parse XML; or when the orchestrator surfaces XML prologs in request bodies. Produces findings with CWE-611 mapping, per-endpoint request/response evidence, and parser-config remediation snippets. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,7 +27,7 @@ metadata:
 ## Goal
 
 Audit every endpoint that accepts or processes XML for XML External Entity
-(XXE) injection — the flaw that occurs when an XML parser resolves
+(XXE) injection - the flaw that occurs when an XML parser resolves
 attacker-declared external entities and leaks local files, issues outbound
 requests, or consumes CPU/memory. This skill implements WSTG-INPV-07 and
 maps findings to CWE-611 (Improper Restriction of XML External Entity
@@ -38,7 +38,7 @@ Nokogiri, SAXParserFactory, etc.).
 
 ## When to Use
 
-- Request bodies contain an XML prolog (`<?xml version="1.0"...?>`) — the
+- Request bodies contain an XML prolog (`<?xml version="1.0"...?>`) - the
   server is definitely parsing XML somewhere.
 - The endpoint's `Content-Type` is `application/xml`, `text/xml`, or a SOAP
   variant (`application/soap+xml`).
@@ -52,11 +52,10 @@ Nokogiri, SAXParserFactory, etc.).
 
 ## When NOT to Use
 
-- For flaws in how the application USES the parsed XML data downstream —
-  use the relevant class (`sqli-hunter`, `command-injection-hunter`).
-- For JSON or form-encoded endpoints — XXE requires XML parsing.
+- For flaws in how the application USES the parsed XML data downstream -   use the relevant class (`sqli-hunter`, `command-injection-hunter`).
+- For JSON or form-encoded endpoints - XXE requires XML parsing.
 - For pure authentication flaws (e.g., SAML signature validation bypass)
-  that don't involve entity resolution — use `auth-flaw-hunter`.
+  that don't involve entity resolution - use `auth-flaw-hunter`.
 - For DoS billion-laughs / quadratic-blowup payloads against production
   assets without `destructive_testing: approved` in scope.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
@@ -86,7 +85,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific XML-accepting endpoints to focus on
+- `{scope_context}`: optional - specific XML-accepting endpoints to focus on
 - `{oob_listener}`: the authorized out-of-band listener URL for blind-XXE
   tests (must appear in scope.yaml `oob_listener` list)
 - `{user_a}`: authenticated session if the endpoints require auth
@@ -111,7 +110,7 @@ and request credentials.
 2. **Baseline legitimate parses** [WSTG v4.2, WSTG-INPV-07]
 
    Do: For each target, capture a known-good XML request and its response
-   (this is the baseline — success looks like X, errors look like Y).
+   (this is the baseline - success looks like X, errors look like Y).
 
    Record: Baselines in `xxe-targets.md` per endpoint.
 
@@ -145,7 +144,7 @@ and request credentials.
    and similar lines.
 
    Not-vulnerable response: The probe succeeded on `hostname` but fails on
-   `/etc/passwd` — indicates the parser is vulnerable but the web-server
+   `/etc/passwd` - indicates the parser is vulnerable but the web-server
    user can't read the file (still a vulnerability; see severity rubric).
 
 ### Phase 3: SSRF via Entity URL
@@ -166,17 +165,17 @@ and request credentials.
    Not-vulnerable response: No connection on the listener.
 
    Record: A successful SSRF contact is a finding even without the file-read
-   vector — external entity resolution is still happening.
+   vector - external entity resolution is still happening.
 
 6. **Internal-network probe** [WAHH, Ch 10, p. 386]
 
    Do: Only if the scope file explicitly lists internal hostnames as
    in-scope (`internal_targets: [10.0.0.0/8, ...]`), point the entity at
-   internal resources. Skip otherwise — do NOT probe RFC1918 ranges
+   internal resources. Skip otherwise - do NOT probe RFC1918 ranges
    without explicit authorization.
 
    Vulnerable response: Differential responses (200 vs 500 vs timeout)
-   indicate the internal host responds — information disclosure.
+   indicate the internal host responds - information disclosure.
 
 ### Phase 4: Blind XXE (Out-of-Band)
 
@@ -275,7 +274,7 @@ Categories (full payloads in `references/payloads.md`):
   in error messages
 - **XInclude**: XInclude namespace vectors for DOCTYPE-stripping parsers
 - **SVG/OXML**: file-upload vectors for image and document processors
-- **DoS (gated)**: billion-laughs, quadratic blowup — only with
+- **DoS (gated)**: billion-laughs, quadratic blowup - only with
   `destructive_testing: approved`
 
 ## Output Format
@@ -304,7 +303,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -328,14 +327,14 @@ Before marking complete, verify:
 - **Permission-denied on file read**: The parser is vulnerable and
   processes the entity, but the web-server user lacks permissions to read
   the specific file (e.g., `/etc/shadow`), returning a "permission denied"
-  or empty-string entity. This is STILL a vulnerability — the parser
+  or empty-string entity. This is STILL a vulnerability - the parser
   resolves externals. Use `/etc/hostname` or `/etc/passwd` for
   confirmation since those are typically world-readable.
 
 - **WAF echo**: A WAF blocks the request but echoes the malicious payload
   in its own error response. A reflection in the WAF page is NOT proof of
   XXE. Confirm by comparing the app's actual response body with a
-  non-malicious baseline — the reflection should only appear in the app
+  non-malicious baseline - the reflection should only appear in the app
   response, not the WAF response.
 
 - **Network latency misread as SSRF**: Variations in response time during
@@ -346,13 +345,13 @@ Before marking complete, verify:
 
 - **Parameter entities required**: Some parsers allow general entities in
   the DOCTYPE but forbid parameter entities. Blind-XXE via external DTDs
-  requires parameter entities — may fail while classic in-band XXE works.
+  requires parameter entities - may fail while classic in-band XXE works.
 
 ## References
 
-- `references/payloads.md` — complete payload library (in-band, SSRF,
+- `references/payloads.md` - complete payload library (in-band, SSRF,
   blind, XInclude, SVG, OXML)
-- `references/remediation.md` — parser-configuration snippets per library
+- `references/remediation.md` - parser-configuration snippets per library
 
 External:
 - WSTG-INPV-07: https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/07-Testing_for_XML_Injection

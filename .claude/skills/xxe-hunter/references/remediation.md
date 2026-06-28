@@ -1,4 +1,4 @@
-# remediation — xxe-hunter
+# remediation - xxe-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Segurança e Testes em Ataques XXE.md` (Section 8: REMEDIATION)
 
@@ -9,7 +9,7 @@ parser. Listing the primary libraries below.
 
 ## 1. Disable DTDs / External Entities (Primary Fix)
 
-### Python — `lxml`
+### Python - `lxml`
 
 ```python
 from lxml import etree
@@ -17,7 +17,7 @@ from lxml import etree
 # WRONG (default parser resolves entities)
 parser = etree.XMLParser()
 
-# RIGHT — reject DTDs and external entities outright
+# RIGHT - reject DTDs and external entities outright
 parser = etree.XMLParser(
     resolve_entities=False,
     no_network=True,
@@ -26,7 +26,7 @@ parser = etree.XMLParser(
 root = etree.fromstring(xml_bytes, parser=parser)
 ```
 
-### Python — `xml.etree.ElementTree`
+### Python - `xml.etree.ElementTree`
 
 Python stdlib is safe against most XXE by default, but `ElementTree`
 does not use `expat`'s `external_entity_ref_handler`. For defense in
@@ -37,14 +37,14 @@ from defusedxml.ElementTree import fromstring
 root = fromstring(xml_bytes)     # raises EntitiesForbidden / ExternalReferenceForbidden
 ```
 
-### Python — `xml.sax`
+### Python - `xml.sax`
 
 ```python
 from defusedxml.sax import make_parser
 parser = make_parser()
 ```
 
-### Java — JAXP (DocumentBuilderFactory, SAXParserFactory, etc.)
+### Java - JAXP (DocumentBuilderFactory, SAXParserFactory, etc.)
 
 ```java
 import javax.xml.XMLConstants;
@@ -60,7 +60,7 @@ dbf.setXIncludeAware(false);
 dbf.setExpandEntityReferences(false);
 ```
 
-### Java — Transformer
+### Java - Transformer
 
 ```java
 TransformerFactory tf = TransformerFactory.newInstance();
@@ -68,7 +68,7 @@ tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
 tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 ```
 
-### Node.js — `libxmljs2`
+### Node.js - `libxmljs2`
 
 ```javascript
 const libxml = require("libxmljs2");
@@ -77,13 +77,13 @@ const doc = libxml.parseXml(xml, { noent: false, dtdload: false, nonet: true });
 ```
 
 Note: Node's built-in `DOMParser` (via JSDOM) does not resolve external
-entities, but `fast-xml-parser` and `xml2js` may — always verify the
+entities, but `fast-xml-parser` and `xml2js` may - always verify the
 library's defaults.
 
-### .NET — XmlReader / XmlDocument
+### .NET - XmlReader / XmlDocument
 
 ```csharp
-// WRONG — XmlResolver is non-null by default on older frameworks
+// WRONG - XmlResolver is non-null by default on older frameworks
 var doc = new XmlDocument();
 
 // RIGHT
@@ -98,12 +98,12 @@ var doc = new XmlDocument { XmlResolver = null };
 doc.Load(reader);
 ```
 
-### PHP — libxml
+### PHP - libxml
 
 ```php
 // Global disable (recommended on every request)
 libxml_disable_entity_loader(true);             // PHP < 8.0
-// PHP >= 8.0 sets this to true by default — do not override
+// PHP >= 8.0 sets this to true by default - do not override
 
 // SimpleXML
 $xml = simplexml_load_string(
@@ -117,26 +117,26 @@ $doc = new DOMDocument();
 $doc->loadXML($input, LIBXML_NONET | LIBXML_DTDLOAD ^ LIBXML_DTDLOAD);
 ```
 
-### Ruby — REXML / Nokogiri
+### Ruby - REXML / Nokogiri
 
 ```ruby
-# REXML — safe by default in recent versions; explicit:
+# REXML - safe by default in recent versions; explicit:
 require "rexml/document"
 REXML::Document.entity_expansion_limit = 0
 
-# Nokogiri — disable DTD load and entities:
+# Nokogiri - disable DTD load and entities:
 Nokogiri::XML(input) do |config|
   config.strict.nononet.noent(false)
 end
 ```
 
-### Go — `encoding/xml`
+### Go - `encoding/xml`
 
 Go's standard library `encoding/xml` does NOT resolve external entities
-by default. Leave it that way — do not introduce a third-party parser
+by default. Leave it that way - do not introduce a third-party parser
 that re-enables them.
 
-### Python — `xmltodict`
+### Python - `xmltodict`
 
 Uses `expat` under the hood; configure:
 
@@ -184,7 +184,7 @@ credentials even if a parser regression is introduced.
 
 Reject payloads containing `<!DOCTYPE`, `<!ENTITY`, or `<xi:include` at
 the HTTP reverse proxy (Nginx, Envoy, API Gateway) before the XML ever
-reaches the application. This is a defence-in-depth measure — the
+reaches the application. This is a defence-in-depth measure - the
 primary defence is the parser configuration.
 
 ```nginx

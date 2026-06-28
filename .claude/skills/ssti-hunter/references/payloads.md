@@ -1,4 +1,4 @@
-# SSTI Payloads — Per-Engine
+# SSTI Payloads - Per-Engine
 
 **Provenance:** folded from three source notes:
 - Guia Completo de Testes e Mitigação de SSTI.md
@@ -6,7 +6,7 @@
 - Guia Técnico de Server-Side Template Injection (SSTI).md
 
 All payloads confirm evaluation via harmless system commands (`whoami`,
-`id`, `hostname`). Do NOT substitute destructive commands — the skill's
+`id`, `hostname`). Do NOT substitute destructive commands - the skill's
 authorization contract forbids it.
 
 ---
@@ -42,9 +42,9 @@ ${"a"?upper_case}    -> Freemarker: "A"
 
 ---
 
-## Jinja2 (Python — Flask, etc.)
+## Jinja2 (Python - Flask, etc.)
 
-### Config/global enumeration (Medium severity — information disclosure)
+### Config/global enumeration (Medium severity - information disclosure)
 
 ```
 {{ config }}
@@ -81,7 +81,7 @@ ${"a"?upper_case}    -> Freemarker: "A"
 
 ---
 
-## Twig (PHP — Symfony, Drupal)
+## Twig (PHP - Symfony, Drupal)
 
 ### `_self.env` callback chain (Twig < 1.20 / 2.x)
 
@@ -99,7 +99,7 @@ ${"a"?upper_case}    -> Freemarker: "A"
 
 ---
 
-## Freemarker (Java — Apache, Liferay)
+## Freemarker (Java - Apache, Liferay)
 
 ### Standard Execute utility
 
@@ -118,7 +118,7 @@ ${"freemarker.template.utility.ObjectConstructor"?new()("java.lang.ProcessBuilde
 
 ---
 
-## ERB (Ruby — Rails, Jekyll)
+## ERB (Ruby - Rails, Jekyll)
 
 ### Backticks
 
@@ -159,7 +159,7 @@ ${"freemarker.template.utility.ObjectConstructor"?new()("java.lang.ProcessBuilde
 
 ---
 
-## Velocity (Java — Apache Velocity, older Struts)
+## Velocity (Java - Apache Velocity, older Struts)
 
 ### Runtime.exec chain
 
@@ -214,7 +214,7 @@ $ex.waitFor()
 
 ---
 
-## Liquid (Ruby — Shopify, Jekyll)
+## Liquid (Ruby - Shopify, Jekyll)
 
 Liquid is by design strict and typically does NOT allow RCE. SSTI in
 Liquid usually means variable / filter abuse for information disclosure:
@@ -226,7 +226,7 @@ Liquid usually means variable / filter abuse for information disclosure:
 ```
 
 If the app implemented a custom filter that wraps a system call, Liquid
-CAN RCE through that filter — audit custom filter code.
+CAN RCE through that filter - audit custom filter code.
 
 ---
 

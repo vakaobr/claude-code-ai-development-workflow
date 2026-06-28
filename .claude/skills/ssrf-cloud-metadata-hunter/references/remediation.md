@@ -1,4 +1,4 @@
-# remediation — ssrf-cloud-metadata-hunter
+# remediation - ssrf-cloud-metadata-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Técnico_ Exploração de SSRF em Metadados de Nuvem.md` (Section 8: REMEDIATION)
 
@@ -10,7 +10,7 @@ This file focuses on (2).
 
 ---
 
-## 1. AWS — Enforce IMDSv2 Only
+## 1. AWS - Enforce IMDSv2 Only
 
 IMDSv2 requires a session token via PUT, which simple SSRF primitives
 cannot emit. Enforce it:
@@ -31,10 +31,10 @@ resource "aws_instance" "app" {
 }
 ```
 
-`http_put_response_hop_limit = 1` is critical — it prevents containers
+`http_put_response_hop_limit = 1` is critical - it prevents containers
 on the host (whose packets add a TTL hop) from reading IMDS at all.
 
-### AWS CLI — modify an existing instance
+### AWS CLI - modify an existing instance
 
 ```bash
 aws ec2 modify-instance-metadata-options \
@@ -55,12 +55,12 @@ aws ec2 modify-instance-metadata-defaults \
 ### EKS / Fargate
 
 For EKS worker nodes, set `metadataOptions` in the launch template of the
-managed node group. For Fargate, IMDS is unreachable by default — no
+managed node group. For Fargate, IMDS is unreachable by default - no
 extra config needed.
 
 ---
 
-## 2. GCP — Disable v1beta1 and Require the Header
+## 2. GCP - Disable v1beta1 and Require the Header
 
 ### Via gcloud
 
@@ -80,12 +80,12 @@ gcloud compute instances add-metadata app-vm \
 ```
 
 Once set, requests to `metadata.google.internal/computeMetadata/v1beta1/`
-return 403. The v1 endpoint requires `Metadata-Flavor: Google` — simple
+return 403. The v1 endpoint requires `Metadata-Flavor: Google` - simple
 SSRF cannot set headers, so the vector collapses.
 
 ### GKE
 
-Modern GKE clusters ship with Workload Identity — which removes the
+Modern GKE clusters ship with Workload Identity - which removes the
 service-account token from node metadata entirely. Migrate to Workload
 Identity and treat the node-level metadata service as "no credentials
 to steal":
@@ -103,13 +103,13 @@ gcloud iam service-accounts add-iam-policy-binding \
 
 ---
 
-## 3. Azure — Managed Identity Best Practices
+## 3. Azure - Managed Identity Best Practices
 
 Azure IMDS already requires `Metadata: true`, which blocks simple SSRF.
-The harder problem is the managed-identity access token — once issued,
+The harder problem is the managed-identity access token - once issued,
 it's a valid bearer credential for Azure Resource Manager.
 
-### Terraform — use user-assigned identity with minimum scope
+### Terraform - use user-assigned identity with minimum scope
 
 ```hcl
 resource "azurerm_user_assigned_identity" "app" {
@@ -135,7 +135,7 @@ resource "azurerm_linux_virtual_machine" "app" {
 
 ---
 
-## 4. Defence in Depth — Egress Controls
+## 4. Defence in Depth - Egress Controls
 
 Block application pods from reaching the metadata IP unless required.
 
@@ -190,7 +190,7 @@ permissions. Audit and tighten:
 aws iam list-attached-role-policies --role-name <ROLE>
 aws iam get-role-policy --role-name <ROLE> --policy-name <POLICY>
 
-# Check "Resource": "*" — almost always over-broad
+# Check "Resource": "*" - almost always over-broad
 aws accessanalyzer create-analyzer --analyzer-name audit --type ACCOUNT
 ```
 
@@ -203,9 +203,9 @@ a short allowlist. Remove `AdministratorAccess` from any instance role.
 
 | Provider | Log source that surfaces IMDS credential use |
 |----------|----------------------------------------------|
-| AWS      | CloudTrail — `userIdentity.type == AssumedRole`; alert on unusual source IP / UA |
+| AWS      | CloudTrail - `userIdentity.type == AssumedRole`; alert on unusual source IP / UA |
 | AWS      | GuardDuty findings `UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS` and `.OutsideAWS` |
-| GCP      | Cloud Audit Logs — service-account activity tied to VM compute-default SA |
+| GCP      | Cloud Audit Logs - service-account activity tied to VM compute-default SA |
 | Azure    | Azure AD sign-in logs for managed identities; alert on tokens used outside the VM's IP range |
 
 Set an alert rule: "role credentials used from an IP not in my VPC range"
@@ -218,7 +218,7 @@ is almost always malicious.
 Find remaining IMDSv1 callers before disabling:
 
 ```bash
-# AWS CloudWatch metric: MetadataNoToken — calls to IMDS without session token
+# AWS CloudWatch metric: MetadataNoToken - calls to IMDS without session token
 aws cloudwatch get-metric-statistics \
   --namespace AWS/EC2 \
   --metric-name MetadataNoToken \

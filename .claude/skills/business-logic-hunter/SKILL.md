@@ -1,6 +1,6 @@
 ---
 name: business-logic-hunter
-description: "Tests application-specific logic for workflow bypasses (skipping steps), data-validation gaps (negative prices, oversized quantities, unit confusion), hidden-field tampering, function-usage abuse (coupon reuse, free-trial re-registration), and trust-boundary pivots. Use when the target has complex multi-step workflows (checkout, account recovery, approval chains), parameters with real-world meaning (prices, quantities, dates), or state-carrying hidden fields. This class is unique to each app — requires understanding of intended business rules. Produces findings with CWE-840 / CWE-841 mapping and server-side-authoritative-validation remediation."
+description: "Tests application-specific logic for workflow bypasses (skipping steps), data-validation gaps (negative prices, oversized quantities, unit confusion), hidden-field tampering, function-usage abuse (coupon reuse, free-trial re-registration), and trust-boundary pivots. Use when the target has complex multi-step workflows (checkout, account recovery, approval chains), parameters with real-world meaning (prices, quantities, dates), or state-carrying hidden fields. This class is unique to each app - requires understanding of intended business rules. Produces findings with CWE-840 / CWE-841 mapping and server-side-authoritative-validation remediation."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,7 +27,7 @@ metadata:
 ## Goal
 
 Test application-specific logic for flaws that arise from violated
-developer assumptions — workflow bypasses, logically-invalid-but-
+developer assumptions - workflow bypasses, logically-invalid-but-
 technically-valid data (negative prices, oversized quantities,
 unit-confusion), hidden-field tampering, function-usage abuse (coupon
 reuse), and trust-boundary pivots (recovery flow granting login-like
@@ -57,13 +57,12 @@ data-validation gaps with server-side-authoritative remediation.
 ## When NOT to Use
 
 - For generic input-validation flaws (SQLi, XSS, command injection)
-  — use the class-specific hunter.
-- For missing access control (user reaching another user's data) —
-  use `idor-hunter` / `bola-bfla-hunter`.
+ - use the class-specific hunter.
+- For missing access control (user reaching another user's data) -   use `idor-hunter` / `bola-bfla-hunter`.
 - For mass-assignment / admin-flag injection in generic
-  profile-update endpoints — use `mass-assignment-hunter`.
+  profile-update endpoints - use `mass-assignment-hunter`.
 - For rate-limit-specific abuse (e.g., SMS cost amplification,
-  brute-force) — use `rate-limit-hunter`.
+  brute-force) - use `rate-limit-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
 
@@ -83,7 +82,7 @@ Before ANY outbound activity:
      creation; consume test coupons that have no real value)
 4. For financial-impact findings (negative price, oversized credit,
    coupon-reuse): STOP at the first confirmation. Do NOT escalate
-   to see "how much" can be stolen — one proof is enough.
+   to see "how much" can be stolen - one proof is enough.
    Coordinate revert with the platform team.
 5. For workflow-bypass findings that create persistent records
    (KYC-skip, approval-skip), file the finding AND request that
@@ -104,7 +103,7 @@ The skill expects the caller to provide:
 - `{user_b}`: second test-user credentials (for cross-user logic
   tests)
 - `{test_billing}`: test credit-card / payment instrument from scope
-- `{workflow_docs}`: optional — links to product-team
+- `{workflow_docs}`: optional - links to product-team
   documentation describing intended workflows
 
 ## Methodology
@@ -152,7 +151,7 @@ The skill expects the caller to provide:
      later step's expected body
 
    Vulnerable response: The application treats the workflow as
-   completed — e.g., the user gets an "order confirmed" page
+   completed - e.g., the user gets an "order confirmed" page
    without payment processed.
 
    Not-vulnerable response: The server rolls back, redirects to
@@ -209,7 +208,7 @@ The skill expects the caller to provide:
    unit without re-validation against the user's region or the
    product's defined currency.
 
-   Record: FINDING-NNN — often leads to 100x or 1000x price
+   Record: FINDING-NNN - often leads to 100x or 1000x price
    errors.
 
 ### Phase 4: Hidden-Field Tampering
@@ -246,7 +245,7 @@ The skill expects the caller to provide:
    - Referral bonus: claim a referral reward twice for the same
      referrer-referee pair
 
-   Vulnerable response: Function executes multiple times — often
+   Vulnerable response: Function executes multiple times - often
    leading to direct financial impact or resource exhaustion.
 
    Not-vulnerable response: Second invocation rejected.
@@ -281,7 +280,7 @@ The skill expects the caller to provide:
 
     Example: Account-recovery sends an email with a "continue
     reset" link. Open the link but don't set a new password.
-    Instead, try to access `/account/settings` directly — does
+    Instead, try to access `/account/settings` directly - does
     the partial-recovery session grant it?
 
     Vulnerable response: Partial-trust state lets the user access
@@ -344,10 +343,8 @@ Specific to this skill:
 - **OWASP**: WSTG-BUSL-01 through WSTG-BUSL-09. For APIs,
   API6:2023 (Unrestricted Access to Sensitive Business Flows).
   A04:2021 (Insecure Design) for design-level gaps.
-- **CVSS vectors**: direct financial theft —
-  `AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N`. Step-skip bypassing
-  payment — `...PR:L/C:N/I:H/A:N`. Coupon reuse at scale —
-  `...AC:L/C:N/I:L/A:N` (aggregated financial impact, not per-user
+- **CVSS vectors**: direct financial theft -   `AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:N`. Step-skip bypassing
+  payment - `...PR:L/C:N/I:H/A:N`. Coupon reuse at scale -   `...AC:L/C:N/I:L/A:N` (aggregated financial impact, not per-user
   severity).
 - **Evidence**: the workflow HAR (normal path), the tampered
   request, the server response, and the resulting state change
@@ -367,7 +364,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -384,7 +381,7 @@ Before marking complete, verify:
 - [ ] Race-condition tests used moderate concurrency (5-10), not
       hundreds
 - [ ] Workflow documentation (if provided in `{workflow_docs}`)
-      was consulted — findings reference the specific intended-
+      was consulted - findings reference the specific intended-
       behavior violation
 - [ ] Skills Run Log row updated from `running` to `complete` or
       `halted:{reason}`
@@ -407,21 +404,21 @@ Before marking complete, verify:
 
 - **Coupon-reuse as intended behavior**: Some coupons are
   legitimately multi-use (site-wide codes, recurring subscriber
-  rewards). Check product docs / admin UI before filing — the
+  rewards). Check product docs / admin UI before filing - the
   defect is "one-per-user" codes being reused, not all coupons.
 
 - **Partial-trust pivot that's actually intended**: Password-reset
   flows legitimately grant a narrow session to set a new password.
   The bug is when that session also grants unrelated full-auth
   scope. Distinguish by checking what the partial session is
-  authorized to do — if it's scoped to password-reset only, the
+  authorized to do - if it's scoped to password-reset only, the
   flow is correct.
 
 - **Negative-price that refunds to original payer, not attacker**:
   A negative-quantity bug may result in an inventory error
   (stock increments) without financial impact because the
   negative charge is refunded to the payer, not the attacker.
-  Still a finding — operations risk, inventory fraud — but lower
+  Still a finding - operations risk, inventory fraud - but lower
   severity than direct theft.
 
 ## References

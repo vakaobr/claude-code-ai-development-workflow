@@ -44,9 +44,9 @@ schema. Findings map to the OWASP Top 10 for LLM Applications.
 
 ## When NOT to Use
 
-- Manual prompt-injection threat modeling / architecture review — use
+- Manual prompt-injection threat modeling / architecture review - use
   the `/redteam-ai` command and `security-analyst` agent.
-- Open-weight model alignment/refusal-geometry analysis — that is the
+- Open-weight model alignment/refusal-geometry analysis - that is the
   OBLITERATUS path in `/redteam-ai`.
 - Pointing probes at a third-party provider's public API as the
   "target" (e.g. scanning api.openai.com). Test YOUR endpoint only.
@@ -60,7 +60,7 @@ schema. Findings map to the OWASP Top 10 for LLM Applications.
 3. Confirm the target is first-party (the org's deployment), not a
    provider's shared infrastructure. If the endpoint host belongs to a
    model vendor, halt and ask.
-4. Note any cost ceiling — probe batteries can issue thousands of
+4. Note any cost ceiling - probe batteries can issue thousands of
    generations. Respect `llm_redteam_max_requests` if set.
 5. Append a `running` row to the Skills Run Log.
 
@@ -69,7 +69,7 @@ schema. Findings map to the OWASP Top 10 for LLM Applications.
 - `{issue}`: planning folder name
 - `{endpoint}`: the in-scope LLM endpoint (URL or local model id)
 - `{auth}`: how the harness authenticates to the endpoint (vault ref)
-- `{model_context}`: optional — system-prompt structure, tool access,
+- `{model_context}`: optional - system-prompt structure, tool access,
   output rendering surface (from `/redteam-ai`'s AI components inventory)
 
 ## Methodology
@@ -77,7 +77,7 @@ schema. Findings map to the OWASP Top 10 for LLM Applications.
 ### Phase 1: Surface Confirmation
 1. Confirm reachability and capability tier of the endpoint: does the
    model have tool/function access, file access, or rendered output?
-   (This sets impact — same finding is Medium with no tools, Critical
+   (This sets impact - same finding is Medium with no tools, Critical
    with code execution. Cross-ref the matrix in `offensive-security` →
    "Prompt Injection Severity Matrix".)
 
@@ -90,12 +90,12 @@ schema. Findings map to the OWASP Top 10 for LLM Applications.
      --report_prefix .claude/planning/{issue}/garak
    ```
    Probe families to include:
-   - `promptinject` / `latentinjection` — LLM01 direct + indirect
-   - `dan` / `grandma` / `jailbreak` — guardrail bypass
-   - `leakreplay` — training-data / memorized-content leakage (LLM06)
-   - `xss` / `htmlinject` — insecure output handling (LLM02)
-   - `encoding` — obfuscated-payload bypass
-   - `malwaregen` / `realtoxicityprompts` — harmful-content policy
+   - `promptinject` / `latentinjection` - LLM01 direct + indirect
+   - `dan` / `grandma` / `jailbreak` - guardrail bypass
+   - `leakreplay` - training-data / memorized-content leakage (LLM06)
+   - `xss` / `htmlinject` - insecure output handling (LLM02)
+   - `encoding` - obfuscated-payload bypass
+   - `malwaregen` / `realtoxicityprompts` - harmful-content policy
    Record: parse `garak*.report.jsonl` for failed (vulnerable) probes.
 
 ### Phase 3: PyRIT Targeted Scenarios
@@ -104,7 +104,7 @@ schema. Findings map to the OWASP Top 10 for LLM Applications.
    - Multi-turn crescendo jailbreaks
    - System-prompt extraction (LLM07) via role-confusion sequences
    - If the endpoint is an *agent* with tools: tool-abuse via injected
-     instructions (highest impact — confirm tool allow-listing).
+     instructions (highest impact - confirm tool allow-listing).
    Record: PyRIT scoring output; capture the minimal transcript that
    demonstrates each success.
 
@@ -113,29 +113,29 @@ schema. Findings map to the OWASP Top 10 for LLM Applications.
    garak/PyRIT overlaps into a single issue citing both. Downgrade
    probes that "succeeded" but produced only benign output the app
    already handles (e.g. XSS string returned but output is HTML-escaped
-   downstream — verify the rendering surface before rating).
+   downstream - verify the rendering surface before rating).
 
 ## Output Format
 
 Findings append to `.claude/planning/{issue}/07a_SECURITY_AUDIT.md` per
 `.claude/skills/_shared/finding-schema.md`. (If running inside the
 SDLC AI phase, also surface a summary into `07c_AI_THREAT_MODEL.md` to
-sit alongside the manual `/redteam-ai` output — do not overwrite it.)
+sit alongside the manual `/redteam-ai` output - do not overwrite it.)
 
 Specific to this skill:
 - **CWE**: CWE-77 / CWE-94 (injection → action), CWE-79 (output XSS),
   CWE-200 (info disclosure), CWE-1426 (improper validation of generative
   AI output) where applicable.
-- **OWASP**: OWASP Top 10 for LLM Apps — LLM01 (Prompt Injection),
+- **OWASP**: OWASP Top 10 for LLM Apps - LLM01 (Prompt Injection),
   LLM02 (Insecure Output Handling), LLM06 (Sensitive Information
   Disclosure), LLM07 (System Prompt Leakage). Tag each finding.
-- **CVSS / severity**: gate on capability — no tools + escaped output =
+- **CVSS / severity**: gate on capability - no tools + escaped output =
   Medium; tool/file/network access reachable via injection = High/
   Critical. Reuse the severity matrix in `offensive-security`.
 - **Evidence**: the probe name, the minimal request/response transcript
   proving the bypass, and the scanner's score. Keep harmful generations
   truncated to the minimum needed as proof.
-- **Remediation framing**: app team — structured message roles (never
+- **Remediation framing**: app team - structured message roles (never
   concatenate user input into the system prompt), output encoding before
   render, tool-call allow-listing, input/output schema validation, treat
   all retrieved/fetched content as untrusted, rate-limit inference.
@@ -177,6 +177,6 @@ Updates `STATUS.md` and the Skills Run Log row to `complete`.
 ## Source Methodology
 
 Cannibalized from the `guardian-cli` (zakirkun/guardian-cli, MIT)
-garak/PyRIT integration pattern — adapted to this stack's finding schema
+garak/PyRIT integration pattern - adapted to this stack's finding schema
 and scope-gating model rather than its agentic orchestrator. Conversion
 date: 2026-06-27.

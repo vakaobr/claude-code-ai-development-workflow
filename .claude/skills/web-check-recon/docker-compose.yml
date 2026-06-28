@@ -3,7 +3,7 @@
 #
 # Hardened for assessment use:
 #   - Bound to 127.0.0.1 ONLY (never exposed on the network).
-#   - GUI disabled — API-only, so nothing extra is served.
+#   - GUI disabled - API-only, so nothing extra is served.
 #   - Rate limiting on, per-check timeout bounded.
 #   - Optional .env (copy from .env.sample) supplies third-party API keys.
 #
@@ -14,7 +14,7 @@ services:
   web-check:
     container_name: web-check-recon
     image: lissy93/web-check:latest
-    # 127.0.0.1 prefix is the security control — the API is reachable only
+    # 127.0.0.1 prefix is the security control - the API is reachable only
     # from this host, never from the LAN/internet.
     ports:
       - "127.0.0.1:3000:3000"

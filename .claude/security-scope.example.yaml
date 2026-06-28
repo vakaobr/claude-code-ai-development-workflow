@@ -1,6 +1,6 @@
 #            .claude/security-scope.example.yaml
 # =====================================================================
-#  EXAMPLE — A WORKED, FILLED-IN SCOPE FILE.  NOT LIVE.
+#  EXAMPLE - A WORKED, FILLED-IN SCOPE FILE.  NOT LIVE.
 # =====================================================================
 #  This shows the SHAPE of a fully-populated engagement scope. It uses
 #  IANA-reserved example domains (example.com / contoso.com) and RFC-1918
@@ -29,7 +29,7 @@ environments:
     default_testing: passive_only   # override per-asset
     rate_limit_rps: 5
 
-# --- Assets in scope (web/API/cloud — the orchestrator's domain) ---
+# --- Assets in scope (web/API/cloud - the orchestrator's domain) ---
 assets:
   - name: "app.staging.example.com"
     environment: staging
@@ -56,7 +56,7 @@ assets:
     testing_level: passive
     destructive_testing: denied
     service_affecting: denied
-    notes: "Bucket ACL/policy review only — read-only AWS calls."
+    notes: "Bucket ACL/policy review only - read-only AWS calls."
 
 # --- Explicitly out of scope (refuse even if discovered) ---
 out_of_scope:
@@ -119,13 +119,13 @@ red_team_ops:
   reverse_engineering: approved
   re_artifacts: ["fw/contoso-gw-2.4.1.bin (sha256:7b21…aa08)"]
 
-  # Social engineering / phishing — targets PEOPLE; needs its own consent:
+  # Social engineering / phishing - targets PEOPLE; needs its own consent:
   social_engineering: approved
   se_consent_ref: "RoE-Annex-C signed 2026-06-20 (phishing, 50 staff, IT dept)"
   se_recipient_list: "secret/pentest/contoso/se-recipients.csv"
   se_evilginx: denied                  # MFA-phish demo NOT authorized in this example
 
-  # Wireless — RF hardware + Linux capture host; workshop consent for rogue-AP:
+  # Wireless - RF hardware + Linux capture host; workshop consent for rogue-AP:
   wireless: approved
   wireless_targets: ["CONTOSO-CORP (aa:bb:cc:dd:ee:ff)"]
   wireless_workshop_consent: "Awareness-Workshop consent + attendee signage, 2026-07-02"

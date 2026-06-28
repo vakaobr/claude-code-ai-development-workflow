@@ -1,6 +1,6 @@
 ---
 name: secrets-in-code-hunter
-description: "Scans code repositories and git history for hardcoded credentials — AWS / GCP / Azure keys, API tokens, JWT signing secrets, database connection strings, SSH private keys, and generic high-entropy strings. Uses trufflehog / gitleaks plus custom regex over `git log`, `git show`, and file contents. Also audits exposed `.git/` directories and `.env` files on production. Use after `web-recon-passive` surfaces repo references; after `gitlab-cicd-hunter` identifies candidate repos; or when the orchestrator requests a org-wide secret sweep. Produces findings with CWE-798 / CWE-540 mapping, HASH-only evidence (never plaintext), and vault-migration + key-rotation remediation. Defensive testing only — READ-ONLY repo access."
+description: "Scans code repositories and git history for hardcoded credentials - AWS / GCP / Azure keys, API tokens, JWT signing secrets, database connection strings, SSH private keys, and generic high-entropy strings. Uses trufflehog / gitleaks plus custom regex over `git log`, `git show`, and file contents. Also audits exposed `.git/` directories and `.env` files on production. Use after `web-recon-passive` surfaces repo references; after `gitlab-cicd-hunter` identifies candidate repos; or when the orchestrator requests a org-wide secret sweep. Produces findings with CWE-798 / CWE-540 mapping, HASH-only evidence (never plaintext), and vault-migration + key-rotation remediation. Defensive testing only - READ-ONLY repo access."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -23,7 +23,7 @@ metadata:
 ## Goal
 
 Scan code repositories, git history, and exposed production
-configuration for hardcoded credentials — AWS / GCP / Azure
+configuration for hardcoded credentials - AWS / GCP / Azure
 keys, API tokens, JWT signing secrets, database connection
 strings, SSH private keys, and generic high-entropy strings.
 This skill complements `gitlab-cicd-hunter` (which focuses on
@@ -43,20 +43,19 @@ key-rotation remediation.
   identified secret-candidate strings that need deeper scanning.
 - The orchestrator requests a comprehensive org-wide secret
   sweep.
-- Post-incident — after a leak is suspected, confirm scope by
+- Post-incident - after a leak is suspected, confirm scope by
   scanning all commit history.
 
 ## When NOT to Use
 
-- For GitLab-CI/CD-specific pipeline config review — use
+- For GitLab-CI/CD-specific pipeline config review - use
   `gitlab-cicd-hunter` (which focuses on the pipeline layer).
-- For validating DISCOVERED keys against live cloud services —
-  use `aws-iam-hunter` (AWS validation) or equivalent. This
+- For validating DISCOVERED keys against live cloud services -   use `aws-iam-hunter` (AWS validation) or equivalent. This
   skill finds keys; other skills enumerate impact.
-- For secrets in API RESPONSES (not source code) — use
+- For secrets in API RESPONSES (not source code) - use
   `excessive-data-exposure-hunter`.
 - For secrets in client-side JavaScript bundles served by the
-  live app — `excessive-data-exposure-hunter` covers that;
+  live app - `excessive-data-exposure-hunter` covers that;
   this skill focuses on the REPOSITORIES the bundles are built
   from.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
@@ -70,14 +69,14 @@ Before ANY outbound activity:
    or doesn't parse, halt and report.
 2. Confirm the target organization appears in the `assets` list
    AND its `testing_level` is at least `passive`. Secret-sweep
-   is read-only — runs git commands against already-cloned
+   is read-only - runs git commands against already-cloned
    copies, never modifies.
 3. If the scope lists specific repos as in-scope vs
    out-of-scope, honor that. NEVER scan repos outside the
    declared scope, even if publicly reachable.
 4. Discovered secrets MUST be stored HASHED (first/last 4 chars
    + sha256) in findings, NEVER plaintext. This is non-
-   negotiable — a finding with plaintext secrets can leak in
+   negotiable - a finding with plaintext secrets can leak in
    downstream reports.
 5. If a discovered secret appears to be ACTIVELY USED (high
    entropy, looks unsullied, recent commit), IMMEDIATELY flag
@@ -93,7 +92,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset or organization identifier
-- `{scope_context}`: optional — specific repos to focus on
+- `{scope_context}`: optional - specific repos to focus on
 - `{repo_list}`: list of authorized repos to scan (paths on
   disk if cloned, or GitHub/GitLab URLs for fetch)
 
@@ -143,14 +142,14 @@ The skill expects the caller to provide:
    [Bug Bounty Bootcamp, Ch 21]
 
    Do: Gitleaks uses pattern-based detection (regex families
-   per provider) — catches patterns trufflehog misses. Run:
+   per provider) - catches patterns trufflehog misses. Run:
    ```bash
    gitleaks detect --source={repo_path} \
      --report-format=json \
      --report-path={repo_path}.gitleaks.json
    ```
 
-   Record: Per-finding — rule ID (e.g., `aws-access-key`),
+   Record: Per-finding - rule ID (e.g., `aws-access-key`),
    commit, file, line, match.
 
 ### Phase 3: Custom Regex Grep (Coverage Supplement)
@@ -213,7 +212,7 @@ The skill expects the caller to provide:
    reconstructed via tools like `git-dumper`.
 
    NOTE: This skill's `repo-readonly` profile doesn't include
-   `curl` in its allowed-tools — this step delegates the live
+   `curl` in its allowed-tools - this step delegates the live
    probing to `web-recon-active`, which has curl. If
    `ATTACK_SURFACE.md` already flagged `.git/` exposure, read
    that finding and chain it here.
@@ -223,7 +222,7 @@ The skill expects the caller to provide:
 7. **Probe for `.env`, `web.config`, `.npmrc`, etc.**
    [WSTG v4.2, 4.2.4]
 
-   Do: Same delegation pattern — `web-recon-active` probes
+   Do: Same delegation pattern - `web-recon-active` probes
    live hosts for common config paths. This skill reads the
    results and cross-references with repo-captured secret
    findings.
@@ -243,7 +242,7 @@ The skill expects the caller to provide:
 
    For known-validatable secret types (AWS keys, GitHub tokens,
    Stripe keys), set a flag for `aws-iam-hunter` or
-   equivalent to validate — but the validation happens in that
+   equivalent to validate - but the validation happens in that
    OTHER skill, not this one.
 
    Record: Per-finding rotation directive + validation handoff.
@@ -277,10 +276,8 @@ Specific to this skill:
 - **OWASP**: WSTG-INFO-05. For APIs, API7:2023 (Security
   Misconfiguration). A07:2021 (Identification and
   Authentication Failures) if the secret is an auth token.
-- **CVSS vectors**: leaked AWS root key —
-  `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Leaked service-
-  account token — similar. Leaked test-env sandbox token —
-  lower (`...C:L/I:L/A:N`).
+- **CVSS vectors**: leaked AWS root key -   `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Leaked service-
+  account token - similar. Leaked test-env sandbox token -   lower (`...C:L/I:L/A:N`).
 - **Evidence**: the commit SHA + file path + line + the
   HASH-only secret reference. Include the detection tool that
   caught it (trufflehog / gitleaks / custom-regex) and whether
@@ -292,19 +289,18 @@ Specific to this skill:
     Azure Key Vault, GCP Secret Manager
   - pre-commit hook enforcement: `gitleaks`, `talisman`,
     `detect-secrets`
-  - git history rewrite (BFG Repo-Cleaner) WITH caveats —
-    rewrite doesn't help if someone cloned before the rewrite,
+  - git history rewrite (BFG Repo-Cleaner) WITH caveats -     rewrite doesn't help if someone cloned before the rewrite,
     rotation is still primary
   - Access review: check whether the secret was USED between
     commit and discovery (cloud audit logs, API access logs)
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/aws-iam-targets.md` — AWS keys for
+- `.claude/planning/{issue}/aws-iam-targets.md` - AWS keys for
   `aws-iam-hunter` validation (HASH-only)
-- `.claude/planning/{issue}/jwt-targets.md` — any JWT signing
+- `.claude/planning/{issue}/jwt-targets.md` - any JWT signing
   secrets discovered for `jwt-hunter` HS256-crack validation
 
 ## Quality Check (Self-Review)
@@ -313,7 +309,7 @@ Before marking complete, verify:
 
 - [ ] Every finding cites the detection tool
       (trufflehog / gitleaks / custom-regex)
-- [ ] Every finding stores the secret as HASH-only — grep the
+- [ ] Every finding stores the secret as HASH-only - grep the
       SECURITY_AUDIT for raw AKIA / BEGIN.*PRIVATE KEY / etc.
       patterns; should find zero outside the first4-last4
       format
@@ -337,18 +333,18 @@ Before marking complete, verify:
 - **Honeytokens in public repos**: Orgs sometimes commit fake
   credentials with monitoring. Trufflehog's `--only-verified`
   mode may VALIDATE a honeytoken (it was designed to look real)
-  — which triggers the defender's alert. Coordinate with the
+ - which triggers the defender's alert. Coordinate with the
   security team before extensive validation of public repo
   findings.
 
 - **Rotated-but-in-history secrets**: The team rotated the key
   AFTER committing it. Finding the old key in history is still
-  a finding — anyone cloning between commit-add and commit-
+  a finding - anyone cloning between commit-add and commit-
   rotate has it. Severity depends on how long the window was
   and whether audit logs show external access.
 
 - **Sandbox / test account credentials**: `sk_test_...` Stripe
-  keys, `AKIA...` keys in dedicated sandbox accounts — lower
+  keys, `AKIA...` keys in dedicated sandbox accounts - lower
   impact than prod but should still be rotated, and ideally
   never committed at all.
 
@@ -369,7 +365,7 @@ Before marking complete, verify:
 
 ## References
 
-- `references/signatures.md` — full regex catalog + detector
+- `references/signatures.md` - full regex catalog + detector
   source attribution
 
 External:

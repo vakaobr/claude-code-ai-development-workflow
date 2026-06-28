@@ -45,8 +45,8 @@ header/cookie remediation snippets.
 ## When NOT to Use
 
 - For automatic cross-site request attacks that do not require user UI
-  interaction — use `csrf-hunter` instead.
-- For script execution in a victim's browser — use `xss-hunter` or
+  interaction - use `csrf-hunter` instead.
+- For script execution in a victim's browser - use `xss-hunter` or
   `dom-xss-hunter`.
 - For pages whose functionality is intentionally embeddable (public widgets,
   share buttons, oEmbed resources).
@@ -61,8 +61,7 @@ Before ANY outbound activity:
 1. Read `.claude/security-scope.yaml`. If the file doesn't exist or doesn't
    parse, halt and report.
 2. Confirm the intended target appears in the `assets` list AND the target's
-   `testing_level` is `active` or `passive` (this skill is passive —
-   framing tests run locally, the only live traffic is normal HTTP fetches).
+   `testing_level` is `active` or `passive` (this skill is passive -    framing tests run locally, the only live traffic is normal HTTP fetches).
 3. If the target is ambiguous (not explicitly listed), write the ambiguity
    to `.claude/planning/{issue}/SCOPE_QUESTIONS.md` and halt on that target
    only. Continue other in-scope work.
@@ -76,7 +75,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name (e.g., `security-audit-q2-2026`)
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific page paths to focus on (e.g.,
+- `{scope_context}`: optional - specific page paths to focus on (e.g.,
   `/account/settings`, `/transfer`)
 - `{user_a}`: an authenticated session for the target (framing needs a
   logged-in victim context to be exploitable)
@@ -109,7 +108,7 @@ halt and request credentials.
 
    Do: For each action, check whether its URL accepts GET parameters that
    initialize form state (e.g., `/transfer?recipient=X&amount=Y`). These
-   actions are highest priority — the PoC doesn't require JavaScript to
+   actions are highest priority - the PoC doesn't require JavaScript to
    fill the form.
 
    Record: Mark pre-fillable actions in the target list with `prefillable:
@@ -144,7 +143,7 @@ halt and request credentials.
    whitelist of known-trusted origins.
 
    Record: If XFO and CSP disagree (e.g., XFO=DENY but CSP=`frame-ancestors
-   *`), note the inconsistency — modern browsers use CSP and the page is
+   *`), note the inconsistency - modern browsers use CSP and the page is
    framable.
 
 5. **Audit `SameSite` cookie attribute** [Bug Bounty Bootcamp, Ch 8, p. 151]
@@ -209,10 +208,10 @@ halt and request credentials.
    the victim user).
 
    Not-vulnerable response: Click lands on the overlay, not the framed
-   button — alignment across viewports is not guaranteed, which weakens
+   button - alignment across viewports is not guaranteed, which weakens
    impact.
 
-   Record: Finding severity depends on which action was triggered — see
+   Record: Finding severity depends on which action was triggered - see
    severity rubric below.
 
 9. **Audit pre-filled state initialization**
@@ -221,15 +220,14 @@ halt and request credentials.
    Do: Confirm that the sensitive action can be fully parameterized via the
    URL. If the action requires the user to type a value (password, amount,
    recipient) that cannot be filled via query string, exploitation requires
-   social engineering on top of the frame — lowers practical severity.
+   social engineering on top of the frame - lowers practical severity.
 
    Record: Note whether each finding requires user-typed input (Low impact)
    or is fully URL-driven (High impact).
 
 ## Payload Library
 
-Framing probes are short HTML snippets, not payloads against the target —
-there is no payload list worth a separate `references/payloads.md`. The
+Framing probes are short HTML snippets, not payloads against the target - there is no payload list worth a separate `references/payloads.md`. The
 core probes inline in this skill are:
 
 - **Basic frame probe**: `<iframe src="https://{target}/{path}"></iframe>`
@@ -250,7 +248,7 @@ Specific to this skill:
   For findings that also bypass CSRF tokens via framing, add CWE-352.
 - **OWASP**: WSTG-CLNT-09. For session-cookie contributions, also map to
   ASVS V3.4.
-- **CVSS vectors**: typically `AV:N/AC:H/PR:N/UI:R/S:C/C:N/I:H/A:N` — high
+- **CVSS vectors**: typically `AV:N/AC:H/PR:N/UI:R/S:C/C:N/I:H/A:N` - high
   attack complexity (requires viewport alignment and social engineering),
   user interaction required, integrity impact from the state change.
 - **Evidence**: the response headers (with missing/weak XFO/CSP), the local
@@ -263,7 +261,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -286,7 +284,7 @@ Before marking complete, verify:
 
 - **Inert framable pages**: The page is framable but the actions within it
   are non-sensitive (public news feed, dashboard view-only). Framability
-  alone is not a vulnerability — it only matters for state-changing
+  alone is not a vulnerability - it only matters for state-changing
   actions. Mark these as Informational or drop them.
 
 - **Manual-input actions**: The target function requires the user to type
@@ -296,7 +294,7 @@ Before marking complete, verify:
 
 - **Intentional embedding**: The resource is designed to be embedded as a
   widget, share button, or oEmbed resource. Confirm with the product team
-  before filing — this is an intentional product design choice.
+  before filing - this is an intentional product design choice.
 
 - **Non-production environments**: The vulnerability exists on a
   non-production environment that doesn't have access to live user

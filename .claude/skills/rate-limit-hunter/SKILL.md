@@ -1,6 +1,6 @@
 ---
 name: rate-limit-hunter
-description: "Tests APIs and sensitive features for missing or weak rate limiting — credential-stuffing resistance, MFA code brute-force, SMS / email amplification, oversized-payload resource exhaustion, and IP / session rotation evasion. Use when the target has login / password-reset / MFA / signup / SMS-trigger endpoints and `api-recon`'s auth inventory shows no `X-RateLimit-*` response headers; when the orchestrator identifies high-cost operations; or when cross-referencing a `auth-flaw-hunter` lockout finding. Produces findings with CWE-307 / CWE-770 / CWE-400 mapping and throttle / captcha / resource-limit remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml — service_affecting: true."
+description: "Tests APIs and sensitive features for missing or weak rate limiting - credential-stuffing resistance, MFA code brute-force, SMS / email amplification, oversized-payload resource exhaustion, and IP / session rotation evasion. Use when the target has login / password-reset / MFA / signup / SMS-trigger endpoints and `api-recon`'s auth inventory shows no `X-RateLimit-*` response headers; when the orchestrator identifies high-cost operations; or when cross-referencing a `auth-flaw-hunter` lockout finding. Produces findings with CWE-307 / CWE-770 / CWE-400 mapping and throttle / captcha / resource-limit remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml - service_affecting: true."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,7 +27,7 @@ metadata:
 ## Goal
 
 Test the target's sensitive endpoints and high-cost features for missing
-or weak rate limiting — the class of flaws that lets an attacker brute-
+or weak rate limiting - the class of flaws that lets an attacker brute-
 force credentials, burn through MFA codes, send mass SMS / email (often
 at the org's direct cost), scrape bulk data, or trigger resource
 exhaustion via oversized payloads. This skill implements WSTG-ATHN-03
@@ -54,15 +54,15 @@ infrastructure limits).
 
 ## When NOT to Use
 
-- For pure DoS / DDoS flooding — rate-limit testing is a controlled
+- For pure DoS / DDoS flooding - rate-limit testing is a controlled
   burst to characterize the limit, not a denial-of-service attack.
   If scope requires DoS testing, use a dedicated stress tool under
   separate authorization.
 - For algorithmic-complexity DoS (regex backtracking, quadratic JSON
-  parsing) — that's `deserialization-hunter` or a dedicated
+  parsing) - that's `deserialization-hunter` or a dedicated
   algorithmic-complexity skill.
 - For business-logic abuse that doesn't involve request volume
-  (e.g., applying a coupon twice) — use `business-logic-hunter`.
+  (e.g., applying a coupon twice) - use `business-logic-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml`, or whose
   `service_affecting` is `denied`.
 
@@ -80,7 +80,7 @@ Before ANY outbound activity:
    asset owner. Cite the specific endpoints to be tested.
 4. Apply the scope's `rate_limit_rps` as a CEILING. This skill's
    purpose is to probe how the target responds AT the documented
-   ceiling — do not exceed it. If the target's actual defense kicks
+   ceiling - do not exceed it. If the target's actual defense kicks
    in at a higher threshold, that's a finding; we don't need to
    flood past the scope ceiling to prove it.
 5. For SMS / email trigger endpoints specifically: do not trigger
@@ -97,7 +97,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints to probe
+- `{scope_context}`: optional - specific endpoints to probe
 - `{user_a}`: credentials for a test user (needed to trigger
   authenticated rate-limit probing)
 - `{test_contacts}`: SMS/email test destinations from the scope file
@@ -123,7 +123,7 @@ The skill expects the caller to provide:
    - `X-Rate-Limit-*` (legacy vendor variants)
    - Custom headers like `X-Shopify-Api-Call-Limit`
 
-   Vulnerable response: No headers present — no advertised limit.
+   Vulnerable response: No headers present - no advertised limit.
 
    Not-vulnerable response: Headers present with sensible values
    (e.g., "remaining: 99" / "limit: 100 per 60s").
@@ -180,12 +180,12 @@ The skill expects the caller to provide:
    1000000, 999999999999.
 
    Watch response time and status. STOP at first:
-   - Response > 10 seconds (potential DoS confirmation — don't
+   - Response > 10 seconds (potential DoS confirmation - don't
      deepen)
    - 500 error suggesting memory exhaustion
    - Response > 50MB (mass-data-scrape risk)
 
-   Vulnerable response: Any of the above — server didn't enforce a
+   Vulnerable response: Any of the above - server didn't enforce a
    maximum.
 
    Not-vulnerable response: 400 Bad Request, or silent truncation
@@ -222,7 +222,7 @@ The skill expects the caller to provide:
    signup with same email, single-use OTP), attempt to invoke the
    operation twice in the same session.
 
-   Vulnerable response: The operation succeeds both times — the
+   Vulnerable response: The operation succeeds both times - the
    "one-time" enforcement is client-side only.
 
    Record: Each successful reuse as a finding; severity depends on
@@ -238,10 +238,10 @@ The skill expects the caller to provide:
    - Rotate the session cookie (logout + login between bursts)
    - Rotate the API key (if test account has multiple)
    - Distribute across different source IPs (requires scope-approved
-     pivoting infrastructure — skip if not)
+     pivoting infrastructure - skip if not)
 
    Vulnerable response: The limit resets when the identifier
-   changes — the server relied on a weak identifier.
+   changes - the server relied on a weak identifier.
 
    Not-vulnerable response: Limit persists based on session token,
    user ID, or composite fingerprinting.
@@ -257,7 +257,7 @@ The skill expects the caller to provide:
     SMS/email, and ONLY to those contacts. Trigger 3 sends in rapid
     succession to a test contact.
 
-    Vulnerable response: 3 sends completed — no per-recipient rate
+    Vulnerable response: 3 sends completed - no per-recipient rate
     limit. Multiply by average cost ($0.01-$0.05/SMS) and monthly
     org volume for a financial-impact estimate.
 
@@ -296,10 +296,7 @@ Specific to this skill:
 - **OWASP**: For APIs, API4:2023 (Unrestricted Resource Consumption).
   For web apps, WSTG-ATHN-03 and WSTG-BUSL-05. A04:2021 (Insecure
   Design).
-- **CVSS vectors**: unprotected login enabling credential stuffing —
-  `AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N`. Unprotected SMS trigger —
-  `...C:N/I:N/A:H` (cost-based DoS). Unlimited `limit=` parameter —
-  `...C:H/I:N/A:L` (mass-scrape + resource pressure).
+- **CVSS vectors**: unprotected login enabling credential stuffing -   `AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N`. Unprotected SMS trigger -   `...C:N/I:N/A:H` (cost-based DoS). Unlimited `limit=` parameter -   `...C:H/I:N/A:L` (mass-scrape + resource pressure).
 - **Evidence**: the exact request used, the observed throughput (N
   requests in M seconds), and the response that didn't block
   (status + sampled body).
@@ -316,7 +313,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -324,7 +321,7 @@ The skill also updates:
 Before marking complete, verify:
 
 - [ ] Every probe stayed at or under the scope's `rate_limit_rps`
-      ceiling — confirmed by measuring actual request rate
+      ceiling - confirmed by measuring actual request rate
 - [ ] SMS/email probes used only `test_contacts` from the scope
 - [ ] Controlled test accounts used for lockout probing were
       restored (or escalated if unrestorable)
@@ -357,7 +354,7 @@ Before marking complete, verify:
   inconclusive for external-attacker scenarios.
 
 - **429 returned but action still completed**: Some apps return 429
-  with the body from the successful action already applied — they
+  with the body from the successful action already applied - they
   rate-limit the response but not the operation. Always check
   whether the operation's side effects happened, not just whether
   the response was 429.
@@ -365,7 +362,7 @@ Before marking complete, verify:
 - **Lockout that unblocks too fast**: The server does implement
   lockout but for only 60 seconds. Real attackers with unlimited
   time can simply wait and retry. Note this as a finding
-  (insufficient lockout duration) — Medium severity.
+  (insufficient lockout duration) - Medium severity.
 
 - **Rate limit enforced on HTTP only, not on websocket / gRPC /
   other channels**: Inconsistent enforcement across transports is

@@ -59,7 +59,7 @@ trap cleanup EXIT
 
 if [[ "$DO_PULL" -eq 1 ]]; then
   step "Pull image (idempotent)"
-  bash "$HERE/webcheck-up.sh" pull || echo "pull skipped/failed — continuing (cached image may exist)"
+  bash "$HERE/webcheck-up.sh" pull || echo "pull skipped/failed - continuing (cached image may exist)"
 fi
 
 step "Start instance"

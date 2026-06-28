@@ -1,4 +1,4 @@
-# signatures — gitlab-cicd-hunter
+# signatures - gitlab-cicd-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Segurança e Auditoria em Pipelines CI_CD GitLab.md` (Section 3: DETECTION SIGNALS) + community `.gitlab-ci.yml` anti-patterns.
 
@@ -24,8 +24,7 @@ terraform\.tfstate$                 # IaC state with secrets
 terraform\.tfvars$                  # variable overrides (often secrets)
 ```
 
-A public repo containing `terraform.tfstate` is immediately a finding —
-state files contain full resource inventories and sometimes secrets.
+A public repo containing `terraform.tfstate` is immediately a finding - state files contain full resource inventories and sometimes secrets.
 
 ---
 
@@ -34,7 +33,7 @@ state files contain full resource inventories and sometimes secrets.
 ### 2a. Hardcoded secrets in variables
 
 ```yaml
-# RED FLAG — variables are LOGGED in job output unless masked
+# RED FLAG - variables are LOGGED in job output unless masked
 variables:
   DB_PASSWORD: "s3cret_password"         # literal value in YAML
   AWS_SECRET_ACCESS_KEY: "wJalrXUt..."
@@ -50,7 +49,7 @@ Regex to grep:
 ### 2b. Privileged runners
 
 ```yaml
-# RED FLAG — container escape surface
+# RED FLAG - container escape surface
 image: docker:20
 services:
   - docker:20-dind
@@ -84,7 +83,7 @@ credentials (NOT masked).
 ### 2d. `when: manual` on destructive jobs without approvals
 
 ```yaml
-# RED FLAG — any developer can trigger
+# RED FLAG - any developer can trigger
 deploy_prod:
   stage: deploy
   when: manual                     # no `protected: true`, no approvers defined
@@ -97,19 +96,19 @@ Check whether `protected: true` AND a `rules:` gate is present.
 ### 2e. Arbitrary-branch triggers
 
 ```yaml
-# RED FLAG — any push to any branch can deploy
+# RED FLAG - any push to any branch can deploy
 deploy_prod:
   script: ./deploy.sh prod
   only:
     - pushes                       # not restricted to main
 ```
 
-Or missing `only:` / `rules:` entirely — default is ALL branches.
+Or missing `only:` / `rules:` entirely - default is ALL branches.
 
 ### 2f. Submodule-spoofing / trigger-token leakage
 
 ```yaml
-# RED FLAG — trigger token in plain config
+# RED FLAG - trigger token in plain config
 trigger_downstream:
   trigger:
     project: group/other-project
@@ -139,7 +138,7 @@ Probe production hosts for:
 Tools:
 
 ```bash
-# gitdumper — reconstruct repo from exposed .git
+# gitdumper - reconstruct repo from exposed .git
 bash gitdumper.sh https://target.example/.git/ /tmp/restored
 
 # git-ls-remote check
@@ -246,7 +245,7 @@ kubectl config set-credentials
 
 ## 9. `.well-known/security.txt` / Contact
 
-Positive signal (not a vulnerability) — indicates a mature security
+Positive signal (not a vulnerability) - indicates a mature security
 posture. Absence is a minor observation, not a finding.
 
 ```
@@ -299,5 +298,5 @@ git log --all --oneline -S "SECRET_KEY"
   token scoped to read-only access (`read_api` / `read_repository`);
   do NOT use a `Maintainer`+ token for a scan.
 - Report findings to the tenant's security + DevOps teams in parallel
-  — rotating a live pipeline-token while a deploy is in-flight can
+ - rotating a live pipeline-token while a deploy is in-flight can
   break production.

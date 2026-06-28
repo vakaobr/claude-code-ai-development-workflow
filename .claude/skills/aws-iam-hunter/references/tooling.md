@@ -1,4 +1,4 @@
-# tooling — aws-iam-hunter
+# tooling - aws-iam-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Auditoria e Segurança em Misconfigurações AWS IAM.md` (Sections 4, 5: TEST METHODOLOGY / PAYLOADS)
 
@@ -8,16 +8,16 @@ All commands here fit the `cloud-readonly` tool profile: only
 
 ---
 
-## Phase 1 — Identity & Attribution (who am I?)
+## Phase 1 - Identity & Attribution (who am I?)
 
 ```bash
 # What principal am I using?
 aws sts get-caller-identity
 
 # Useful fields:
-#   Account     — which AWS account
-#   Arn         — which user / role
-#   UserId      — principal ID
+#   Account - which AWS account
+#   Arn - which user / role
+#   UserId - principal ID
 ```
 
 If the result is a role ARN (`arn:aws:sts::123456:assumed-role/Foo/i-0abc`),
@@ -27,7 +27,7 @@ groups.
 
 ---
 
-## Phase 2 — Read-Only Enumeration
+## Phase 2 - Read-Only Enumeration
 
 ### IAM users, groups, roles
 
@@ -84,7 +84,7 @@ aws ec2 describe-instances \
     --output table
 ```
 
-`HttpTokens` = `optional` means IMDSv1 is still enabled — flag.
+`HttpTokens` = `optional` means IMDSv1 is still enabled - flag.
 
 ### Access key age
 
@@ -113,10 +113,10 @@ your org is a red flag.
 
 ---
 
-## Phase 3 — Policy Simulation (what CAN this principal do?)
+## Phase 3 - Policy Simulation (what CAN this principal do?)
 
 Use `iam simulate-principal-policy` to ask "if this principal requested
-action X, would it be allowed?" This is a read-only simulation — it does
+action X, would it be allowed?" This is a read-only simulation - it does
 NOT perform the action.
 
 ```bash
@@ -163,7 +163,7 @@ Findings include:
 
 ---
 
-## Phase 4 — CloudTrail Lookup (what has this principal DONE?)
+## Phase 4 - CloudTrail Lookup (what has this principal DONE?)
 
 ### Direct `lookup-events` (covers 90 days)
 
@@ -201,7 +201,7 @@ LIMIT 500;
 
 ---
 
-## Phase 5 — S3 & Bucket Review (handoff to `s3-misconfig-hunter`)
+## Phase 5 - S3 & Bucket Review (handoff to `s3-misconfig-hunter`)
 
 Short list of commands most relevant during an IAM audit:
 
@@ -217,7 +217,7 @@ done
 
 ---
 
-## Phase 6 — Credential Key Validation (stolen key?)
+## Phase 6 - Credential Key Validation (stolen key?)
 
 Set the suspect credentials in a throwaway shell:
 
@@ -232,12 +232,12 @@ aws iam list-attached-user-policies --user-name $(aws sts get-caller-identity --
 ```
 
 Tools:
-- **KeyHacks** (github.com/streaak/keyhacks) — quick check whether a
+- **KeyHacks** (github.com/streaak/keyhacks) - quick check whether a
   key is valid AND which service it grants access to.
-- **prowler** (github.com/prowler-cloud/prowler) — full read-only IAM /
+- **prowler** (github.com/prowler-cloud/prowler) - full read-only IAM /
   S3 / EC2 audit.
-- **ScoutSuite** (github.com/nccgroup/ScoutSuite) — multi-cloud audit.
-- **pacu** (github.com/RhinoSecurityLabs/pacu) — offensive AWS toolkit;
+- **ScoutSuite** (github.com/nccgroup/ScoutSuite) - multi-cloud audit.
+- **pacu** (github.com/RhinoSecurityLabs/pacu) - offensive AWS toolkit;
   most modules are DESTRUCTIVE, gated behind
   `destructive_testing: approved`.
 
@@ -245,11 +245,11 @@ Tools:
 
 ## Safety Notes
 
-- This skill is `cloud-readonly` — commands above are all get / list /
+- This skill is `cloud-readonly` - commands above are all get / list /
   describe / simulate. Do NOT run `aws iam create-*`, `aws iam put-*`,
   or `aws iam delete-*`.
 - If a test demonstrates a privilege-escalation path via
-  `simulate-principal-policy`, report it — do NOT attempt the actual
+  `simulate-principal-policy`, report it - do NOT attempt the actual
   escalation.
 - Read-only commands are still logged by CloudTrail; avoid running the
   full sweep during sensitive windows (e.g., incident-response exercises)

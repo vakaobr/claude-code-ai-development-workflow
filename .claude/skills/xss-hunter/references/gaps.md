@@ -1,4 +1,4 @@
-# gaps — xss-hunter
+# gaps - xss-hunter
 
 **Source:** Author notes on what the source methodology did NOT cover.
 
@@ -7,9 +7,9 @@ covers Reflected and Stored XSS in depth. Coverage gaps to keep in mind:
 
 ---
 
-## DOM XSS — Delegated, Not Covered Here
+## DOM XSS - Delegated, Not Covered Here
 
-DOM XSS is explicitly out of scope for this skill — it has its own
+DOM XSS is explicitly out of scope for this skill - it has its own
 `dom-xss-hunter` skill and source note. Any reflection whose source
 is a client-side API (`location.hash`, `document.URL`, `postMessage`,
 `window.name`, `document.referrer`) and whose sink is a JavaScript
@@ -25,14 +25,14 @@ The source does not cover CSP bypass research paths:
 - AngularJS template-injection gadgets that bypass CSP
 
 If the target has a strict CSP (`'strict-dynamic'` + nonce), successful
-XSS injection may still not execute — report the injection as a finding
+XSS injection may still not execute - report the injection as a finding
 but note the effective-mitigation status.
 
 ## Template-Engine Boundary (handoff to `ssti-hunter`)
 
 A reflection in a server-rendered template can be Template Injection
 (server-side, RCE) instead of XSS. Probes like `{{7*7}}` or `${7*7}`
-returning `49` indicate SSTI — delegate to `ssti-hunter`, do not
+returning `49` indicate SSTI - delegate to `ssti-hunter`, do not
 mis-classify as XSS.
 
 ## mXSS (Mutation XSS)
@@ -69,7 +69,7 @@ should be checked on top of the generic methodology.
 ## AMP / Accelerated-Mobile-Pages Context
 
 AMP has its own allowlist of elements and disallows arbitrary `<script>`.
-XSS inside AMP content requires AMP-specific gadgets — not in scope for
+XSS inside AMP content requires AMP-specific gadgets - not in scope for
 the source.
 
 ## WebSocket / Server-Sent Events (SSE) Reflections
