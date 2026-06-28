@@ -1,9 +1,9 @@
 # Security Skills Library
 
-49 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
-red-team + 3 DFIR/incident-response + 2 reference) plus the
-`security-orchestrator` agent that composes the web/API/cloud set. Skills
-are under `.claude/skills/{name}/`;
+53 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
+red-team + 3 red-team-ops + 3 DFIR/incident-response + 3 reference) plus
+the `security-orchestrator` agent that composes the web/API/cloud set.
+Skills are under `.claude/skills/{name}/`;
 the agent is at `.claude/agents/security-orchestrator.md`; the
 authorization file is `.claude/security-scope.yaml` (template — must be
 populated with real company assets before any live use).
@@ -140,6 +140,29 @@ below) and carry their own scope gates.
 `llm_redteam_max_requests` (LLM); `mobile_testing: approved`,
 `mobile_artifacts: [...]` (mobile).
 
+### Red-Team Ops (4 skills)
+
+Full-scope offensive engagement skills for **proving impact to clients**
+(network/infra pentest + post-exploitation), grounded in PTES / NIST SP
+800-115 / HackTricks / GTFOBins (authored, not imported; tool names
+cross-checked against awesome-pentest CC-BY-4.0). More aggressive than the
+web `active` hunters; least-damage proof, no online brute force, no
+persistence. Findings go to `SECURITY_AUDIT.md` / `PENTEST_REPORT.md`.
+
+| Skill | Profile | Covers |
+|---|---|---|
+| [redteam-ops](redteam-ops/SKILL.md) | reference (none) | Engagement methodology (PTES phases), ROE + proof-for-clients, external→internal kill-chain, technique/tool map. Grounds the red-team-ops hunters. |
+| [network-pentest-hunter](network-pentest-hunter/SKILL.md) | network-pentest | Non-web infra: full nmap/rustscan/masscan, SMB/SNMP/NFS/DB/mail enum, default-cred checks, version→CVE + least-damage validation |
+| [host-privesc-hunter](host-privesc-hunter/SKILL.md) | host-privesc | Local Linux/Windows privesc on an authorized foothold: PEAS enumeration → GTFOBins/LOLBAS/service/cron/kernel paths, least-damage proof |
+| [cracking-hunter](cracking-hunter/SKILL.md) | cracking | Offline hashcat/John against captured hashes (AD/JWT/SAM/NTDS); proves weak password policy. The shared cracking utility |
+
+**New scope-file keys these require** (under a `red_team_ops:` block):
+`network_pentest`, `network_targets`, `exploit_validation`, `scan_rate`,
+`host_privesc`, `offline_cracking`, `crack_time_budget`. All default
+`denied`. (RE / exploit-dev / social-engineering / wireless skills land in
+later batches with their own gates; AV/EDR evasion is intentionally
+excluded.)
+
 ### DFIR / Incident Response (4 skills)
 
 Net-new **defensive** category — the stack's first non-offensive track.
@@ -163,7 +186,7 @@ to `INCIDENT_REPORT.md`, not `SECURITY_AUDIT.md`.
 
 ## Tool profiles
 
-All skills reference one of 10 profiles defined in
+All skills reference one of 13 profiles defined in
 [_shared/tool-profiles.md](_shared/tool-profiles.md):
 
 - **passive** — `Read, Grep, Glob, WebFetch` (no Bash outside planning/)
@@ -189,6 +212,15 @@ All skills reference one of 10 profiles defined in
   (Volatility 3), Sleuth Kit (`mmls`/`fls`/`icat`), `plaso`, `chainsaw`,
   `hayabusa`, `tshark`/`zeek`, `yara`; hash-verify before analysis, no
   acquisition/mount-rw/containment
+- **network-pentest** — infra pentest: full `nmap`/`rustscan`/`masscan`,
+  `netexec`, `enum4linux-ng`, `smbmap`, `snmpwalk`, `searchsploit`;
+  least-damage validation, no online brute force (`hydra`/`medusa` banned)
+- **host-privesc** — local privesc enumeration on an authorized foothold:
+  `linpeas`/`winpeas`, `pspy`, `linux-exploit-suggester`, `seatbelt`,
+  `sudo -l`, `getcap`; prove with `id`/`whoami`, no persistence
+- **cracking** — OFFLINE only: `hashcat`, `john`, `hashid`, `cewl`,
+  `crunch`; vault-stored results (hashcat-exempt from the ban, like
+  internal-ad)
 
 ## Output contract
 
@@ -240,6 +272,26 @@ differ too much from the harmless-probe model). Run them deliberately:
   endpoints hand off to `api-recon` for normal API testing. Gate:
   `mobile_testing: approved`.
 
+## Red-team-ops track
+
+Full-scope offensive engagement, manually driven (not auto-dispatched by
+the web orchestrator). Load `redteam-ops` (reference) for methodology +
+ROE + proof-for-clients, then follow the kill-chain with the right
+hunters:
+
+- **Infra**: `network-pentest-hunter` (non-web service discovery →
+  enumeration → least-damage validation). Gate:
+  `red_team_ops.network_pentest: approved` (+ `exploit_validation` for PoC).
+- **Post-exploitation**: `host-privesc-hunter` (local root/SYSTEM on an
+  authorized foothold). Gate: `red_team_ops.host_privesc: approved`.
+- **Cracking**: `cracking-hunter` (offline). The AD chain
+  (`ad-kerberos-hunter`), `jwt-hunter`, and `host-privesc-hunter` hand
+  captured hashes here. Gate: `red_team_ops.offline_cracking: approved`.
+
+Findings use the offensive finding schema and feed the engagement attack
+narrative. AV/EDR evasion is intentionally out of scope; RE / exploit-dev
+/ social-engineering / wireless ship in later batches.
+
 ## DFIR track
 
 The DFIR skills are **defensive/reactive**, fully separate from the
@@ -269,13 +321,14 @@ matches directory, description length, scope-file reference,
 defensive-framing heuristic, forbidden-tool catch, cloud-readonly
 write-verb catch, references/ file consistency.
 
-Expected output: **0 errors, 0 warnings**. Validator notes: the two
-reference skills `redteam-ad-ops` and `incident-response` are on the
-exclude list (like `offensive-security`, they have no methodology
-sections); `internal-ad` skills are exempt from the `hashcat` ban
+Expected output: **0 errors, 0 warnings**. Validator notes: the reference
+skills `offensive-security`, `redteam-ad-ops`, `incident-response`, and
+`redteam-ops` are on the exclude list (they have no methodology sections);
+`internal-ad` and `cracking` skills are exempt from the `hashcat` ban
 (offline cracking is intentional there) — `sqlmap`/`metasploit`/`hydra`/
-`nikto` stay banned for every skill. The `dfir-readonly` profile uses
-only read-only forensic tools, so it needs no exemption.
+`nikto` stay banned for every skill. The `dfir-readonly`,
+`network-pentest`, and `host-privesc` profiles use no banned tools, so
+they need no exemption.
 
 ## Authorization model
 
