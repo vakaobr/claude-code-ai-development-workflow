@@ -1,0 +1,26 @@
+:root{--bg:#0f1226;--card:#fff;--ink:#1d2333;--mut:#6b7280;--line:#e5e7eb}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#1b2150,#0f1226);font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);padding:24px}
+.card{background:var(--card);width:100%;max-width:380px;border-radius:18px;
+  padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.card.aware{max-width:520px}
+.logo{font-size:22px;font-weight:700;margin-bottom:18px}
+.logo.warn{color:#b91c1c}
+h1{font-size:22px;margin:0 0 6px}
+h2{font-size:16px;margin:22px 0 8px}
+.sub{color:var(--mut);margin:0 0 22px;font-size:14px;line-height:1.5}
+.btn{display:flex;align-items:center;gap:12px;width:100%;border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;margin:10px 0;text-decoration:none;color:var(--ink);
+  font-weight:600;font-size:15px;background:#fff;transition:.15s}
+.btn:hover{background:#f8fafc;transform:translateY(-1px)}
+.btn .ico{display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center;
+  border-radius:6px;font-weight:800;color:#fff}
+.google .ico{background:#ea4335}
+.microsoft .ico{background:#2f2f2f}
+.github .ico{background:#181717}
+.fine{color:var(--mut);font-size:12px;margin:14px 0 0;text-align:center}
+.fine.demo{color:#b45309;font-weight:600}
+.points{margin:0;padding-left:18px}
+.points li{margin:8px 0;font-size:14px;line-height:1.5}
+.points.good li{color:#065f46}
