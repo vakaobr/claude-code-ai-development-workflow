@@ -1,0 +1,143 @@
+#            .claude/security-scope.example.yaml
+# =====================================================================
+#  EXAMPLE — A WORKED, FILLED-IN SCOPE FILE.  NOT LIVE.
+# =====================================================================
+#  This shows the SHAPE of a fully-populated engagement scope. It uses
+#  IANA-reserved example domains (example.com / contoso.com) and RFC-1918
+#  ranges, so nothing here is a real target.
+#
+#  Skills read `.claude/security-scope.yaml` (NOT this .example file), so
+#  this never authorizes anything. To run an engagement: copy the bits you
+#  need into the real `security-scope.yaml`, replace every example value
+#  with real, explicitly-authorized assets, and set `authorized_by` /
+#  dates to the signed authorization.
+#
+#  Every `approved` below is illustrative. In the real file, start from the
+#  template (all `denied`) and flip only what the signed RoE covers.
+# ---------------------------------------------------------------------
+
+version: "1.0"
+authorized_by: "Jane Approver, CISO, Contoso Ltd (signed RoE 2026-06-20)"
+authorization_date: "2026-06-20"
+review_date: "2026-09-20"   # quarterly
+
+environments:
+  - name: staging
+    default_testing: active
+    rate_limit_rps: 20
+  - name: production
+    default_testing: passive_only   # override per-asset
+    rate_limit_rps: 5
+
+# --- Assets in scope (web/API/cloud — the orchestrator's domain) ---
+assets:
+  - name: "app.staging.example.com"
+    environment: staging
+    asset_type: web_application
+    tech_stack: [node, express, postgres]
+    testing_level: active
+    destructive_testing: denied
+    service_affecting: denied
+    requires_auth_testing_credentials: true
+    test_credentials_vault_path: "secret/pentest/contoso/app-staging"
+    notes: "Customer portal. Two test accounts seeded for IDOR/BOLA."
+
+  - name: "api.staging.example.com"
+    environment: staging
+    asset_type: rest_api
+    tech_stack: [python, fastapi, postgres]
+    testing_level: active
+    destructive_testing: denied
+    service_affecting: approved          # rate-limit tests allowed on staging
+    owasp_api_top10_applicable: true
+
+  - name: "*.contoso-assets-7782.s3.amazonaws.com"
+    asset_type: aws_s3
+    testing_level: passive
+    destructive_testing: denied
+    service_affecting: denied
+    notes: "Bucket ACL/policy review only — read-only AWS calls."
+
+# --- Explicitly out of scope (refuse even if discovered) ---
+out_of_scope:
+  - "*.partner-saas.example.net"        # third-party vendor
+  - "login.microsoftonline.com"         # external IdP
+  - "prod-db.internal.contoso.com"      # no direct DB access
+  - "*.customer-owned.example.org"
+
+technique_restrictions:
+  never_run:
+    - "social_engineering"              # unless the SE block below is approved
+    - "physical_access_tests"
+    - "dos_flooding"
+  require_approval:
+    - "fuzzing_with_high_volume"
+    - "authentication_brute_force"
+
+# =====================================================================
+#  RED-TEAM EXTENSION  (internal AD / mobile / LLM)
+# =====================================================================
+red_team_extension:
+  # Internal AD engagement is authorized for this example:
+  internal_pentest: approved
+  ad_credentials_vault_path: "secret/pentest/contoso/ad-engagement"
+  ad_domains: ["corp.contoso.com"]
+  ad_subnets: ["10.20.0.0/16"]
+  scan_hours: "Mon-Fri 18:00-06:00 UTC"
+  offline_cracking: approved
+  impersonation_proof: approved        # mint/revert S4U/RBCD/shadow-cred to prove only
+  credential_dumping: denied           # NOT authorized in this example
+  domain_dominance: denied             # NOT authorized in this example
+
+  # LLM red-team on a first-party endpoint:
+  llm_redteam: approved
+  llm_endpoints: ["https://app.staging.example.com/api/assistant"]
+  llm_redteam_max_requests: 2000
+
+  # Mobile static assessment of the Android client:
+  mobile_testing: approved
+  mobile_artifacts: ["builds/contoso-portal-1.8.0-release.apk (sha256:0f3a…d91c)"]
+  mobsf_instance: "local"
+
+# =====================================================================
+#  RED-TEAM OPS  (network/infra, privesc, cracking, RE, exploit, SE, wireless)
+# =====================================================================
+red_team_ops:
+  # Network / infrastructure pentest:
+  network_pentest: approved
+  network_targets: ["10.20.10.0/24", "vpn.example.com"]
+  exploit_validation: approved
+  lab_replica: "10.20.99.0/24"         # validate exploits here first, not prod
+  scan_rate: "min-rate 800"
+
+  # Post-exploitation:
+  host_privesc: approved               # on hosts landed under this RoE
+  offline_cracking: approved
+  crack_time_budget: "4h"
+
+  # Reverse engineering of a delivered firmware image:
+  reverse_engineering: approved
+  re_artifacts: ["fw/contoso-gw-2.4.1.bin (sha256:7b21…aa08)"]
+
+  # Social engineering / phishing — targets PEOPLE; needs its own consent:
+  social_engineering: approved
+  se_consent_ref: "RoE-Annex-C signed 2026-06-20 (phishing, 50 staff, IT dept)"
+  se_recipient_list: "secret/pentest/contoso/se-recipients.csv"
+  se_evilginx: denied                  # MFA-phish demo NOT authorized in this example
+
+  # Wireless — RF hardware + Linux capture host; workshop consent for rogue-AP:
+  wireless: approved
+  wireless_targets: ["CONTOSO-CORP (aa:bb:cc:dd:ee:ff)"]
+  wireless_workshop_consent: "Awareness-Workshop consent + attendee signage, 2026-07-02"
+  wireless_capture_host: "pi"          # "vm" (USB passthrough) | "pi" (Raspberry Pi 4/5)
+
+# =====================================================================
+#  DFIR / INCIDENT RESPONSE  (defensive; analyzes acquired evidence copies)
+# =====================================================================
+dfir_scope:
+  incident_response: approved
+  case_id: "IR-2026-0042"
+  evidence_store_path: "/cases/IR-2026-0042/evidence"     # verified COPIES only
+  chain_of_custody_log: "/cases/IR-2026-0042/coc.md"
+  allow_live_response: denied          # offline images only in this example
+  external_sandbox: denied             # do not upload samples to public sandboxes
