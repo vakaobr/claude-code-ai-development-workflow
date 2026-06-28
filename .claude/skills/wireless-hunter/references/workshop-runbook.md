@@ -24,6 +24,12 @@ the "free wifi" awareness demo run by `wireless-hunter`.
 > splash. For this awareness demo, keep the portal benign: it records the
 > *fact* of a submission for the teachable moment, never real credentials.
 
+> **Ready-to-run portal:** `references/captive-portal/` — a brandable
+> "free wifi" splash with Continue-with-Google/Microsoft/GitHub buttons,
+> safe by default (buttons → an awareness page; no credentials captured;
+> clicks logged for rates). Its `README.md` covers the rogue-AP bring-up
+> and the opt-in, consent-gated evilginx (AiTM) wiring with a test account.
+
 ---
 
 ## 0. Pre-flight (the day before / morning of)
