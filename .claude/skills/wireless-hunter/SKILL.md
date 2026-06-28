@@ -64,6 +64,8 @@ post-association traffic analysis that surfaces the honest risk story
 > Step-by-step runnable checklist (Kali VM USB-passthrough + Raspberry Pi
 > 4/5, driver install, monitor/injection verification, workshop AP
 > bring-up + teardown): `references/capture-host-setup.md`.
+> Attendee-facing talk track + "what leaked / what didn't" slide for the
+> awareness workshop: `references/workshop-runbook.md`.
 
 **Primary (supported now): VM + USB passthrough.**
 - Linux guest (Kali/Ubuntu) in the VM; pass the USB Wi-Fi adapter through
