@@ -21,7 +21,13 @@
     if(a==='x86') return 'x86-'+(b||'64');
     return a+(b||'');                 // arm + 64 -> arm64
   }
-  function build(os, browser){
+  function dev(m){
+    var mobile = (typeof m==='boolean') ? m
+      : (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+         (navigator.maxTouchPoints>1 && Math.min(screen.width,screen.height)<=820));
+    return mobile ? 'Mobile (phone / tablet)' : 'Computer';
+  }
+  function build(os, browser, mobileFlag){
     var n=navigator, s=screen, tz='';
     try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone;}catch(e){}
     var dpr=window.devicePixelRatio||1;
@@ -29,7 +35,7 @@
     render([
       ['Operating system', esc(os)],
       ['Browser', esc(browser)],
-      ['Device', (n.maxTouchPoints>1?'Touch / mobile':'Desktop')],
+      ['Device', dev(mobileFlag)],
       ['Automation', (n.webdriver?'detected (bot)':'none (human)')],
       ['Screen resolution', resW+'×'+resH],
       ['Timezone', esc(tz||' - ')],
@@ -50,7 +56,7 @@
         var os = (d.platform||' - ') + (d.platformVersion?(' '+d.platformVersion):'');
         var a = archStr(d.architecture, d.bitness);
         if(a) os += ' · ' + a;
-        build(os, browser);
+        build(os, browser, navigator.userAgentData.mobile);
       }).catch(function(){build(navigator.platform||' - ', navigator.userAgent);});
   } else {
     var ua=navigator.userAgent, os=' - ', b=ua, m;
