@@ -230,6 +230,13 @@ Alongside these, a **5-skill internal / mobile / AI red-team extension** covers 
 | AI red-team (ai-redteam) | llm-redteam | Automated garak + PyRIT against first-party LLM endpoints → OWASP LLM Top 10. Complements the manual `/redteam-ai` command |
 | Mobile (mobile-sast) | mobile-android | Static APK assessment (MobSF + apkleaks) → OWASP MASVS. Cannibalized from guardian-cli (MIT) |
 
+**DFIR / Incident Response extension (4 skills, separate defensive track):** the stack's first non-offensive capability. Analyzes acquired evidence **copies read-only**; never acquires, mutates, contains, or eradicates. Writes to `INCIDENT_REPORT.md`. Authored from NIST SP 800-61/800-86, SANS PICERL, and MITRE ATT&CK/D3FEND.
+
+| Class | Skills | Notable |
+|---|---|---|
+| IR reference | incident-response | Knowledge skill (no execution): NIST/PICERL lifecycle, evidence handling + chain of custody, triage decision tree, IOC/ATT&CK model. Grounds the DFIR hunters. |
+| Forensics (dfir-readonly) | memory-forensics, disk-triage, log-timeline | Volatility 3 (RAM), Sleuth Kit + plaso (disk), Chainsaw/Hayabusa Sigma (EVTX/logs/PCAP). Hash-verified evidence, unified UTC timeline, ATT&CK-tagged findings. Gated by `dfir_scope.incident_response: approved` |
+
 **Authorization model.** Every skill reads `.claude/security-scope.yaml` before any outbound activity and halts if the file is missing, malformed, or contains only placeholder assets. The scope file is distributed as a template — it **must** be populated with real company-owned targets before live use. See the "Security Testing Scope and Authorization" section of `CLAUDE.md` for the full rules-of-engagement contract.
 
 **Navigation:** [`.claude/skills/SECURITY_SKILLS_README.md`](.claude/skills/SECURITY_SKILLS_README.md) is the library entry point — full inventory with tier / profile / output-artifact per skill and the cross-skill dispatch map.
@@ -718,6 +725,9 @@ your-project/
 │   │   ├── redteam-ad-ops/
 │   │   │   └── SKILL.md            # Internal/AD red-team reference: lifecycle, OPSEC, evasion (model: opus)
 │   │   │                           # + executable: ad-recon-hunter, ad-kerberos-hunter, llm-redteam-hunter, mobile-android-hunter
+│   │   ├── incident-response/
+│   │   │   └── SKILL.md            # DFIR reference: NIST/PICERL lifecycle, evidence handling, ATT&CK (model: opus)
+│   │   │                           # + executable: memory-forensics-hunter, disk-triage-hunter, log-timeline-hunter
 │   │   └── visual-explainer/        # HTML visualization skill (visual-explainer)
 │   │       ├── SKILL.md            # Workflow, diagram types, anti-slop rules (model: sonnet)
 │   │       ├── references/          # CSS patterns, libraries, slide patterns (~120KB)

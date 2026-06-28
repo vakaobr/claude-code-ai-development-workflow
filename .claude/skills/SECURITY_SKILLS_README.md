@@ -1,8 +1,9 @@
 # Security Skills Library
 
-45 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
-red-team + 1 reference) plus the `security-orchestrator` agent that
-composes the web/API/cloud set. Skills are under `.claude/skills/{name}/`;
+49 security skills (40 defensive web/API/cloud + 4 internal/mobile/AI
+red-team + 3 DFIR/incident-response + 2 reference) plus the
+`security-orchestrator` agent that composes the web/API/cloud set. Skills
+are under `.claude/skills/{name}/`;
 the agent is at `.claude/agents/security-orchestrator.md`; the
 authorization file is `.claude/security-scope.yaml` (template — must be
 populated with real company assets before any live use).
@@ -139,9 +140,30 @@ below) and carry their own scope gates.
 `llm_redteam_max_requests` (LLM); `mobile_testing: approved`,
 `mobile_artifacts: [...]` (mobile).
 
+### DFIR / Incident Response (4 skills)
+
+Net-new **defensive** category — the stack's first non-offensive track.
+Grounded in NIST SP 800-61/800-86, SANS PICERL, and MITRE ATT&CK/D3FEND
+(authored from those sources, not from any awesome-list). Analyzes
+**acquired evidence copies read-only**; never acquires, mutates, contains,
+or eradicates. Runs as its own track (see "DFIR track" below) and writes
+to `INCIDENT_REPORT.md`, not `SECURITY_AUDIT.md`.
+
+| Skill | Profile | Covers |
+|---|---|---|
+| [incident-response](incident-response/SKILL.md) | reference (none) | Knowledge layer: NIST/PICERL lifecycle, evidence handling + chain of custody, triage decision tree, IOC/ATT&CK model, artifact map. Grounds the DFIR hunters. |
+| [memory-forensics-hunter](memory-forensics-hunter/SKILL.md) | dfir-readonly | Volatility 3 over a RAM image: hidden/injected processes (malfind), netscan, DLLs/drivers, cmdlines, credential-access traces |
+| [disk-triage-hunter](disk-triage-hunter/SKILL.md) | dfir-readonly | Sleuth Kit + plaso over a disk image: $MFT/registry/Prefetch/tasks/persistence, deleted-file recovery, super-timeline |
+| [log-timeline-hunter](log-timeline-hunter/SKILL.md) | dfir-readonly | Chainsaw/Hayabusa (Sigma) over EVTX + Linux/network logs/PCAP: logon anomalies, lateral movement, C2 beaconing, unified UTC timeline |
+
+**New scope-file keys these require** (under a `dfir_scope:` block in
+`.claude/security-scope.yaml`): `incident_response`, `case_id`,
+`evidence_store_path`, `chain_of_custody_log`, `allow_live_response`,
+`external_sandbox`. All default `denied`.
+
 ## Tool profiles
 
-All skills reference one of 9 profiles defined in
+All skills reference one of 10 profiles defined in
 [_shared/tool-profiles.md](_shared/tool-profiles.md):
 
 - **passive** — `Read, Grep, Glob, WebFetch` (no Bash outside planning/)
@@ -163,6 +185,10 @@ All skills reference one of 9 profiles defined in
   first-party LLM endpoints only
 - **mobile-sast** — static APK tooling: `mobsf`, `mobsfscan`, `apkleaks`,
   `apktool`, `jadx`, `trufflehog` (no dynamic/Frida)
+- **dfir-readonly** — read-only forensics on evidence COPIES: `vol`
+  (Volatility 3), Sleuth Kit (`mmls`/`fls`/`icat`), `plaso`, `chainsaw`,
+  `hayabusa`, `tshark`/`zeek`, `yara`; hash-verify before analysis, no
+  acquisition/mount-rw/containment
 
 ## Output contract
 
@@ -214,6 +240,24 @@ differ too much from the harmless-probe model). Run them deliberately:
   endpoints hand off to `api-recon` for normal API testing. Gate:
   `mobile_testing: approved`.
 
+## DFIR track
+
+The DFIR skills are **defensive/reactive**, fully separate from the
+offensive orchestrator and the offensive scope. They run during an
+authorized incident, on acquired evidence copies, and write to
+`.claude/planning/{case}/INCIDENT_REPORT.md` (schema:
+[_shared/incident-schema.md](_shared/incident-schema.md)) — never to
+`SECURITY_AUDIT.md`. Gate: `dfir_scope.incident_response: approved`.
+
+- Load `incident-response` (reference) for lifecycle + evidence-handling
+  context, then run the hunters against whatever evidence exists:
+  `memory-forensics-hunter` (RAM), `disk-triage-hunter` (disk image),
+  `log-timeline-hunter` (EVTX/syslog/PCAP). They cross-corroborate and
+  build one UTC super-timeline.
+- Every hunter hash-verifies its evidence item before analysis and HALTs
+  on mismatch. Containment / eradication / acquisition are operator
+  actions, never performed by these skills.
+
 ## Validation
 
 ```bash
@@ -225,12 +269,13 @@ matches directory, description length, scope-file reference,
 defensive-framing heuristic, forbidden-tool catch, cloud-readonly
 write-verb catch, references/ file consistency.
 
-Expected output: **0 errors, 0 warnings**. The validator was updated for
-the extension: `redteam-ad-ops` joins the reference-skill exclude list
-(like `offensive-security`, it has no methodology sections), and
-`internal-ad` skills are exempt from the `hashcat` ban (offline cracking
-is intentional there) — `sqlmap`/`metasploit`/`hydra`/`nikto` stay banned
-for every skill.
+Expected output: **0 errors, 0 warnings**. Validator notes: the two
+reference skills `redteam-ad-ops` and `incident-response` are on the
+exclude list (like `offensive-security`, they have no methodology
+sections); `internal-ad` skills are exempt from the `hashcat` ban
+(offline cracking is intentional there) — `sqlmap`/`metasploit`/`hydra`/
+`nikto` stay banned for every skill. The `dfir-readonly` profile uses
+only read-only forensic tools, so it needs no exemption.
 
 ## Authorization model
 
