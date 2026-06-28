@@ -1,6 +1,6 @@
 ---
 name: cors-misconfig-hunter
-description: "Audits CORS response headers for overly permissive policies — arbitrary-origin reflection with `Access-Control-Allow-Credentials: true`, subdomain confusion (`Origin: www.target.com.attacker.com` reflected), `null` origin acceptance, and permissive `Access-Control-Allow-Methods` exposing destructive verbs. Analyzes traffic already captured by `api-recon` and `web-recon-active` (passive) plus a small number of targeted Origin-header probes. Use when API responses include CORS headers; when cross-domain calls are visible in browser dev tools; or when the orchestrator needs an explicit CORS check. Produces findings with CWE-346 / CWE-942 mapping and strict-allowlist + no-credentials-with-wildcard remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Audits CORS response headers for overly permissive policies - arbitrary-origin reflection with `Access-Control-Allow-Credentials: true`, subdomain confusion (`Origin: www.target.com.attacker.com` reflected), `null` origin acceptance, and permissive `Access-Control-Allow-Methods` exposing destructive verbs. Analyzes traffic already captured by `api-recon` and `web-recon-active` (passive) plus a small number of targeted Origin-header probes. Use when API responses include CORS headers; when cross-domain calls are visible in browser dev tools; or when the orchestrator needs an explicit CORS check. Produces findings with CWE-346 / CWE-942 mapping and strict-allowlist + no-credentials-with-wildcard remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: Read, Grep, Glob, WebFetch(domain:*.in-scope-domain.com)
 metadata:
@@ -20,7 +20,7 @@ metadata:
 
 Audit CORS (Cross-Origin Resource Sharing) response headers for
 misconfigurations that let a malicious origin read
-authenticated API responses cross-domain — bypassing the Same-
+authenticated API responses cross-domain - bypassing the Same-
 Origin Policy's default protection. Flags overly-permissive
 `Access-Control-Allow-Origin` reflection, dangerous
 `Access-Control-Allow-Credentials: true` combined with wildcard
@@ -46,15 +46,14 @@ CORS-layer flaws with strict-allowlist remediation.
 
 ## When NOT to Use
 
-- For CSRF specifically (cookie-based cross-site state change) —
-  use `csrf-hunter`. The two share related surface but different
+- For CSRF specifically (cookie-based cross-site state change) -   use `csrf-hunter`. The two share related surface but different
   mechanisms: CSRF exploits cookie auto-send; CORS misconfig
   exploits cross-domain read.
-- For XSS (script execution in the target's own origin) — use
+- For XSS (script execution in the target's own origin) - use
   `xss-hunter`.
-- For same-origin issues like clickjacking — use
+- For same-origin issues like clickjacking - use
   `clickjacking-hunter`.
-- For postMessage / cross-frame communication — use
+- For postMessage / cross-frame communication - use
   `dom-xss-hunter` (Phase 5).
 - Any asset not listed in `.claude/security-scope.yaml`.
 
@@ -66,7 +65,7 @@ Before ANY outbound activity:
    or doesn't parse, halt and report.
 2. Confirm the intended target appears in the `assets` list AND
    its `testing_level` is at least `passive`. This skill is
-   passive — uses WebFetch with custom `Origin` headers, no
+   passive - uses WebFetch with custom `Origin` headers, no
    state changes.
 3. Probe traffic uses the authorized callback host from the
    scope as the `Origin` value. Do NOT use arbitrary public
@@ -81,7 +80,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints to focus on
+- `{scope_context}`: optional - specific endpoints to focus on
 - `{user_a}`: authenticated session (needed to check CORS on
   authenticated-only endpoints)
 - `{oauth_callback_host}`: authorized attacker-simulated Origin
@@ -153,7 +152,7 @@ The skill expects the caller to provide:
    ```
 
    Some servers use `startsWith(origin, "https://target.com")`
-   or `endsWith(origin, "target.com")` — both bypassable.
+   or `endsWith(origin, "target.com")` - both bypassable.
 
    Vulnerable signal: The malicious origin is reflected in
    `Access-Control-Allow-Origin`.
@@ -187,7 +186,7 @@ The skill expects the caller to provide:
 
    Note: browsers reject this combination at the client side.
    But the server's willingness to set both still indicates a
-   config error — and some older browsers / non-browser clients
+   config error - and some older browsers / non-browser clients
    may accept.
 
    Vulnerable signal: Server sets both (config bug).
@@ -273,10 +272,8 @@ Specific to this skill:
 - **OWASP**: WSTG-CLIENT-07. For APIs, API8:2023 (Security
   Misconfiguration). A05:2021 (Security Misconfiguration).
 - **CVSS vectors**: reflected-origin + credentials on
-  authenticated API —
-  `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N` (read-level compromise
-  of any authenticated user's data). Subdomain-confusion —
-  same. Wildcard-only (no creds) on public data — Informational
+  authenticated API -   `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N` (read-level compromise
+  of any authenticated user's data). Subdomain-confusion -   same. Wildcard-only (no creds) on public data - Informational
   to Low.
 - **Evidence**: the request with the malicious `Origin` header,
   the response headers showing reflection and
@@ -287,7 +284,7 @@ Specific to this skill:
   - Strict allowlist of origins (exact match, not regex)
   - NEVER combine `Access-Control-Allow-Origin: *` with
     credentials-carrying endpoints
-  - Don't accept `null` origin — reject explicitly
+  - Don't accept `null` origin - reject explicitly
   - Minimize `Access-Control-Allow-Methods` to the minimum
     required (typically GET + POST)
   - Set `Vary: Origin` on any response with Origin-dependent
@@ -297,7 +294,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -307,7 +304,7 @@ Before marking complete, verify:
 - [ ] Every finding shows the `Origin` request header and the
       `Access-Control-Allow-*` response headers side-by-side
 - [ ] Reflected-origin findings always check
-      `Access-Control-Allow-Credentials: true` — without
+      `Access-Control-Allow-Credentials: true` - without
       credentials the severity is much lower
 - [ ] `null` origin tests were run on all CORS-exposing
       endpoints
@@ -322,8 +319,7 @@ Before marking complete, verify:
 
 - **Public/static reflection on non-sensitive data**: The
   endpoint reflects arbitrary origins but only returns public
-  data (marketing pages, documentation). Not a vulnerability —
-  note as Informational.
+  data (marketing pages, documentation). Not a vulnerability -   note as Informational.
 
 - **Credential-less reflection**: `Access-Control-Allow-Origin`
   reflects but `Allow-Credentials` is not set. Browsers won't
@@ -334,12 +330,12 @@ Before marking complete, verify:
 - **Chrome / Firefox strict-enforce wildcard+credentials**:
   Modern browsers refuse to honor `AC-Allow-Origin: *` +
   `AC-Allow-Credentials: true`. The combo is inoperative in
-  browsers — but may still enable exploitation via non-browser
+  browsers - but may still enable exploitation via non-browser
   clients. File as config bug, severity Medium.
 
 - **Legitimate cross-domain integration**: Some apps are
   designed for cross-origin use (CDN-serving, widget-embedding).
-  Verify whether a permissive policy is intentional — and in
+  Verify whether a permissive policy is intentional - and in
   that case, whether the endpoint actually returns sensitive
   data to begin with.
 

@@ -1,6 +1,6 @@
 ---
 name: web-recon-passive
-description: "Performs passive reconnaissance against in-scope targets using only public OSINT sources — search engines, DNS history, Wayback Machine, public code repositories, metadata in published files, and .well-known files on the live site (no intrusive probing). Use as the first foundational skill of an assessment; results feed web-recon-active and api-recon. Produces an OSINT dossier written to .claude/planning/{issue}/PASSIVE_RECON.md. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Performs passive reconnaissance against in-scope targets using only public OSINT sources - search engines, DNS history, Wayback Machine, public code repositories, metadata in published files, and .well-known files on the live site (no intrusive probing). Use as the first foundational skill of an assessment; results feed web-recon-active and api-recon. Produces an OSINT dossier written to .claude/planning/{issue}/PASSIVE_RECON.md. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: Read, Grep, Glob, WebFetch(domain:*.in-scope-domain.com)
 metadata:
@@ -24,12 +24,12 @@ narrower and more efficient. This skill implements WSTG-INFO-01 through
 WSTG-INFO-05 (passive sections) and produces the dossier that
 `web-recon-active` and `api-recon` consume. No vulnerability findings
 from this skill alone unless credentials or sensitive data are
-discovered in public sources — those escalate to SECURITY_AUDIT.md
+discovered in public sources - those escalate to SECURITY_AUDIT.md
 immediately.
 
 ## When to Use
 
-- At the very start of an assessment — passive recon runs before
+- At the very start of an assessment - passive recon runs before
   active to avoid re-discovering surface OSINT already reveals.
 - When the scope file restricts testing to `passive_only` (production
   environments typically default to this).
@@ -40,18 +40,18 @@ immediately.
   read its `WEBCHECK.md` / `PASSIVE_RECON.patch.md` to skip
   re-collecting the DNS / TLS / headers / cookies / subdomain /
   reputation signals it already gathered, and focus this skill on the
-  OSINT depth web-check does NOT do — GitHub secret dorks (Phase 4),
+  OSINT depth web-check does NOT do - GitHub secret dorks (Phase 4),
   file-metadata pulls (Phase 1 §2), and Wayback parameter mining
   (Phase 3).
 
 ## When NOT to Use
 
 - When active probes are needed to confirm that OSINT-surfaced
-  endpoints are still live — that's `web-recon-active`'s job.
-- For deep API-spec enumeration — use `api-recon` (includes both
+  endpoints are still live - that's `web-recon-active`'s job.
+- For deep API-spec enumeration - use `api-recon` (includes both
   passive and active phases).
 - For the one-off credential verification that's part of a leaked-key
-  investigation — use `secrets-in-code-hunter` (which cross-references
+  investigation - use `secrets-in-code-hunter` (which cross-references
   `aws-iam-hunter` for key validation).
 - Any asset not listed in `.claude/security-scope.yaml`.
 
@@ -81,7 +81,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier (hostname, domain, or org name)
-- `{scope_context}`: optional — apex domain or sibling assets to
+- `{scope_context}`: optional - apex domain or sibling assets to
   cross-reference
 
 ## Methodology
@@ -111,7 +111,7 @@ The skill expects the caller to provide:
    [WSTG v4.2, 4.1.5]
 
    Do: Download any indexed office files (PDFs, DOCXs) and run
-   `exiftool` / `pdfinfo` to extract metadata — author names,
+   `exiftool` / `pdfinfo` to extract metadata - author names,
    internal paths, software versions.
 
    Record: Leaked usernames / paths in the passive-recon file.
@@ -123,10 +123,10 @@ The skill expects the caller to provide:
 
    Do: `amass enum -passive -d {target}` or equivalent Crt.sh,
    SecurityTrails, Chaos DB, DNSDumpster queries. All use
-   already-indexed data — no direct DNS fuzzing against the target.
+   already-indexed data - no direct DNS fuzzing against the target.
 
    Vulnerable condition: Dev/staging subdomains appear
-   (`dev.{target}`, `staging.{target}`, `backup.{target}`) — Improper
+   (`dev.{target}`, `staging.{target}`, `backup.{target}`) - Improper
    Asset Management candidates.
 
    Record: Subdomain list in
@@ -174,7 +174,7 @@ The skill expects the caller to provide:
    org:{org_name} path:config.json
    ```
 
-   Use `gh` CLI or web interface — do NOT use third-party "search
+   Use `gh` CLI or web interface - do NOT use third-party "search
    everything" tools without scope approval.
 
    Vulnerable condition: Valid API keys, AWS access keys, JWTs, or
@@ -239,7 +239,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No payloads — this skill only reads public sources. Key probe
+No payloads - this skill only reads public sources. Key probe
 patterns:
 
 - **Google dorks**: filetype:, inurl:, site:, intitle:
@@ -255,7 +255,7 @@ patterns:
 This skill produces the **PASSIVE_RECON.md dossier** that downstream
 recon and hunter skills consume:
 
-- `.claude/planning/{issue}/PASSIVE_RECON.md` — structured as:
+- `.claude/planning/{issue}/PASSIVE_RECON.md` - structured as:
   - **Organization** (apex, legal entity, org identifiers)
   - **Subdomains** (passive-sourced + CT log)
   - **Historical URLs** (Wayback + gau highlights)
@@ -271,11 +271,11 @@ something immediately exploitable:
 - **Exposed configuration files** (`.env`, `config.json`) → CWE-538,
   severity depends on content
 - **Public dev/staging with production data** → CWE-200 + API9:2023
-  — Improper Asset Management
+ - Improper Asset Management
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -299,7 +299,7 @@ Before marking complete, verify:
 
 - **Stale archives**: Wayback / gau often show URLs that are no
   longer live. Distinguish in the dossier between "historical" and
-  "confirmed live" — the latter requires active probing, which is
+  "confirmed live" - the latter requires active probing, which is
   `web-recon-active`'s scope.
 
 - **Honeytokens in public repos**: Some orgs intentionally commit fake
@@ -310,7 +310,7 @@ Before marking complete, verify:
 
 - **Body-embedded errors**: An app can return HTTP 200 with a
   "not found" body. Passive recon can't distinguish without active
-  probing — note the URL but defer confirmation to
+  probing - note the URL but defer confirmation to
   `web-recon-active`.
 
 - **Search index lag**: A recent incident or config change may not
@@ -340,7 +340,7 @@ Converted from:
 Grounded in:
 - Hacking APIs, Ch 6 (Passive Recon)
 - Bug Bounty Bootcamp, Ch 5 (Recon)
-- OWASP WSTG v4.2 (Section 4.1, Information Gathering — passive)
+- OWASP WSTG v4.2 (Section 4.1, Information Gathering - passive)
 - zseano's methodology (Methodology Chapter)
 
 Conversion date: 2026-04-24

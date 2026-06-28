@@ -1,6 +1,6 @@
 ---
 name: ssrf-hunter
-description: "Tests URL-fetching endpoints for Server-Side Request Forgery — loopback / internal-IP access, cloud metadata endpoints (169.254.169.254), internal-port scanning, blind SSRF via OOB callback, protocol smuggling (file:// / gopher:// / dict://), URL-parser confusion (fragment / userinfo / encoded), and DNS rebinding candidates. Use when the target has webhook / URL-fetch / link-preview / PDF-render / SVG-upload features; when parameters named `url`, `target`, `uri`, `endpoint`, `proxy` are in the inventory; or when the orchestrator's recon identifies external-fetch functionality. Produces findings with CWE-918 mapping, OOB-callback evidence, and allowlist + SSRF-safe fetcher remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Tests URL-fetching endpoints for Server-Side Request Forgery - loopback / internal-IP access, cloud metadata endpoints (169.254.169.254), internal-port scanning, blind SSRF via OOB callback, protocol smuggling (file:// / gopher:// / dict://), URL-parser confusion (fragment / userinfo / encoded), and DNS rebinding candidates. Use when the target has webhook / URL-fetch / link-preview / PDF-render / SVG-upload features; when parameters named `url`, `target`, `uri`, `endpoint`, `proxy` are in the inventory; or when the orchestrator's recon identifies external-fetch functionality. Produces findings with CWE-918 mapping, OOB-callback evidence, and allowlist + SSRF-safe fetcher remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -26,8 +26,7 @@ metadata:
 
 ## Goal
 
-Test URL-fetching functionality for Server-Side Request Forgery —
-flaws that let an attacker pivot through the target's network
+Test URL-fetching functionality for Server-Side Request Forgery - flaws that let an attacker pivot through the target's network
 position to reach internal services, steal cloud credentials from
 instance-metadata endpoints, perform internal port scans, or
 exfiltrate data from internal systems. This skill implements
@@ -52,15 +51,15 @@ and allowlist / SSRF-safe-fetcher remediation.
 
 ## When NOT to Use
 
-- For blind-XXE-as-SSRF via external entity URLs — use
+- For blind-XXE-as-SSRF via external entity URLs - use
   `xxe-hunter`; its methodology covers SSRF-adjacent XXE.
-- For cloud-metadata-specific deep SSRF with IMDSv2 bypass — use
+- For cloud-metadata-specific deep SSRF with IMDSv2 bypass - use
   `ssrf-cloud-metadata-hunter` (separate skill); this one covers
   standard IMDSv1 probes.
-- For webhook-specific SSRF in CI/CD — `gitlab-cicd-hunter`
+- For webhook-specific SSRF in CI/CD - `gitlab-cicd-hunter`
   handles that; this skill handles general webhooks.
 - For DNS-rebinding active testing (requires controlled DNS infra)
-  — flag candidates here, but full testing needs a DNS rebinding
+ - flag candidates here, but full testing needs a DNS rebinding
   harness which is out of scope for this skill.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -88,7 +87,7 @@ Before ANY outbound activity:
      authorized `oob_listener` from scope. NEVER use public paste
      services without explicit approval.
 4. If SSRF recovers cloud credentials, STOP at the proof. Do NOT
-   use the credentials to explore the cloud account — hand off to
+   use the credentials to explore the cloud account - hand off to
    `aws-iam-hunter` for a read-only permission audit.
 5. NO internal port scanning beyond common ports (22, 80, 443,
    3306, 5432, 6379, 8080, 8443) unless scope approves broader
@@ -103,10 +102,10 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific URL-fetch endpoints
+- `{scope_context}`: optional - specific URL-fetch endpoints
 - `{user_a}`: authenticated session if endpoints are behind auth
 - `{oob_listener}`: authorized OOB listener URL
-- `{internal_targets}`: optional — explicit list of internal
+- `{internal_targets}`: optional - explicit list of internal
   hosts/CIDRs in scope (only used if
   `internal_ssrf_testing: approved`)
 
@@ -182,14 +181,14 @@ The skill expects the caller to provide:
    GCP:
    ```
    http://metadata.google.internal/computeMetadata/v1/
-   (requires Metadata-Flavor: Google header — try header injection
+   (requires Metadata-Flavor: Google header - try header injection
    via URL fragment or dedicated parameter if available)
    ```
 
    Azure:
    ```
    http://169.254.169.254/metadata/instance?api-version=2021-02-01
-   (requires Metadata: true header — same constraint as GCP)
+   (requires Metadata: true header - same constraint as GCP)
    ```
 
    Vulnerable response: JSON with instance metadata, IAM role
@@ -254,13 +253,13 @@ The skill expects the caller to provide:
    ```
    file:///etc/passwd
    file:///c:/boot.ini
-   gopher://127.0.0.1:6379/_FLUSHALL (careful — flushall is destructive)
+   gopher://127.0.0.1:6379/_FLUSHALL (careful - flushall is destructive)
    dict://127.0.0.1:11211/stat (memcached stats)
    ftp://internal-host/file.txt
    ldap://internal-host/
    ```
 
-   **Avoid destructive gopher payloads** — even on in-scope, don't
+   **Avoid destructive gopher payloads** - even on in-scope, don't
    send `FLUSHALL`, `SET`, `DEL` to Redis.
 
    Vulnerable response: Server fetches file content, or
@@ -298,7 +297,7 @@ The skill expects the caller to provide:
    Do: Submit a hostname that resolves to a public IP AT FIRST
    query and switches to an internal IP on a second query. This
    requires a DNS-rebinding server setup (`rbndr.us`,
-   `dns-rebinding.com`) — if scope permits, attempt with an
+   `dns-rebinding.com`) - if scope permits, attempt with an
    authorized rebinding host.
 
    Vulnerable response: The target fetches an internal IP when
@@ -339,24 +338,21 @@ Specific to this skill:
 - **CWE**: CWE-918 (SSRF). CWE-611 for XXE-via-SSRF (hand off to
   `xxe-hunter`). CWE-200 for internal information disclosure via
   port scanning.
-- **OWASP**: WSTG-INPV-19. A10:2021 (SSRF — added in 2021). For
+- **OWASP**: WSTG-INPV-19. A10:2021 (SSRF - added in 2021). For
   APIs, API7:2023 (Server-Side Request Forgery).
-- **CVSS vectors**: SSRF → cloud metadata → IAM creds —
-  `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Internal service access
-  without creds — `...C:H/I:L/A:N`. Blind SSRF only —
-  `...AC:H/C:L/I:L/A:N`. `file://` to sensitive file —
-  `...C:H/I:N/A:N`.
+- **CVSS vectors**: SSRF → cloud metadata → IAM creds -   `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`. Internal service access
+  without creds - `...C:H/I:L/A:N`. Blind SSRF only -   `...AC:H/C:L/I:L/A:N`. `file://` to sensitive file -   `...C:H/I:N/A:N`.
 - **Evidence**: the injected URL, the response containing internal
   content (or OOB listener log), and the fingerprinted internal
   service if applicable.
 - **Remediation framing**: backend engineer + platform. Include:
   - Allowlist of permitted fetch destinations (domains AND
-    resolved IPs — resolve and re-check before fetch)
+    resolved IPs - resolve and re-check before fetch)
   - SSRF-safe fetcher libraries (e.g., Python `ssrf_safe`, Ruby
     `ssrf_filter`, Node `ssrf-req-filter`)
   - Network-level egress filtering from the application subnet
     (block RFC 1918, link-local, loopback)
-  - IMDSv2 enforcement (AWS) — blocks basic SSRF even if app
+  - IMDSv2 enforcement (AWS) - blocks basic SSRF even if app
     SSRF exists
   - Protocol allowlist (HTTPS only, not file/gopher/ftp)
   - Response sanitization if fetched content is displayed (don't
@@ -364,9 +360,9 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/aws-iam-targets.md` — appends SSRF
+- `.claude/planning/{issue}/aws-iam-targets.md` - appends SSRF
   vectors reaching IMDS for `aws-iam-hunter`
 
 ## Quality Check (Self-Review)
@@ -376,7 +372,7 @@ Before marking complete, verify:
 - [ ] Every finding includes the injection URL AND the resulting
       response / OOB log
 - [ ] Cloud-credential discoveries were NOT used to explore the
-      account beyond the proof — handed off to `aws-iam-hunter`
+      account beyond the proof - handed off to `aws-iam-hunter`
 - [ ] Internal-IP probes stayed within scope-declared
       internal_targets, or used `internal_ssrf_testing: approved`
       blanket permission
@@ -410,12 +406,12 @@ Before marking complete, verify:
 - **IMDSv2 protection**: AWS instances with IMDSv2 enforced
   reject IMDS requests without a session token. Basic SSRF
   payloads fail even if SSRF exists. File as "SSRF confirmed,
-  IMDS inaccessible due to IMDSv2 — verify no IMDSv1 fallback".
+  IMDS inaccessible due to IMDSv2 - verify no IMDSv1 fallback".
   Cross-reference `aws-iam-hunter` Phase 4.
 
 - **WAF blocks SSRF attempts**: Some WAFs block internal-IP
   patterns in URL parameters. The WAF is a defense; file as
-  "SSRF exists but externally blocked by WAF — fix the
+  "SSRF exists but externally blocked by WAF - fix the
   application layer regardless".
 
 - **Circular vs actual internal**: `127.0.0.1` from the target's
@@ -425,7 +421,7 @@ Before marking complete, verify:
 
 ## References
 
-- `references/payloads.md` — full encoding-and-protocol bypass
+- `references/payloads.md` - full encoding-and-protocol bypass
   payload catalog
 
 External:

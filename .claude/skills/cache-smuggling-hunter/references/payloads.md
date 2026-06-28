@@ -1,15 +1,15 @@
-# payloads — cache-smuggling-hunter
+# payloads - cache-smuggling-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Técnico_ Web Cache Poisoning e HTTP Smuggling.md` (Section 5: PAYLOADS / PROBES)
 
-All probes are non-destructive — an `X-Forwarded-Host` reflection or a
+All probes are non-destructive - an `X-Forwarded-Host` reflection or a
 CL.TE desync. Do NOT submit probes that poison user-facing pages on
-production without `destructive_testing: approved` — a single poisoned
+production without `destructive_testing: approved` - a single poisoned
 CDN entry can affect every visitor.
 
 ---
 
-## Part A — Web Cache Poisoning
+## Part A - Web Cache Poisoning
 
 ### A1. Unkeyed-Header Reflection Probe
 
@@ -26,7 +26,7 @@ If a match appears in the body or in a `Location` header, the header is
 reflected. Next, verify it's also UNKEYED (not part of the cache key):
 
 ```bash
-# Same URL, different IP / different User-Agent — check for cache hit
+# Same URL, different IP / different User-Agent - check for cache hit
 curl -s -D - "https://target.example/" | grep -iE 'age|x-cache|cf-cache-status'
 ```
 
@@ -50,7 +50,7 @@ X-Accept-Version: PROBE
 
 ### A3. Param-Cloaking Probes
 
-Query string parameters may be unkeyed — vary each and check caching:
+Query string parameters may be unkeyed - vary each and check caching:
 
 ```
 https://target/?utm_source=attacker-value
@@ -95,7 +95,7 @@ https://target.example/?cb=testrun-{uuid}
 
 ---
 
-## Part B — HTTP Request Smuggling
+## Part B - HTTP Request Smuggling
 
 ### B1. CL.TE Probe (front-end CL, back-end TE)
 
@@ -189,7 +189,7 @@ Look for `X-Injected: yes` in the response headers.
 
 ### B5. HTTP/2 Downgrade Smuggling (h2c, http2-to-1)
 
-Front-end speaks HTTP/2, back-end HTTP/1.1 — header smuggling via
+Front-end speaks HTTP/2, back-end HTTP/1.1 - header smuggling via
 `transfer-encoding` pseudo-header:
 
 ```
@@ -211,14 +211,14 @@ Requires a HTTP/2-capable client (nghttp2, h2load, Burp HTTP/2 tab).
 ## Sweep Commands
 
 ```bash
-# Smuggler (tool by @defparam) — automated CL.TE / TE.CL / TE.TE probes
+# Smuggler (tool by @defparam) - automated CL.TE / TE.CL / TE.TE probes
 # https://github.com/defparam/smuggler
 python3 smuggler.py -u https://target.example
 
-# Param Miner (Burp extension, free) — automates unkeyed-header
+# Param Miner (Burp extension, free) - automates unkeyed-header
 # discovery with a large wordlist.
 
-# h2csmuggler — tests HTTP/2 downgrade smuggling
+# h2csmuggler - tests HTTP/2 downgrade smuggling
 h2csmuggler -u https://target.example/ -p "GET /admin HTTP/1.1"
 ```
 
@@ -243,6 +243,6 @@ h2csmuggler -u https://target.example/ -p "GET /admin HTTP/1.1"
   legitimate traffic on the same back-end socket. Run during low-
   traffic windows.
 - Do NOT send a poisoning payload with a real XSS / malicious script
-  — use harmless reflections (`PROBE.attacker.example` / random string).
+ - use harmless reflections (`PROBE.attacker.example` / random string).
   The vulnerability is proven by the reflection; actual exploitation
   payloads require `destructive_testing: approved`.

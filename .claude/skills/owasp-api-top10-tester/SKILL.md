@@ -1,6 +1,6 @@
 ---
 name: owasp-api-top10-tester
-description: "Runs a full OWASP API Security Top 10 coverage sweep against a target — dispatches to class-specific hunters (bola-bfla-hunter, auth-flaw-hunter, excessive-data-exposure-hunter, rate-limit-hunter, mass-assignment-hunter, sqli-hunter, command-injection-hunter, jwt-hunter) for each Top-10 item, then produces a consolidated API-Top-10 coverage matrix showing which items were tested, what was found, and which items need follow-up. Use as the 'API sweep' entry point when the orchestrator wants broad-but-shallow coverage, or as the pre-deploy final check. Produces .claude/planning/{issue}/API_TOP10_COVERAGE.md alongside any downstream findings. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Runs a full OWASP API Security Top 10 coverage sweep against a target - dispatches to class-specific hunters (bola-bfla-hunter, auth-flaw-hunter, excessive-data-exposure-hunter, rate-limit-hunter, mass-assignment-hunter, sqli-hunter, command-injection-hunter, jwt-hunter) for each Top-10 item, then produces a consolidated API-Top-10 coverage matrix showing which items were tested, what was found, and which items need follow-up. Use as the 'API sweep' entry point when the orchestrator wants broad-but-shallow coverage, or as the pre-deploy final check. Produces .claude/planning/{issue}/API_TOP10_COVERAGE.md alongside any downstream findings. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -29,7 +29,7 @@ metadata:
 Perform a structured OWASP API Security Top 10 assessment by
 orchestrating class-specific hunter skills for each item and
 producing a single consolidated coverage matrix. This skill does
-NOT re-implement each item's methodology — it dispatches to the
+NOT re-implement each item's methodology - it dispatches to the
 specialized hunter skill and aggregates results. Output maps
 directly to OWASP API Top 10 categories and supports the
 compliance-focused reporting that reviewers and auditors expect.
@@ -49,12 +49,12 @@ Implements WSTG-API family (meta-skill) and produces
 
 ## When NOT to Use
 
-- For deep testing of a single class — dispatch directly to the
+- For deep testing of a single class - dispatch directly to the
   class-specific hunter (faster, richer findings).
 - For web-app-first assessments where the target isn't API-heavy
-  — use the individual hunters; this skill's dispatching overhead
+ - use the individual hunters; this skill's dispatching overhead
   isn't worth it for 2-3 classes.
-- For non-HTTP APIs (raw TCP, binary protocols) — source
+- For non-HTTP APIs (raw TCP, binary protocols) - source
   methodology doesn't cover these; file a gap.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -68,7 +68,7 @@ Before ANY outbound activity:
 2. Confirm the intended target appears in the `assets` list AND
    its `testing_level` is `active`.
 3. This skill invokes other skills via the orchestrator. Each
-   dispatched skill's OWN Authorization Check still runs — this
+   dispatched skill's OWN Authorization Check still runs - this
    skill only coordinates; it does not bypass per-skill gating.
    If a dispatched skill halts (e.g., `auth-flaw-hunter` needs
    security-team notification), this skill waits and surfaces the
@@ -84,17 +84,17 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — subsections of the API to focus on
+- `{scope_context}`: optional - subsections of the API to focus on
 - `{user_a}`: regular-user test credentials
 - `{user_b}`: second regular-user test credentials (for BOLA)
 - `{user_admin}`: admin credentials (for BFLA)
-- `{skip_items}`: optional — list of Top-10 items to skip (e.g.,
+- `{skip_items}`: optional - list of Top-10 items to skip (e.g.,
   `[API4]` if rate-limit testing is deferred to a separate window)
 
 ## Methodology
 
 Each phase below corresponds to one OWASP API Top 10 item
-(2019 / 2023 editions — this skill honors the updated 2023
+(2019 / 2023 editions - this skill honors the updated 2023
 version primarily). Each dispatches to a specialized hunter skill
 and records the outcome.
 
@@ -107,17 +107,17 @@ and records the outcome.
 
    Record: Verified-present in coverage matrix.
 
-### Phase 2: API1:2023 — Broken Object Level Authorization
+### Phase 2: API1:2023 - Broken Object Level Authorization
 
 2. **Dispatch to `bola-bfla-hunter` (BOLA section)**
 
    Do: Invoke `bola-bfla-hunter` with Phases 1-3 (object ID
    inventory, A-B token swap, side-channel enumeration).
 
-   Record: Outcome in coverage matrix: `API1 — {finding_count}
-   findings — dispatched-to: bola-bfla-hunter`.
+   Record: Outcome in coverage matrix: `API1 - {finding_count}
+   findings - dispatched-to: bola-bfla-hunter`.
 
-### Phase 3: API2:2023 — Broken Authentication
+### Phase 3: API2:2023 - Broken Authentication
 
 3. **Dispatch to `auth-flaw-hunter` + `jwt-hunter`**
 
@@ -127,7 +127,7 @@ and records the outcome.
 
    Record: Combined outcome, both skills' finding counts.
 
-### Phase 4: API3:2023 — Broken Object Property Level Authorization (BOPLA)
+### Phase 4: API3:2023 - Broken Object Property Level Authorization (BOPLA)
 
 4. **Dispatch to `excessive-data-exposure-hunter` +
    `mass-assignment-hunter`**
@@ -138,17 +138,17 @@ and records the outcome.
 
    Record: Combined coverage.
 
-### Phase 5: API4:2023 — Unrestricted Resource Consumption
+### Phase 5: API4:2023 - Unrestricted Resource Consumption
 
 5. **Dispatch to `rate-limit-hunter`**
 
    Do: Invoke for lockout / SMS-cost / payload-size / function-usage
-   tests. Honor `service_affecting` gating — may halt waiting for
+   tests. Honor `service_affecting` gating - may halt waiting for
    scope approval; surface that as a coverage gap if so.
 
    Record: Outcome; "halted-awaiting-approval" is a valid state.
 
-### Phase 6: API5:2023 — Broken Function Level Authorization
+### Phase 6: API5:2023 - Broken Function Level Authorization
 
 6. **Dispatch to `bola-bfla-hunter` (BFLA section)**
 
@@ -157,7 +157,7 @@ and records the outcome.
 
    Record: Outcome.
 
-### Phase 7: API6:2023 — Unrestricted Access to Sensitive Business Flows
+### Phase 7: API6:2023 - Unrestricted Access to Sensitive Business Flows
 
 7. **Dispatch to `business-logic-hunter` +
    `rate-limit-hunter` (function-usage)**
@@ -168,7 +168,7 @@ and records the outcome.
 
    Record: Combined.
 
-### Phase 8: API7:2023 — Server-Side Request Forgery
+### Phase 8: API7:2023 - Server-Side Request Forgery
 
 8. **Dispatch to `ssrf-hunter`**
 
@@ -178,18 +178,18 @@ and records the outcome.
    Record: Outcome; if cloud credentials were recovered, note
    the cross-skill handoff to `aws-iam-hunter`.
 
-### Phase 9: API8:2023 — Security Misconfiguration
+### Phase 9: API8:2023 - Security Misconfiguration
 
 9. **Synthesize misconfiguration findings**
 
-   Do: This item doesn't have a single dedicated hunter — it
+   Do: This item doesn't have a single dedicated hunter - it
    aggregates from:
    - `crypto-flaw-hunter` for TLS / HSTS / cookie-flag issues
    - `web-recon-active` / `api-recon` findings for verbose errors,
      exposed admin paths, CORS misconfigurations
    - `cors-misconfig-hunter` for CORS specifically (if run)
    - Missing security headers via a direct `WebFetch` audit
-     (X-Content-Type-Options, X-Frame-Options — cross-reference
+     (X-Content-Type-Options, X-Frame-Options - cross-reference
      `clickjacking-hunter` for frame-ancestors)
 
    Do: Run a consolidated check:
@@ -200,7 +200,7 @@ and records the outcome.
    Record: Per-header matrix. File Medium findings for each
    missing header appropriate to the asset type.
 
-### Phase 10: API9:2023 — Improper Inventory Management
+### Phase 10: API9:2023 - Improper Inventory Management
 
 10. **Inventory-drift check**
 
@@ -219,7 +219,7 @@ and records the outcome.
     if the legacy endpoint bypasses modern auth or exposes
     decommissioned functionality.
 
-### Phase 11: API10:2023 — Unsafe Consumption of APIs
+### Phase 11: API10:2023 - Unsafe Consumption of APIs
 
 11. **Third-party API consumption audit**
 
@@ -256,7 +256,7 @@ and records the outcome.
     `.claude/planning/{issue}/API_TOP10_COVERAGE.md`:
 
     ```markdown
-    # API Top 10 Coverage — {issue} — {target}
+    # API Top 10 Coverage - {issue} - {target}
 
     | # | Category                                           | Dispatched Skill(s)        | Findings | Status |
     |---|----------------------------------------------------|----------------------------|----------|--------|
@@ -277,7 +277,7 @@ and records the outcome.
 
 ## Payload Library
 
-No payloads — this is a dispatching meta-skill. Specific payloads
+No payloads - this is a dispatching meta-skill. Specific payloads
 live in each dispatched hunter. The OWASP polyglot probes from
 the source note are a subset of what dedicated hunters carry:
 BOLA IDs, Mass Assignment `admin:true`, JWT `alg:none`, Injection
@@ -299,7 +299,7 @@ with counts and status per category.
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -340,10 +340,10 @@ Before marking complete, verify:
 
 - **Skipped categories masquerading as "clean"**: If `{skip_items}`
   excluded a category, the matrix must say "Skipped" not
-  "Tested — 0 findings". Auditors care about the distinction.
+  "Tested - 0 findings". Auditors care about the distinction.
 
 - **API8 "Security Misconfiguration" scope creep**: This category
-  is broad — nearly any posture issue fits. Limit to what the
+  is broad - nearly any posture issue fits. Limit to what the
   dispatched skills actually tested to avoid overclaiming
   coverage.
 

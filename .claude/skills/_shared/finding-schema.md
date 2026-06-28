@@ -58,7 +58,7 @@ append these; they never rewrite prior findings.
 **OWASP:** {ASVS ref, API Top 10 ref, or WSTG ref}
 **Status:** Confirmed | Suspected | False Positive | Rejected
 
-**Asset:** {from security-scope.yaml — exact name}
+**Asset:** {from security-scope.yaml - exact name}
 **Endpoint:** {URL or resource identifier}
 **Discovered:** 2026-04-23 09:22 UTC
 
@@ -125,7 +125,7 @@ if user.id != request.user.id and not request.user.is_admin:
 
 2. **Use monotonic finding IDs.** Read the current file, find the highest
    FINDING-NNN, increment. Race conditions across parallel skills are the
-   orchestrator's problem, not the skill's — skills acquire a lock via
+   orchestrator's problem, not the skill's - skills acquire a lock via
    `.claude/planning/{issue}/.audit.lock` before appending.
 
 3. **One finding per issue.** Do not bundle "five XSS findings" into one
@@ -138,4 +138,4 @@ if user.id != request.user.id and not request.user.is_admin:
    only existing content skills are permitted to modify.
 
 6. **If no findings, still log the run.** An empty skill run is valuable
-   data — it means that vulnerability class is clean for this scope.
+   data - it means that vulnerability class is clean for this scope.

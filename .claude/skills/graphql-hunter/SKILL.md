@@ -54,17 +54,16 @@ authorization).
 
 ## When NOT to Use
 
-- For REST / JSON APIs — use `owasp-api-top10-tester`,
+- For REST / JSON APIs - use `owasp-api-top10-tester`,
   `bola-bfla-hunter`, `mass-assignment-hunter`, or the specific
   class's hunter.
-- For generic JSON injection — use `sqli-hunter` against
+- For generic JSON injection - use `sqli-hunter` against
   resolver-arguments; this skill dispatches to it for the
   injection phase.
-- For JWT flaws in GraphQL bearer tokens — use `jwt-hunter`; this
+- For JWT flaws in GraphQL bearer tokens - use `jwt-hunter`; this
   skill maps the auth model, JWT specifics go to jwt-hunter.
 - For GraphQL Federation or Apollo Router-specific
-  misconfigurations (variant: `@federation` directive misuse) —
-  file a gap in `references/gaps.md`; this skill doesn't yet
+  misconfigurations (variant: `@federation` directive misuse) -   file a gap in `references/gaps.md`; this skill doesn't yet
   cover federation-specific attacks.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -117,10 +116,10 @@ The skill expects the caller to provide:
    application/json" -d '{"query":"{__typename}"}'`.
 
    Vulnerable condition: Server responds with `{"data":
-   {"__typename":"Query"}}` — GraphQL is live; __typename
+   {"__typename":"Query"}}` - GraphQL is live; __typename
    was not blocked.
 
-   Not-vulnerable condition: 404 / 403 — endpoint doesn't
+   Not-vulnerable condition: 404 / 403 - endpoint doesn't
    exist or blocks unauthenticated probes.
 
    Record: Endpoint details in `.claude/planning/{issue}/graphql-targets.md`.
@@ -138,10 +137,9 @@ The skill expects the caller to provide:
    /_apollo_explorer
    ```
 
-   Vulnerable condition: An IDE is exposed in production —
-   lowers the bar for attacker enumeration.
+   Vulnerable condition: An IDE is exposed in production -    lowers the bar for attacker enumeration.
 
-   Record: Each exposed IDE as a finding (Medium — information
+   Record: Each exposed IDE as a finding (Medium - information
    exposure; production should use a dev-gated environment).
 
 ### Phase 2: Introspection
@@ -179,7 +177,7 @@ The skill expects the caller to provide:
    ```
 
    Vulnerable condition: Server returns the full schema in
-   production — enables precise attack planning.
+   production - enables precise attack planning.
 
    Not-vulnerable condition: Introspection disabled (400 / 403 /
    specific error message from Apollo/Graphene about
@@ -233,7 +231,7 @@ The skill expects the caller to provide:
 
    Vulnerable response: Sensitive fields (`hashedPassword`,
    `mfaSecret`, `apiKeys`, `internalNotes`) are returned to
-   non-admins — authorization is at query level, not field level.
+   non-admins - authorization is at query level, not field level.
 
    Not-vulnerable response: Sensitive fields return `null` or
    are rejected with a per-field error.
@@ -251,7 +249,7 @@ The skill expects the caller to provide:
 
    Watch response time. Start at depth 5, increment by 5 until
    either (a) response time exceeds 10s, or (b) depth 50 reached.
-   STOP at first >10s response — do not deepen further.
+   STOP at first >10s response - do not deepen further.
 
    Vulnerable response: Server response time scales exponentially
    with depth.
@@ -273,7 +271,7 @@ The skill expects the caller to provide:
    ```
 
    Vulnerable response: All 100 are executed in one HTTP request
-   — rate limiting was per-HTTP-request not per-operation.
+ - rate limiting was per-HTTP-request not per-operation.
 
    Not-vulnerable response: Batching disabled or limited to N=5.
 
@@ -294,7 +292,7 @@ The skill expects the caller to provide:
    Vulnerable response: Error message with SQL syntax signature,
    or response with cross-tenant data.
 
-   Record: Delegate deep-dive to `sqli-hunter` — this skill flags
+   Record: Delegate deep-dive to `sqli-hunter` - this skill flags
    the resolver as a candidate; sqli-hunter confirms.
 
 10. **Command injection probe**
@@ -366,9 +364,9 @@ Specific to this skill:
   DoS/batching), API8:2023 (Security Misconfiguration for
   introspection).
 - **CVSS vectors**: BOLA on sensitive types (user PII, messages)
-  — `AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N`. Mass data disclosure
-  via field-level authz gap — `...C:H/I:L/A:N`. DoS via nesting
-  on prod — `...C:N/I:N/A:H`.
+ - `AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N`. Mass data disclosure
+  via field-level authz gap - `...C:H/I:L/A:N`. DoS via nesting
+  on prod - `...C:N/I:N/A:H`.
 - **Evidence**: the exact GraphQL query + variables; the response
   body (truncated if huge); schema excerpt from introspection
   confirming the field or type involved.
@@ -384,7 +382,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -425,18 +423,18 @@ Before marking complete, verify:
 - **`null` on BOLA not always a good signal**: Some GraphQL APIs
   return `null` both for "doesn't exist" and "not authorized",
   making BOLA detection noisy. Confirm by requesting the same
-  ID as user A (owner) — if A gets data, B should get `null` or
+  ID as user A (owner) - if A gets data, B should get `null` or
   error; if A also gets `null`, the resource just doesn't exist.
 
 - **Cost-analysis disguised as depth limit**: Server rejects deep
   queries with "query too expensive" instead of "depth exceeded"
-  — cost analysis is in place, which is stronger than simple
+ - cost analysis is in place, which is stronger than simple
   depth limiting. Note the app is protected.
 
 ## References
 
-- `references/payloads.md` — full per-category payload catalog
-- `references/remediation.md` — per-library remediation snippets
+- `references/payloads.md` - full per-category payload catalog
+- `references/remediation.md` - per-library remediation snippets
   (Apollo, Graphene, graphql-ruby, Hot Chocolate)
 
 External:

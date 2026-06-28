@@ -5,7 +5,7 @@ red-team + 7 red-team-ops + 3 DFIR/incident-response + 3 reference) plus
 the `security-orchestrator` agent that composes the web/API/cloud set.
 Skills are under `.claude/skills/{name}/`;
 the agent is at `.claude/agents/security-orchestrator.md`; the
-authorization file is `.claude/security-scope.yaml` (template — must be
+authorization file is `.claude/security-scope.yaml` (template - must be
 populated with real company assets before any live use).
 
 ## Quickstart
@@ -17,7 +17,7 @@ populated with real company assets before any live use).
    (using reserved `example.com`/`contoso.com` domains, covering the
    web/AD/mobile/LLM/red-team-ops/DFIR blocks) is at
    [`.claude/security-scope.example.yaml`](../security-scope.example.yaml)
-   — copy from it, never point skills at it.
+ - copy from it, never point skills at it.
 2. **Run discovery.** `/discover Security assessment of {asset}` creates
    a planning folder at `.claude/planning/{issue-name}/`.
 3. **Dispatch the orchestrator.** `@security-orchestrator {issue-name}`
@@ -29,7 +29,7 @@ populated with real company assets before any live use).
 
 ## Skill inventory (40 skills)
 
-### Tier 4 — Recon / Foundation (6 skills)
+### Tier 4 - Recon / Foundation (6 skills)
 Run before any hunter. Produce inventory artifacts that hunters consume.
 
 | Skill | Profile | Output |
@@ -41,7 +41,7 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 | [auth-flow-mapper](auth-flow-mapper/SKILL.md) | passive | `AUTH_FLOWS.md` |
 | [attack-surface-mapper](attack-surface-mapper/SKILL.md) | active | `CONSOLIDATED_ATTACK_SURFACE.md` |
 
-### Tier 1/2 — Authentication (4 skills)
+### Tier 1/2 - Authentication (4 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
@@ -50,14 +50,14 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 | [jwt-hunter](jwt-hunter/SKILL.md) | active | `alg:none`, HS256 cracking, RS256→HS256 confusion, `kid`/`jku` injection |
 | [oauth-oidc-hunter](oauth-oidc-hunter/SKILL.md) | active | redirect-URI validation, state/CSRF, code reuse, flow downgrade |
 
-### Tier 1 — Access Control (2 skills)
+### Tier 1 - Access Control (2 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
 | [idor-hunter](idor-hunter/SKILL.md) | active | Web-app object-ID authorization (CWE-639) |
 | [bola-bfla-hunter](bola-bfla-hunter/SKILL.md) | active | API BOLA (API1:2023) + BFLA (API5:2023) |
 
-### Tier 1/2 — Injection (6 skills)
+### Tier 1/2 - Injection (6 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
@@ -68,7 +68,7 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 | [path-traversal-hunter](path-traversal-hunter/SKILL.md) | active | `../` traversal, LFI, RFI, encoding bypasses, protocol wrappers |
 | [deserialization-hunter](deserialization-hunter/SKILL.md) | active | PHP / Java / Python pickle / Ruby Marshal / YAML gadget chains |
 
-### Tier 1/2 — Client-side (6 skills)
+### Tier 1/2 - Client-side (6 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
@@ -79,7 +79,7 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 | [open-redirect-hunter](open-redirect-hunter/SKILL.md) | active | Protocol-relative / path-prefix / userinfo / encoding bypasses |
 | [cors-misconfig-hunter](cors-misconfig-hunter/SKILL.md) | passive | Origin-reflection + credentials, `null` origin, subdomain confusion |
 
-### Tier 1/2 — API-class (5 skills)
+### Tier 1/2 - API-class (5 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
@@ -89,22 +89,22 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 | [rate-limit-hunter](rate-limit-hunter/SKILL.md) | active (service_affecting) | Auth brute-force, MFA brute-force, SMS cost amplification, payload stress |
 | [owasp-api-top10-tester](owasp-api-top10-tester/SKILL.md) | active | Orchestration: dispatches 8 sub-hunters + produces `API_TOP10_COVERAGE.md` |
 
-### Tier 1/2 — Server-side (3 skills)
+### Tier 1/2 - Server-side (3 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
 | [ssrf-hunter](ssrf-hunter/SKILL.md) | active | Loopback, internal-IP, cloud metadata, protocol smuggling, DNS rebinding |
-| [ssrf-cloud-metadata-hunter](ssrf-cloud-metadata-hunter/SKILL.md) | active | AWS IMDSv1/v2 bypass, GCP v1beta1, Azure metadata — downstream of SSRF |
+| [ssrf-cloud-metadata-hunter](ssrf-cloud-metadata-hunter/SKILL.md) | active | AWS IMDSv1/v2 bypass, GCP v1beta1, Azure metadata - downstream of SSRF |
 | [cache-smuggling-hunter](cache-smuggling-hunter/SKILL.md) | active (staging-only, dual-gated) | Cache poisoning via unkeyed headers, CL.TE / TE.CL smuggling |
 
-### Tier 1 — Logic + Cross-cutting (2 skills)
+### Tier 1 - Logic + Cross-cutting (2 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
 | [business-logic-hunter](business-logic-hunter/SKILL.md) | active | Workflow bypasses, logical-invalid data, hidden-field tampering, one-time-function reuse |
 | [crypto-flaw-hunter](crypto-flaw-hunter/SKILL.md) | passive | Consolidates TLS / cookie / JWT / secret artifacts into `CRYPTO_POSTURE.md` |
 
-### Tier 3 — Cloud / CI/CD / Secrets (5 skills)
+### Tier 3 - Cloud / CI/CD / Secrets (5 skills)
 
 | Skill | Profile | Covers |
 |---|---|---|
@@ -114,13 +114,13 @@ Run before any hunter. Produce inventory artifacts that hunters consume.
 | [gitlab-cicd-hunter](gitlab-cicd-hunter/SKILL.md) | cicd-readonly | Pipeline secrets, `.git/` leaks, webhook SSRF, privileged runners |
 | [secrets-in-code-hunter](secrets-in-code-hunter/SKILL.md) | repo-readonly | trufflehog + gitleaks + custom regex over repo history |
 
-### Tier 2 — Recon-adjacent (1 skill)
+### Tier 2 - Recon-adjacent (1 skill)
 
 | Skill | Profile | Covers |
 |---|---|---|
 | [subdomain-takeover-hunter](subdomain-takeover-hunter/SKILL.md) | passive | Dangling CNAMEs to unclaimed GitHub / S3 / Heroku / Azure; NS takeover |
 
-### Internal / Mobile / AI — Red-Team Extension (5 skills)
+### Internal / Mobile / AI - Red-Team Extension (5 skills)
 
 Net-new categories the 40 web/API/cloud hunters do not cover. Sourced
 from RedefiningReality/Cheatsheets (MIT, per author) and cannibalized
@@ -161,7 +161,7 @@ online brute force, no persistence. Findings go to `SECURITY_AUDIT.md` /
 | [cracking-hunter](cracking-hunter/SKILL.md) | cracking | Offline hashcat/John against captured hashes (AD/JWT/SAM/NTDS); proves weak password policy. The shared cracking utility |
 | [reverse-engineering-hunter](reverse-engineering-hunter/SKILL.md) | reverse-eng | Static + sandboxed-dynamic RE of binaries/firmware (Ghidra/radare2/gdb/binwalk/capa): secrets, unsafe calls, weak crypto, auth-bypass logic |
 | [exploit-validation-hunter](exploit-validation-hunter/SKILL.md) | exploit-validation | Confirm exploitability with vetted PoCs / pwntools (replica-first, benign proof, stop at proof). Flips Suspected→Confirmed/Not-Exploitable |
-| [social-engineering-hunter](social-engineering-hunter/SKILL.md) | social-eng | Authorized phishing/awareness (Gophish; evilginx MFA-phish demo gated). Targets people — separate written consent; never stores real creds |
+| [social-engineering-hunter](social-engineering-hunter/SKILL.md) | social-eng | Authorized phishing/awareness (Gophish; evilginx MFA-phish demo gated). Targets people - separate written consent; never stores real creds |
 | [wireless-hunter](wireless-hunter/SKILL.md) | wireless | 802.11 survey, WPA handshake/PMKID capture (→ cracking-hunter), rogue-AP/awareness demos. Runs from a Linux capture host (VM passthrough / Pi); needs RF hardware |
 
 **New scope-file keys these require** (under the `red_team_ops:` block):
@@ -174,7 +174,7 @@ All default `denied`.
 
 ### DFIR / Incident Response (4 skills)
 
-Net-new **defensive** category — the stack's first non-offensive track.
+Net-new **defensive** category - the stack's first non-offensive track.
 Grounded in NIST SP 800-61/800-86, SANS PICERL, and MITRE ATT&CK/D3FEND
 (authored from those sources, not from any awesome-list). Analyzes
 **acquired evidence copies read-only**; never acquires, mutates, contains,
@@ -198,47 +198,47 @@ to `INCIDENT_REPORT.md`, not `SECURITY_AUDIT.md`.
 All skills reference one of 17 profiles defined in
 [_shared/tool-profiles.md](_shared/tool-profiles.md):
 
-- **passive** — `Read, Grep, Glob, WebFetch` (no Bash outside planning/)
-- **active** — passive + allowlisted Bash (`curl`, `ffuf`, `nuclei`,
+- **passive** - `Read, Grep, Glob, WebFetch` (no Bash outside planning/)
+- **active** - passive + allowlisted Bash (`curl`, `ffuf`, `nuclei`,
   `arjun`, `nmap --script=safe`, etc.; forbidden: sqlmap, metasploit,
   hydra, nikto)
-- **cloud-readonly** — passive + `aws` CLI restricted to `describe-*`,
+- **cloud-readonly** - passive + `aws` CLI restricted to `describe-*`,
   `get-*`, `list-*`, `simulate-principal-policy` (no write verbs)
-- **cicd-readonly** — passive + `glab` restricted to read-only +
+- **cicd-readonly** - passive + `glab` restricted to read-only +
   `git log/show/blame/grep`
-- **repo-readonly** — passive + `git log/show/blame/grep/diff` +
+- **repo-readonly** - passive + `git log/show/blame/grep/diff` +
   `trufflehog`, `gitleaks detect/protect`
-- **internal-ad** — DELIBERATELY breaks the no-credential-attacks rule
+- **internal-ad** - DELIBERATELY breaks the no-credential-attacks rule
   for authorized internal pentests: `netexec`/`crackmapexec`, `kerbrute`,
   impacket, `bloodhound-python`, `certipy`, `hashcat`/`john`. Highest
   blast radius; extra-gated (`internal_pentest: approved`, vault creds,
   cracking/impersonation/dumping/dominance sub-gates)
-- **ai-redteam** — `garak`, `pyrit`, `python3`, `curl` against
+- **ai-redteam** - `garak`, `pyrit`, `python3`, `curl` against
   first-party LLM endpoints only
-- **mobile-sast** — static APK tooling: `mobsf`, `mobsfscan`, `apkleaks`,
+- **mobile-sast** - static APK tooling: `mobsf`, `mobsfscan`, `apkleaks`,
   `apktool`, `jadx`, `trufflehog` (no dynamic/Frida)
-- **dfir-readonly** — read-only forensics on evidence COPIES: `vol`
+- **dfir-readonly** - read-only forensics on evidence COPIES: `vol`
   (Volatility 3), Sleuth Kit (`mmls`/`fls`/`icat`), `plaso`, `chainsaw`,
   `hayabusa`, `tshark`/`zeek`, `yara`; hash-verify before analysis, no
   acquisition/mount-rw/containment
-- **network-pentest** — infra pentest: full `nmap`/`rustscan`/`masscan`,
+- **network-pentest** - infra pentest: full `nmap`/`rustscan`/`masscan`,
   `netexec`, `enum4linux-ng`, `smbmap`, `snmpwalk`, `searchsploit`;
   least-damage validation, no online brute force (`hydra`/`medusa` banned)
-- **host-privesc** — local privesc enumeration on an authorized foothold:
+- **host-privesc** - local privesc enumeration on an authorized foothold:
   `linpeas`/`winpeas`, `pspy`, `linux-exploit-suggester`, `seatbelt`,
   `sudo -l`, `getcap`; prove with `id`/`whoami`, no persistence
-- **cracking** — OFFLINE only: `hashcat`, `john`, `hashid`, `cewl`,
+- **cracking** - OFFLINE only: `hashcat`, `john`, `hashid`, `cewl`,
   `crunch`; vault-stored results (hashcat-exempt from the ban, like
   internal-ad)
-- **reverse-eng** — `ghidra`/`analyzeHeadless`, `radare2`/`rizin`,
+- **reverse-eng** - `ghidra`/`analyzeHeadless`, `radare2`/`rizin`,
   `gdb`, `binwalk`, `capa`, `floss`, `yara`, `objdump`/`readelf`;
   static-first, dynamic only in an isolated sandbox
-- **exploit-validation** — `searchsploit`, `python3` (pwntools), `gdb`,
+- **exploit-validation** - `searchsploit`, `python3` (pwntools), `gdb`,
   `ropper`, `one_gadget`, `checksec`, `nc`/`socat`; replica-first, benign
   proof (no `metasploit`/`msfvenom`, no destructive payloads)
-- **social-eng** — `gophish`, `evilginx2`, `python3`, `curl`, `dig`;
+- **social-eng** - `gophish`, `evilginx2`, `python3`, `curl`, `dig`;
   consent + approved-recipient gated, never stores real credentials
-- **wireless** — aircrack-ng suite, `kismet`, `hostapd`/`dnsmasq`,
+- **wireless** - aircrack-ng suite, `kismet`, `hostapd`/`dnsmasq`,
   `bettercap`, `hcxdumptool`, `tshark`; runs on a Linux capture host
   (VM passthrough / Pi), RF hardware required, deauth scoped
 
@@ -279,7 +279,7 @@ The `security-orchestrator` agent is web/API/cloud-scoped and does NOT
 auto-dispatch the 5 extension skills (their blast radius and tooling
 differ too much from the harmless-probe model). Run them deliberately:
 
-- **AD / internal**: `redteam-ad-ops` is reference — load it for context.
+- **AD / internal**: `redteam-ad-ops` is reference - load it for context.
   Then `ad-recon-hunter` → `ad-kerberos-hunter` (recon produces
   `ad-quickwins.md` that kerberos consumes). Lateral movement, credential
   dumping, and domain dominance remain human-operator-driven even when
@@ -312,11 +312,11 @@ hunters:
   Feeds `exploit-validation-hunter`. Gate: `red_team_ops.reverse_engineering`.
 - **Exploit validation**: `exploit-validation-hunter` (prove a Suspected
   finding with a vetted PoC, replica-first, benign proof). `service_affecting`
-  — per-invocation OK. Gate: `red_team_ops.exploit_validation: approved`.
+ - per-invocation OK. Gate: `red_team_ops.exploit_validation: approved`.
 - **Social engineering**: `social-engineering-hunter` (phishing / awareness;
-  evilginx MFA-demo gated). Targets people — needs `se_consent_ref` +
+  evilginx MFA-demo gated). Targets people - needs `se_consent_ref` +
   `se_recipient_list`. Gate: `red_team_ops.social_engineering: approved`.
-- **Wireless**: `wireless-hunter` — runs from a **Linux capture host**
+- **Wireless**: `wireless-hunter` - runs from a **Linux capture host**
   (VM with USB passthrough, or a Raspberry Pi 4/5; never macOS directly)
   with a monitor-mode adapter (e.g. Alfa AWUS036ACH). Handshakes hand to
   `cracking-hunter`. Rogue-AP/awareness demos need
@@ -333,7 +333,7 @@ The DFIR skills are **defensive/reactive**, fully separate from the
 offensive orchestrator and the offensive scope. They run during an
 authorized incident, on acquired evidence copies, and write to
 `.claude/planning/{case}/INCIDENT_REPORT.md` (schema:
-[_shared/incident-schema.md](_shared/incident-schema.md)) — never to
+[_shared/incident-schema.md](_shared/incident-schema.md)) - never to
 `SECURITY_AUDIT.md`. Gate: `dfir_scope.incident_response: approved`.
 
 - Load `incident-response` (reference) for lifecycle + evidence-handling
@@ -360,7 +360,7 @@ Expected output: **0 errors, 0 warnings**. Validator notes: the reference
 skills `offensive-security`, `redteam-ad-ops`, `incident-response`, and
 `redteam-ops` are on the exclude list (they have no methodology sections);
 `internal-ad` and `cracking` skills are exempt from the `hashcat` ban
-(offline cracking is intentional there) — `sqlmap`/`metasploit`/`hydra`/
+(offline cracking is intentional there) - `sqlmap`/`metasploit`/`hydra`/
 `nikto` stay banned for every skill. The `dfir-readonly`,
 `network-pentest`, and `host-privesc` profiles use no banned tools, so
 they need no exemption.
@@ -376,6 +376,6 @@ Scope and Authorization"):
 3. No destructive payloads without `destructive_testing: approved`
    per asset.
 4. OOB listeners must be in scope's allowlist.
-5. RCE / credential-theft confirmations STOP at proof — no pivoting.
+5. RCE / credential-theft confirmations STOP at proof - no pivoting.
 6. Append-only findings in `SECURITY_AUDIT.md` via the canonical
    schema.

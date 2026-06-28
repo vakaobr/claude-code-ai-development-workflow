@@ -1,4 +1,4 @@
-# remediation — aws-iam-hunter
+# remediation - aws-iam-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Auditoria e Segurança em Misconfigurações AWS IAM.md` (Section 8: REMEDIATION)
 
@@ -10,7 +10,7 @@ The default state for every IAM role / user should be "no access". Add
 specific actions on specific resources, not `"Action": "*"` or
 `"Resource": "*"`.
 
-### Terraform — explicit, narrow policy
+### Terraform - explicit, narrow policy
 
 ```hcl
 data "aws_iam_policy_document" "app_read_specific_bucket" {
@@ -113,7 +113,7 @@ In the pipeline, use `aws-actions/configure-aws-credentials@v4` with
 
 ### For EC2 / ECS / EKS workloads
 
-Use instance profiles (EC2), task roles (ECS), or IRSA (EKS) — never
+Use instance profiles (EC2), task roles (ECS), or IRSA (EKS) - never
 hardcoded keys.
 
 ---
@@ -260,7 +260,7 @@ and is owned by you.
 
 | Control                              | AWS primitive                                                 |
 |--------------------------------------|---------------------------------------------------------------|
-| Human access                         | IAM Identity Center (SSO) — NOT IAM users                     |
+| Human access                         | IAM Identity Center (SSO) - NOT IAM users                     |
 | CI/CD access                         | OIDC role-assumption (GitHub / GitLab / Bitbucket OIDC)       |
 | EC2 / ECS / EKS workload access      | Instance profile / ECS task role / IRSA                       |
 | Metadata hardening                   | `http_tokens=required` on all instances                       |
@@ -275,7 +275,7 @@ and is owned by you.
 
 1. Rotate / deactivate the access key immediately.
 2. Scan CloudTrail for the last 30 days using the exposed
-   `AccessKeyId` as a filter — identify every API call made.
+   `AccessKeyId` as a filter - identify every API call made.
 3. Rotate any secondary credentials the attacker may have fetched.
 4. Check for newly created IAM users, access keys, roles.
 5. Check for `ConsoleLogin` events from unusual IPs.

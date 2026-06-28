@@ -1,8 +1,8 @@
-# remediation — dom-xss-hunter
+# remediation - dom-xss-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Testes e Mitigação de DOM XSS.md` (Section 8: REMEDIATION)
 
-DOM XSS fixes are entirely client-side — the server's response doesn't
+DOM XSS fixes are entirely client-side - the server's response doesn't
 contain user-controlled data. The fix is to sanitize at the sink or
 switch to a safe sink.
 
@@ -47,7 +47,7 @@ const html = DOMPurify.sanitize(userInput, {
 element.innerHTML = html;
 ```
 
-Do NOT roll your own sanitizer with regex — it will be bypassed (mXSS).
+Do NOT roll your own sanitizer with regex - it will be bypassed (mXSS).
 
 ---
 
@@ -94,7 +94,7 @@ window.addEventListener("message", (event) => {
 });
 ```
 
-NEVER do `if (event.origin === "*")` — `*` is sender-only.
+NEVER do `if (event.origin === "*")` - `*` is sender-only.
 
 ---
 
@@ -140,7 +140,7 @@ element.innerHTML = policy.createHTML(userInput);
 ```
 
 Once Trusted Types is enforced, `element.innerHTML = "<script>..."` (a
-raw string) throws — the app MUST go through the policy.
+raw string) throws - the app MUST go through the policy.
 
 ---
 
@@ -156,7 +156,7 @@ semgrep --config=p/xss ./src
 eslint --plugin=security --rule "security/detect-non-literal-require: error" src/
 eslint --plugin=no-unsanitized --rule "no-unsanitized/method: error" src/
 
-# RetireJS — stale library scanner
+# RetireJS - stale library scanner
 retire --path src/
 ```
 
@@ -179,7 +179,7 @@ DOM XSS is `dangerouslySetInnerHTML`.
 // RIGHT
 <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(userInput) }} />
 
-// BEST — avoid dangerouslySetInnerHTML entirely
+// BEST - avoid dangerouslySetInnerHTML entirely
 <div>{userInput}</div>
 ```
 
@@ -189,10 +189,10 @@ URLs still work.
 ### Vue 3
 
 ```vue
-<!-- WRONG — v-html is the only path to DOM XSS in Vue -->
+<!-- WRONG - v-html is the only path to DOM XSS in Vue -->
 <div v-html="userInput"></div>
 
-<!-- RIGHT — use {{ }} interpolation -->
+<!-- RIGHT - use {{ }} interpolation -->
 <div>{{ userInput }}</div>
 
 <!-- If HTML is needed: -->
@@ -204,11 +204,11 @@ URLs still work.
 Angular escapes by default via its template engine. The pitfalls:
 
 ```typescript
-// WRONG — bypassSecurityTrust* disables sanitization
+// WRONG - bypassSecurityTrust* disables sanitization
 this.sanitizer.bypassSecurityTrustHtml(userInput);
 this.sanitizer.bypassSecurityTrustUrl(userInput);
 
-// RIGHT — let Angular sanitize
+// RIGHT - let Angular sanitize
 // Use [innerHTML]="userInput" without bypass; Angular will strip scripts.
 ```
 

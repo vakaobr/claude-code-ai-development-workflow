@@ -1,4 +1,4 @@
-# remediation — jwt-hunter
+# remediation - jwt-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Segurança e Testes em Vulnerabilidades JWT.md` (Section 8: REMEDIATION)
 
@@ -10,24 +10,24 @@ Signature verification must be a non-skippable step on the protected-route
 path. The code should not have a branch where an invalid/missing
 signature path still yields a decoded payload that gets used.
 
-### Python — `PyJWT`
+### Python - `PyJWT`
 
 ```python
 # WRONG
 payload = jwt.decode(token, options={"verify_signature": False})
 
-# RIGHT — explicit algorithm allowlist, audience and issuer checks
+# RIGHT - explicit algorithm allowlist, audience and issuer checks
 payload = jwt.decode(
     token,
     key=JWT_SECRET,
-    algorithms=["HS256"],          # allowlist — blocks alg:none and confusion
+    algorithms=["HS256"],          # allowlist - blocks alg:none and confusion
     audience="my-api",
     issuer="https://auth.example",
     options={"require": ["exp", "iat", "sub"]},
 )
 ```
 
-### Node.js — `jsonwebtoken`
+### Node.js - `jsonwebtoken`
 
 ```javascript
 // WRONG
@@ -42,7 +42,7 @@ const decoded = jwt.verify(token, JWT_SECRET, {
 });
 ```
 
-### Java — `jjwt`
+### Java - `jjwt`
 
 ```java
 Claims claims = Jwts.parserBuilder()
@@ -54,7 +54,7 @@ Claims claims = Jwts.parserBuilder()
     .getBody();
 ```
 
-### Go — `github.com/golang-jwt/jwt/v5`
+### Go - `github.com/golang-jwt/jwt/v5`
 
 ```go
 token, err := jwt.Parse(
@@ -75,7 +75,7 @@ token, err := jwt.Parse(
 ### Spring Security (OAuth 2 Resource Server)
 
 ```yaml
-# application.yml — delegate to Spring's JWT decoder with a fixed JWKS
+# application.yml - delegate to Spring's JWT decoder with a fixed JWKS
 spring:
   security:
     oauth2:
@@ -130,10 +130,10 @@ Explicitly reject:
 - `HS256` when an RS256-signed token is expected (algorithm confusion)
 - Any algorithm not on your allowlist
 
-Set the allowlist in EVERY JWT verification call — not globally.
+Set the allowlist in EVERY JWT verification call - not globally.
 
 ```python
-ALLOWED_ALGS = ["RS256"]       # or ["HS256"] — never both
+ALLOWED_ALGS = ["RS256"]       # or ["HS256"] - never both
 jwt.decode(token, key=pub_key, algorithms=ALLOWED_ALGS, ...)
 ```
 
@@ -142,11 +142,11 @@ jwt.decode(token, key=pub_key, algorithms=ALLOWED_ALGS, ...)
 ## 4. Enforce `exp`, `iat`, `nbf`
 
 Always require and validate:
-- `exp` (expiration) — most libraries check automatically; verify you
+- `exp` (expiration) - most libraries check automatically; verify you
   don't have `verify_exp: False` anywhere.
-- `iat` (issued-at) — reject tokens issued "in the future" beyond a
+- `iat` (issued-at) - reject tokens issued "in the future" beyond a
   clock skew of a few seconds.
-- `nbf` (not-before) — respect the not-before claim if present.
+- `nbf` (not-before) - respect the not-before claim if present.
 
 Short `exp` values reduce blast radius:
 - Access token: 15 minutes
@@ -164,7 +164,7 @@ Plain stateless JWT has no revocation. For high-sensitivity flows:
   remaining `exp`.
 
 ```python
-# Python — verify the jti is not blocklisted
+# Python - verify the jti is not blocklisted
 def verify_token(token):
     claims = jwt.decode(token, ..., algorithms=["RS256"])
     if redis.get(f"blocklist:{claims['jti']}"):
@@ -179,7 +179,7 @@ def verify_token(token):
 - Host `/.well-known/jwks.json` so clients can fetch current public keys.
 - Rotate keys periodically (e.g., quarterly) and keep the previous key
   valid for the overlap window.
-- The `kid` header tells the verifier which key to use — and the server
+- The `kid` header tells the verifier which key to use - and the server
   should reject tokens with unknown `kid` values.
 
 ```json
@@ -229,7 +229,7 @@ Invalidate the old token in the blocklist.
 | NestJS                | `@nestjs/passport` + `passport-jwt` (pass `algorithms` option)                            |
 | Spring Security       | `NimbusJwtDecoder.withJwkSetUri(...).jwsAlgorithm(...)`                                   |
 | Laravel               | `tymon/jwt-auth` or `firebase/php-jwt` with `JWT::decode($token, $key, ['HS256'])`        |
-| ASP.NET Core          | `AddJwtBearer(...)` — configure `TokenValidationParameters` with `ValidAlgorithms`        |
+| ASP.NET Core          | `AddJwtBearer(...)` - configure `TokenValidationParameters` with `ValidAlgorithms`        |
 | Go                    | `golang-jwt/jwt/v5` with `ParserOption` `WithValidMethods`                                |
 | Ruby                  | `ruby-jwt` with `JWT.decode(token, key, true, { algorithms: [...] })`                     |
 

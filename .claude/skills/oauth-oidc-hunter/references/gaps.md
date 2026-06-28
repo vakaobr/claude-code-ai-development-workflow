@@ -1,4 +1,4 @@
-# gaps — oauth-oidc-hunter
+# gaps - oauth-oidc-hunter
 
 **Source:** Author notes on what the source methodology did NOT cover.
 
@@ -63,7 +63,7 @@ JWTs to prevent tampering. Gaps:
 ## ID Token vs Access Token Confusion
 
 OIDC `id_token` is for client identity, NOT for API authorization.
-Test whether an API accepts `id_token` as a bearer token — if so,
+Test whether an API accepts `id_token` as a bearer token - if so,
 any client that can log the user in can call the API.
 
 ## Subject-Identifier Spoofing
@@ -76,7 +76,7 @@ For pairwise pseudonymous subject identifiers (`sub=pairwise`), test:
 
 RFC 7009 token revocation is often not implemented, or not enforced.
 Test:
-- `/oauth/revoke` — does the access token stop working immediately
+- `/oauth/revoke` - does the access token stop working immediately
   after revocation?
 - Are refresh tokens revoked when the access token is revoked?
 - Are sibling sessions revoked on password change?
@@ -91,7 +91,7 @@ OIDC's `end_session_endpoint` can be abused:
 
 Silent auth can be abused as an oracle:
 - Send `prompt=none` to learn whether a session exists at the IdP.
-- Useful for targeted attacks — not a vulnerability on its own, but
+- Useful for targeted attacks - not a vulnerability on its own, but
   a reconnaissance signal.
 
 ## Token Binding Absence

@@ -1,4 +1,4 @@
-# remediation — sqli-hunter
+# remediation - sqli-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Compreensivo de Auditoria e Testes de SQL Injection.md` (Section 8: REMEDIATION)
 
@@ -30,7 +30,7 @@ session.execute(text("SELECT * FROM users WHERE id = :id"), {"id": user_id})
 ### Django ORM
 
 ```python
-# Safe — always parameterized
+# Safe - always parameterized
 User.objects.filter(username=username)
 
 # If raw is unavoidable:
@@ -66,10 +66,10 @@ $stmt->execute(['id' => $userId]);
 ### PHP (Laravel Eloquent / Query Builder)
 
 ```php
-// Safe — Query Builder binds by default
+// Safe - Query Builder binds by default
 DB::table('users')->where('id', $userId)->first();
 
-// Raw — use bindings:
+// Raw - use bindings:
 DB::select("SELECT * FROM users WHERE id = ?", [$userId]);
 ```
 
@@ -126,7 +126,7 @@ def safe_sort(column: str, direction: str) -> str:
     return f"ORDER BY {column} {direction.upper()}"
 ```
 
-Do NOT sanitize with `.replace("'", "''")` or regex — these are incomplete.
+Do NOT sanitize with `.replace("'", "''")` or regex - these are incomplete.
 
 ---
 
@@ -175,7 +175,7 @@ Stored procedures are NOT automatically safe. If a procedure builds SQL
 dynamically and executes it via `EXEC` / `sp_executesql`, it is still
 injectable.
 
-### MSSQL — Unsafe
+### MSSQL - Unsafe
 
 ```sql
 CREATE PROCEDURE SearchUser @name NVARCHAR(50)
@@ -185,7 +185,7 @@ BEGIN
 END
 ```
 
-### MSSQL — Safe
+### MSSQL - Safe
 
 ```sql
 CREATE PROCEDURE SearchUser @name NVARCHAR(50)
@@ -207,10 +207,10 @@ END
   `Unclosed quotation mark at character 42`.
 - **Web Application Firewall (WAF)**: Deploy AWS WAF, Cloudflare, or
   ModSecurity with the OWASP Core Rule Set. A WAF is a compensating
-  control — NOT a substitute for parameterized queries.
+  control - NOT a substitute for parameterized queries.
 - **Logging and alerting**: Alert on DB errors from the application tier
   (they should be zero in steady-state).
-- **Output encoding**: If user data is rendered in HTML, encode it — this
+- **Output encoding**: If user data is rendered in HTML, encode it - this
   mitigates second-order XSS regardless of the SQLi posture.
 
 ---

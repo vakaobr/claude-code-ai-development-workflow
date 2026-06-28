@@ -50,19 +50,19 @@ Spring Session).
 - Cookies appear without `Secure` / `HttpOnly` / `SameSite` flags,
   as observed during `web-recon-active`.
 - Structured or encoded-looking tokens (base64, hex) are issued by
-  the server — potential tampering vector.
+  the server - potential tampering vector.
 - The orchestrator selects this skill after detecting auth-cookie
   activity in `API_INVENTORY.md` under the "Auth" section.
 
 ## When NOT to Use
 
 - For JWT-specific flaws (algorithm confusion, `none` alg,
-  secret-cracking) — use `jwt-hunter` instead.
-- For OAuth 2.0 / OIDC-specific issues — use `oauth-oidc-hunter`.
+  secret-cracking) - use `jwt-hunter` instead.
+- For OAuth 2.0 / OIDC-specific issues - use `oauth-oidc-hunter`.
 - For authentication flaws at the login-flow level (credential
-  stuffing resistance, MFA bypass, password reset) — use
+  stuffing resistance, MFA bypass, password reset) - use
   `auth-flaw-hunter`.
-- For auth-flow state-diagram mapping only — use `auth-flow-mapper`
+- For auth-flow state-diagram mapping only - use `auth-flow-mapper`
   for that; this skill tests the live session layer.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -77,7 +77,7 @@ Before ANY outbound activity:
    its `testing_level` is `active`.
 3. This skill collects 500+ tokens in rapid succession for
    entropy analysis (Phase 2, step 3). Confirm the asset's
-   `rate_limit_rps` allows this — default 10 rps means ~1 minute
+   `rate_limit_rps` allows this - default 10 rps means ~1 minute
    for 500 tokens. If the asset has `rate_limit_rps < 5`, halt
    and request scope approval to temporarily raise the limit for
    this test only.
@@ -93,7 +93,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific login/auth endpoints
+- `{scope_context}`: optional - specific login/auth endpoints
 - `{user_a}`: credentials for test user A
 - `{user_b}`: credentials for test user B (different account,
   required for cross-session token-binding tests)
@@ -166,13 +166,13 @@ The skill expects the caller to provide:
 4. **Pre-login → post-login token continuity test**
    [WAHH, Ch 7, p. 244]
 
-   Do: Start a clean session. GET the login page — capture the
+   Do: Start a clean session. GET the login page - capture the
    session cookie issued before authentication. Then POST valid
-   `{user_a}` credentials — compare the post-login session
+   `{user_a}` credentials - compare the post-login session
    cookie.
 
    Vulnerable response: The session cookie is unchanged after
-   login — fixation risk. An attacker who set the cookie could
+   login - fixation risk. An attacker who set the cookie could
    pre-determine the authenticated user's session.
 
    Not-vulnerable response: The login response issues a new
@@ -196,7 +196,7 @@ The skill expects the caller to provide:
    role, timestamp), record the structure.
 
    Vulnerable response: Token contains a decodable user ID or
-   role claim — tampering is feasible.
+   role claim - tampering is feasible.
 
    Not-vulnerable response: Token is opaque, or decodes to
    high-entropy random bytes.
@@ -230,7 +230,7 @@ The skill expects the caller to provide:
    the pre-logout cookie.
 
    Vulnerable response: The server still accepts the token and
-   returns protected content after logout — logout only cleared
+   returns protected content after logout - logout only cleared
    the client cookie, not the server session.
 
    Not-vulnerable response: The request is rejected / redirected
@@ -300,10 +300,9 @@ Specific to this skill:
   Random Values) for entropy failures.
 - **OWASP**: WSTG-SESS-01 through WSTG-SESS-07. For APIs,
   API2:2023 (Broken Authentication).
-- **CVSS vectors**: entropy failure enabling prediction —
-  `AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N`. Missing Secure on HTTPS
-  — `...AC:H/PR:N/.../C:L/I:N/A:N` (requires network position).
-  Failed logout invalidation — `...C:H/I:H/A:N` (someone who
+- **CVSS vectors**: entropy failure enabling prediction -   `AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N`. Missing Secure on HTTPS
+ - `...AC:H/PR:N/.../C:L/I:N/A:N` (requires network position).
+  Failed logout invalidation - `...C:H/I:H/A:N` (someone who
   already had the cookie can still use it).
 - **Evidence**: token-issuance request/response sequences; the
   entropy-test output; the cookie-attribute matrix; diff of
@@ -319,7 +318,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -352,7 +351,7 @@ Before marking complete, verify:
 
 - **IP / user-agent session binding**: The app appears to have
   no fixation protection because the cookie is static across
-  requests — but the server enforces session validity by
+  requests - but the server enforces session validity by
   comparing the request IP or user-agent to what was captured at
   login. Test by replaying the cookie from a different
   IP/user-agent; if rejected, fixation is mitigated server-side.
@@ -361,7 +360,7 @@ Before marking complete, verify:
   measurements can be skewed by server load. Re-run inconclusive
   tests 3 times.
 
-- **False positive from logout test — token still accepted
+- **False positive from logout test - token still accepted
   because of CDN caching**: Some edge-cached endpoints return the
   last cached response without contacting origin. Confirm by
   hitting an endpoint known to be non-cached (e.g., a write
@@ -370,7 +369,7 @@ Before marking complete, verify:
 - **SameSite=None without Secure fails silently**: Modern
   browsers reject cookies with `SameSite=None` that don't also
   have `Secure`. The cookie never persists. Distinguish "not
-  set" from "set but rejected by browser" — if the site is
+  set" from "set but rejected by browser" - if the site is
   HTTPS-only and cookies are missing from cross-site contexts
   even without an intentional test, the app is already
   browser-protected.

@@ -1,6 +1,6 @@
 ---
 name: deserialization-hunter
-description: "Tests inputs that reach deserialization functions (PHP `unserialize`, Java `readObject`, Python `pickle.loads`, Ruby `Marshal.load`, YAML `yaml.load` without safe loader) for insecure deserialization — field tampering for privilege escalation, gadget-chain RCE via known library-sink properties (ysoserial / phpggc), and signature-bypass via HMAC-less payloads. Use when cookies / POST bodies / URL params contain large Base64 / hex blobs with language-specific headers (`rO0` for Java, `O:` for PHP, `\\x80\\x04` for Python pickle). Produces findings with CWE-502 mapping, tampered-blob evidence, and JSON-only + class-allowlist remediation. Defensive testing only — HARMLESS PROBES ONLY, post-RCE halt."
+description: "Tests inputs that reach deserialization functions (PHP `unserialize`, Java `readObject`, Python `pickle.loads`, Ruby `Marshal.load`, YAML `yaml.load` without safe loader) for insecure deserialization - field tampering for privilege escalation, gadget-chain RCE via known library-sink properties (ysoserial / phpggc), and signature-bypass via HMAC-less payloads. Use when cookies / POST bodies / URL params contain large Base64 / hex blobs with language-specific headers (`rO0` for Java, `O:` for PHP, `\\x80\\x04` for Python pickle). Produces findings with CWE-502 mapping, tampered-blob evidence, and JSON-only + class-allowlist remediation. Defensive testing only - HARMLESS PROBES ONLY, post-RCE halt."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -55,13 +55,12 @@ with tampered-blob evidence and language-specific remediation
 
 ## When NOT to Use
 
-- For JWT-specific issues — use `jwt-hunter`.
-- For simple signed-cookie tampering where the cookie is JSON —
-  `session-flaw-hunter` Phase 4 covers that.
+- For JWT-specific issues - use `jwt-hunter`.
+- For simple signed-cookie tampering where the cookie is JSON -   `session-flaw-hunter` Phase 4 covers that.
 - For XXE (which is XML deserialization of a sort, but with its
-  own methodology) — use `xxe-hunter`.
+  own methodology) - use `xxe-hunter`.
 - For generic SQL / command injection that doesn't flow through
-  deserialization — use the specific-class hunter.
+  deserialization - use the specific-class hunter.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
 
@@ -83,7 +82,7 @@ Before ANY outbound activity:
    Even with `destructive_testing: approved`.
 4. If RCE is confirmed, STOP at the proof. Same post-RCE halt as
    `ssti-hunter` and `command-injection-hunter`. Do not pivot.
-5. Gadget-chain payloads are LOUD — they leave distinctive library
+5. Gadget-chain payloads are LOUD - they leave distinctive library
    traces in logs. Notify the security team BEFORE Phase 5 (RCE
    probe) so they can distinguish test traffic.
 6. Log the authorization check to
@@ -97,7 +96,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific blob parameters
+- `{scope_context}`: optional - specific blob parameters
 - `{user_a}`: authenticated session if blobs are session-bound
 - `{oob_listener}`: authorized OOB listener URL for blind-RCE
   confirmation
@@ -150,7 +149,7 @@ The skill expects the caller to provide:
    - Ruby Marshal: object vars often decodable
 
    Re-encode with the length fields updated (for PHP: `s:5:"admin"`
-   has length 5 — if you change "admin" to "admin_role", also
+   has length 5 - if you change "admin" to "admin_role", also
    update to `s:10:"admin_role"`).
 
    Vulnerable response: Server accepts the tampered blob and
@@ -166,8 +165,7 @@ The skill expects the caller to provide:
 
    Do: For PHP specifically, test whether the server validates
    length fields against actual content length. Submit
-   `s:5:"longer_value"` (length says 5 but string is longer) —
-   some PHP versions use this for attacks.
+   `s:5:"longer_value"` (length says 5 but string is longer) -    some PHP versions use this for attacks.
 
    Record: Per-bypass findings.
 
@@ -228,13 +226,13 @@ The skill expects the caller to provide:
 
    Submit the payload in the blob location.
 
-   Vulnerable response: Command executes — OOB listener receives
+   Vulnerable response: Command executes - OOB listener receives
    the callback, or in-band response contains command output.
 
    Not-vulnerable response: Generic error, no callback, or the
    gadget was patched out.
 
-   Record: FINDING-NNN Critical. STOP — do not escalate.
+   Record: FINDING-NNN Critical. STOP - do not escalate.
 
 ### Phase 6: YAML-Specific Deserialization
 
@@ -273,7 +271,7 @@ The skill expects the caller to provide:
    Vulnerable response: Command executes.
 
    Record: FINDING-NNN. Also file recommendation to migrate off
-   BinaryFormatter — Microsoft deprecated it entirely.
+   BinaryFormatter - Microsoft deprecated it entirely.
 
 ## Payload Library
 
@@ -303,30 +301,29 @@ Specific to this skill:
   tampering privilege escalation, add CWE-269.
 - **OWASP**: WSTG-INPV-11. For APIs, API8:2023 (Security
   Misconfiguration) or A08:2021 (Software and Data Integrity
-  Failures) — OWASP Top 10 2021 introduced this explicit category.
-- **CVSS vectors**: gadget-chain RCE —
-  `AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H`. Field-tampering
-  privilege escalation — `AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N`.
-  Signature-bypass alone — `AV:N/AC:L/PR:L/S:U/C:L/I:L/A:N`
+  Failures) - OWASP Top 10 2021 introduced this explicit category.
+- **CVSS vectors**: gadget-chain RCE -   `AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H`. Field-tampering
+  privilege escalation - `AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N`.
+  Signature-bypass alone - `AV:N/AC:L/PR:L/S:U/C:L/I:L/A:N`
   (lower without confirmed escalation path).
 - **Evidence**: the original blob (decoded), the tampered blob,
   the response, and for RCE: the OOB listener log + the gadget
   chain used + the library version.
 - **Remediation framing**: backend engineer. Include:
   - Migration to JSON with strict schema validation (no
-    deserialization of objects — only primitive types)
+    deserialization of objects - only primitive types)
   - Class allowlist (`LookAheadObjectInputStream` for Java,
     `jsonpickle` with safe mode for Python)
   - HMAC-signed serialized data if deserialization is unavoidable
   - YAML: use `yaml.safe_load` (Python) / `YAML.safe_load` (Ruby)
   - .NET: migrate off BinaryFormatter entirely (Microsoft's
-    guidance) — use `System.Text.Json`
+    guidance) - use `System.Text.Json`
   - Library updates (Apache Commons Collections 3.2.2+ removed
     dangerous `InvokerTransformer`; Spring 5.3+ hardened)
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -337,8 +334,8 @@ Before marking complete, verify:
 - [ ] Field-tampering tests used harmless field changes (role bit,
       not a destructive command)
 - [ ] Gadget-chain RCE payloads used `whoami` or OOB callbacks
-      only — NOT reverse shells or state-changing commands
-- [ ] Post-RCE halt was honored — single confirmation per vuln
+      only - NOT reverse shells or state-changing commands
+- [ ] Post-RCE halt was honored - single confirmation per vuln
 - [ ] Security team was notified before Phase 5 RCE probes (or
       scope approved silent runs)
 - [ ] The library version / gadget chain is recorded for each
@@ -349,7 +346,7 @@ Before marking complete, verify:
 ## Common Issues
 
 - **Serialization-without-instantiation**: The server stores the
-  blob (e.g., in a DB) without ever deserializing it — just
+  blob (e.g., in a DB) without ever deserializing it - just
   using it as an opaque identifier. Tampering produces no
   behavior change because no deserialization happens. Confirm
   deserialization actually occurs by checking whether tampered
@@ -373,11 +370,11 @@ Before marking complete, verify:
   signing key leaks (cross-reference `secrets-in-code-hunter` or
   `crypto-flaw-hunter`), the tampering becomes exploitable.
   File the unsafe deserialization as a finding even if HMAC
-  currently blocks exploitation — key compromise is a common
+  currently blocks exploitation - key compromise is a common
   secondary path.
 
 - **Python pickle on internal queues**: A pickle-deserializing
-  worker on an internal queue may be "behind" the web layer — not
+  worker on an internal queue may be "behind" the web layer - not
   directly reachable by HTTP. However, if the web layer can
   enqueue user-supplied data, it's transitively exploitable.
   File with note on the two-step path.
@@ -385,14 +382,13 @@ Before marking complete, verify:
 - **Custom serializer that looks generic**: A company-built
   serializer that mimics PHP's format may not have the same
   gadget chains but can still have type-confusion and
-  field-tampering issues. Note as "custom serializer —
-  methodology adapted" and flag for manual review.
+  field-tampering issues. Note as "custom serializer -   methodology adapted" and flag for manual review.
 
 ## References
 
-- `references/payloads.md` — ysoserial / phpggc / manual payload
+- `references/payloads.md` - ysoserial / phpggc / manual payload
   catalog per language
-- `references/remediation.md` — language-specific safe-
+- `references/remediation.md` - language-specific safe-
   deserialization snippets
 
 External:

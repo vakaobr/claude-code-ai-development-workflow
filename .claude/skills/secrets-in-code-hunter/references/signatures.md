@@ -1,25 +1,25 @@
-# signatures — secrets-in-code-hunter
+# signatures - secrets-in-code-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Segredos em Código_ Detecção e Resposta a Vazamentos.md` (Section 3: DETECTION SIGNALS) + community provider patterns.
 
 Detection regexes grouped by credential type. Use these as Grep
 patterns over the working copy AND the git history (`git log -p`).
 Tools like `gitleaks`, `trufflehog`, and `detect-secrets` ship with
-overlapping rulesets — this document consolidates the high-signal
+overlapping rulesets - this document consolidates the high-signal
 patterns.
 
 ---
 
 ## Universal Best-Practice First
 
-Always run a specialist tool in CI — these regexes are the manual
+Always run a specialist tool in CI - these regexes are the manual
 fallback / reference:
 
 ```bash
-# Gitleaks — fast, scans git history
+# Gitleaks - fast, scans git history
 gitleaks detect --source=. --verbose
 
-# TruffleHog — higher-entropy detection + verification
+# TruffleHog - higher-entropy detection + verification
 trufflehog filesystem --directory=. --only-verified
 
 # detect-secrets
@@ -34,7 +34,7 @@ detect-secrets scan --all-files
 # Access Key ID
 AKIA[0-9A-Z]{16}
 
-# AWS Secret Access Key — 40 chars of base64 alphabet
+# AWS Secret Access Key - 40 chars of base64 alphabet
 (?i)aws(.{0,20})?(?-i)['"][0-9a-zA-Z/+]{40}['"]
 
 # Temporary (STS) credentials
@@ -95,7 +95,7 @@ https://hooks\.slack\.com/services/T[A-Z0-9]{8,}/B[A-Z0-9]{8,}/[a-zA-Z0-9]{24}
 # GCP API key
 AIza[0-9A-Za-z_-]{35}
 
-# GCP service account JSON — anchor on the begin line
+# GCP service account JSON - anchor on the begin line
 "type":\s*"service_account"
 
 # GCP OAuth client ID
@@ -124,7 +124,7 @@ sk_test_[0-9a-zA-Z]{24,}
 # Restricted key (live)
 rk_live_[0-9a-zA-Z]{24,}
 
-# Publishable key — safe but worth detecting to correlate
+# Publishable key - safe but worth detecting to correlate
 pk_live_[0-9a-zA-Z]{24,}
 ```
 
@@ -167,7 +167,7 @@ access_token\$(production|sandbox)\$[0-9a-z]{16}\$[0-9a-f]{32}
 ```
 
 Any `BEGIN ... PRIVATE KEY` header in a tracked file is an immediate
-finding — even if claimed "test only".
+finding - even if claimed "test only".
 
 ## JWT-Signing Secrets
 
@@ -243,7 +243,7 @@ When no provider-specific pattern matches but the string is suspicious:
 ```
 
 Entropy-based detection is best left to `detect-secrets` or
-`trufflehog entropy` — they weigh Shannon entropy more cleanly than a
+`trufflehog entropy` - they weigh Shannon entropy more cleanly than a
 regex can.
 
 ---
@@ -273,7 +273,7 @@ Add these to git-ignore templates and pre-commit hooks.
 
 The source emphasises that secrets live outside obvious files:
 
-- Git commit history (`git log -p` — secrets removed in a later commit
+- Git commit history (`git log -p` - secrets removed in a later commit
   still exist in older commits).
 - Git tags and orphaned branches.
 - Issue / Pull-Request descriptions and comments.
@@ -311,7 +311,7 @@ For each match, verify:
 2. Is it from a test / sandbox account (false positive) or production?
 3. Which commit introduced it? (`git blame` + `git log` on the file)
 4. Is it still in a public branch, or only history? (either way, treat
-   as leaked — assume it's been pulled and rotate.)
+   as leaked - assume it's been pulled and rotate.)
 
 ---
 
@@ -320,8 +320,7 @@ For each match, verify:
 - Do NOT use the discovered credentials in any way beyond a single
   identity call to verify they're live. No bucket downloads, no
   privilege enumeration, no resource listing.
-- Report to the tenant's security team immediately — rotation is urgent
+- Report to the tenant's security team immediately - rotation is urgent
   regardless of whether the repository is now private.
-- When scanning git history, run locally or in a scratch CI job —
-  pushing a bulk-rewrite of history after removing secrets still leaves
+- When scanning git history, run locally or in a scratch CI job -   pushing a bulk-rewrite of history after removing secrets still leaves
   them accessible to anyone with a prior clone.

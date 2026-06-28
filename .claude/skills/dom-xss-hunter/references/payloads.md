@@ -1,15 +1,15 @@
-# payloads — dom-xss-hunter
+# payloads - dom-xss-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Completo de Testes e Mitigação de DOM XSS.md` (Section 5: PAYLOADS / PROBES)
 
 DOM-XSS payloads are delivered via URL fragments / `postMessage` /
 client-readable state, NOT via server-side reflection. The server may
-respond 200 with untouched HTML — the vulnerability is entirely in the
+respond 200 with untouched HTML - the vulnerability is entirely in the
 client-side JavaScript.
 
 ---
 
-## Step 0 — Identify Sources and Sinks
+## Step 0 - Identify Sources and Sinks
 
 **Sources** (user-controllable client-side inputs):
 
@@ -51,7 +51,7 @@ Grep the loaded JS for source-to-sink flows.
 
 ## 1. Fragment-Based XSS (most common)
 
-The fragment (`#...`) is NOT sent to the server — purely client-side.
+The fragment (`#...`) is NOT sent to the server - purely client-side.
 Primary detection target.
 
 ```
@@ -137,7 +137,7 @@ JaVaScRiPt:alert(1)
 ```
 
 Chromium blocks `location.href = "javascript:..."` from some contexts
-but not `<a href>` — test both.
+but not `<a href>` - test both.
 
 ## 7. `data:` URL Sink
 
@@ -166,7 +166,7 @@ windows. Craft a PDF that opens on first view:
 
 ```
 (Fromat this payload outside the skill; PDF/JS is covered minimally
-here — delegate to ssrf-cloud-metadata / xxe if needed.)
+here - delegate to ssrf-cloud-metadata / xxe if needed.)
 ```
 
 ## 10. Browser-Specific Quirks
@@ -203,7 +203,7 @@ grep -rnE "\.innerHTML\s*=|document\.write|eval\(|Function\(|setTimeout\([\"'`]"
 python3 LinkFinder.py -i https://target.example/app.js -o cli
 ```
 
-### Dynamic — crawl + auto-inject
+### Dynamic - crawl + auto-inject
 
 ```bash
 # getJS + katana to enumerate all script URLs:
@@ -228,8 +228,8 @@ dalfox url --deep-domxss -u https://target.example/search?q=FUZZ
 
 - `alert(1)` is the canonical probe but can be blocked by anti-debug
   code. Use `document.title = "xss-probe"` as a silent alternative.
-- `document.cookie` in the payload is exfiltration — replace with
+- `document.cookie` in the payload is exfiltration - replace with
   `document.domain` or `location.href` for evidence; do not log real
   user cookies.
-- Blind DOM XSS confirmation requires an OOB domain — register the
+- Blind DOM XSS confirmation requires an OOB domain - register the
   domain in `security-scope.yaml.allowed_oob_domains`.

@@ -1,4 +1,4 @@
-# remediation — command-injection-hunter
+# remediation - command-injection-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Estratégico de Injeção de Comandos no Sistema Operacional.md` (Section 8: REMEDIATION)
 
@@ -7,20 +7,20 @@
 ## 1. Avoid Shell Invocation Entirely
 
 The single highest-impact fix. If you can solve the problem without
-calling a shell — do.
+calling a shell - do.
 
 ### Python
 
 ```python
-# WRONG — user input passed to shell
+# WRONG - user input passed to shell
 import os
 os.system(f"ping -c 1 {host}")
 
-# Better — argv form, no shell
+# Better - argv form, no shell
 import subprocess
 subprocess.run(["ping", "-c", "1", host], check=True, timeout=5)
 
-# Best — use a library that does what you need
+# Best - use a library that does what you need
 import socket
 socket.gethostbyname(host)      # DNS check without shelling out
 ```
@@ -32,11 +32,11 @@ socket.gethostbyname(host)      # DNS check without shelling out
 const { exec } = require("child_process");
 exec(`ping -c 1 ${host}`, cb);
 
-// Better — argv form
+// Better - argv form
 const { execFile, spawn } = require("child_process");
 execFile("ping", ["-c", "1", host], cb);
 
-// Best — use a Node library
+// Best - use a Node library
 const dns = require("dns").promises;
 await dns.lookup(host);
 ```
@@ -47,7 +47,7 @@ await dns.lookup(host);
 // WRONG
 Runtime.getRuntime().exec("ping -c 1 " + host);
 
-// RIGHT — argv form via ProcessBuilder
+// RIGHT - argv form via ProcessBuilder
 ProcessBuilder pb = new ProcessBuilder("ping", "-c", "1", host);
 pb.redirectErrorStream(true);
 Process proc = pb.start();
@@ -71,10 +71,10 @@ shell_exec("ping -c 1 $host");
 exec("ping -c 1 $host");
 system("ping -c 1 $host");
 
-// Better (still dangerous — use allowlist validation)
+// Better (still dangerous - use allowlist validation)
 exec("ping -c 1 " . escapeshellarg($host));
 
-// Best — use the native socket / pcntl function family
+// Best - use the native socket / pcntl function family
 gethostbyname($host);
 ```
 
@@ -94,7 +94,7 @@ system("ping", "-c", "1", host)       # argv form
 ## 2. Strict Input Validation (Allowlist)
 
 Never accept arbitrary strings for data that will be passed to a
-subsystem — even argv-mode. Validate BEFORE invocation:
+subsystem - even argv-mode. Validate BEFORE invocation:
 
 ```python
 import re
@@ -137,14 +137,14 @@ cmd = f"mylegacy --input {shlex.quote(user_path)}"
 subprocess.run(cmd, shell=True, check=True)
 ```
 
-Escaping is a LAST resort — argv-mode is always preferred.
+Escaping is a LAST resort - argv-mode is always preferred.
 
 ---
 
 ## 4. Parameterize APIs Where Available
 
 For file operations, network utilities, etc., use the language stdlib
-— not shell tools:
+ - not shell tools:
 
 | Goal                          | Don't                                   | Do                                                 |
 |-------------------------------|------------------------------------------|-----------------------------------------------------|
@@ -161,7 +161,7 @@ For file operations, network utilities, etc., use the language stdlib
 
 When you MUST shell out, ensure:
 - The process runs under a dedicated low-privileged user
-  (`www-data`, `app-user`) — not `root` / `Administrator`.
+  (`www-data`, `app-user`) - not `root` / `Administrator`.
 - The process has a minimal filesystem view (`chroot` jail or
   seccomp-bpf / AppArmor profile).
 - Writes to sensitive paths (`/etc`, `/var/www`, `~/.ssh`) are
@@ -224,7 +224,7 @@ if (proc.isAlive()) proc.destroyForcibly();
 | Stack        | Safe pattern                                                                  |
 |--------------|-------------------------------------------------------------------------------|
 | Django       | Use `django-celery` or native Python libs; NEVER `subprocess(shell=True)`     |
-| Flask/FastAPI| Same — argv-form `subprocess.run([...])` + allowlist                          |
+| Flask/FastAPI| Same - argv-form `subprocess.run([...])` + allowlist                          |
 | Express      | `execFile("bin", ["--arg", value])`; validate inputs with `zod` / `joi`       |
 | NestJS       | Use a typed DTO + `class-validator`; delegate to native libs                  |
 | Laravel      | Use `Symfony\Process` with argv array; NEVER string concatenation             |
@@ -239,7 +239,7 @@ if (proc.isAlive()) proc.destroyForcibly();
 If the functionality genuinely needs arbitrary subprocess execution
 (CI/CD runner, build system), isolate it:
 
-- Use gVisor, Firecracker, or Kata Containers — not plain Docker.
+- Use gVisor, Firecracker, or Kata Containers - not plain Docker.
 - Block egress network (`NetworkPolicy: egress: []` in Kubernetes).
 - Mount only the specific inputs (ReadOnly) and the expected output dir
   (ReadWrite).

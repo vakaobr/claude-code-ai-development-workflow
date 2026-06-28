@@ -26,8 +26,7 @@ metadata:
 
 ## Goal
 
-Test URL-redirect parameters for arbitrary-destination redirects —
-the flaw that lets an attacker craft a link on the legitimate
+Test URL-redirect parameters for arbitrary-destination redirects - the flaw that lets an attacker craft a link on the legitimate
 domain that silently forwards the victim to an attacker-controlled
 site, enabling phishing and lending the target's domain
 credibility to the attack. Also tests the chained scenario where
@@ -53,12 +52,12 @@ remediation.
 
 ## When NOT to Use
 
-- For XSS via `javascript:` pseudo-protocol reflections — use
+- For XSS via `javascript:` pseudo-protocol reflections - use
   `xss-hunter` (though this skill dispatches here for the URL
   sink case).
 - For SSRF (attacker controls what the SERVER fetches, not where
-  the USER is redirected) — use `ssrf-hunter`.
-- For OAuth redirect-URI-specific bypasses — use
+  the USER is redirected) - use `ssrf-hunter`.
+- For OAuth redirect-URI-specific bypasses - use
   `oauth-oidc-hunter`; this skill identifies the open-redirect
   primitive, oauth-oidc-hunter leverages it for token leak.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
@@ -75,7 +74,7 @@ Before ANY outbound activity:
 3. Redirect tests aim at an EXTERNAL callback host. This host
    MUST be in the scope's `oob_listener` or
    `oauth_test_callback` allowlist. NEVER redirect to arbitrary
-   public domains like `google.com` or `webhook.site` — even
+   public domains like `google.com` or `webhook.site` - even
    though benign, it shows up in logs and may trigger analyst
    alerts.
 4. Do NOT actually deliver the redirect URL to real users. PoCs
@@ -90,9 +89,9 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific redirect-accepting
+- `{scope_context}`: optional - specific redirect-accepting
   endpoints
-- `{user_a}`: optional — authenticated session (some redirects
+- `{user_a}`: optional - authenticated session (some redirects
   trigger only on authenticated flows)
 - `{oauth_callback_host}`: authorized callback-listener host from
   scope
@@ -133,7 +132,7 @@ The skill expects the caller to provide:
      host (manual test or scripted follow)
 
    Vulnerable response: `Location: https://{oauth_callback_host}/...`
-   returned — any HTTP client following the redirect lands on the
+   returned - any HTTP client following the redirect lands on the
    attacker host.
 
    Not-vulnerable response: "Invalid URL" error, 400 status, or
@@ -246,7 +245,7 @@ The skill expects the caller to provide:
 
    Vulnerable response: Client-side redirect executes.
 
-   Cross-reference `dom-xss-hunter` — client-side URL sinks are
+   Cross-reference `dom-xss-hunter` - client-side URL sinks are
    shared surface.
 
 10. **`javascript:` pseudo-protocol probe** [WAHH, Ch 13, p. 546]
@@ -259,7 +258,7 @@ The skill expects the caller to provide:
 
     Vulnerable response: Link's `href` becomes the payload;
     clicking it executes JS in the target's origin. This is XSS,
-    not just open redirect — file with cross-reference to
+    not just open redirect - file with cross-reference to
     `xss-hunter`.
 
 ### Phase 6: Chain for Impact (High-Value)
@@ -283,7 +282,7 @@ The skill expects the caller to provide:
     Vulnerable response: Callback host receives the leaked
     authorization code.
 
-    Record: Chained finding — primary vuln is open redirect,
+    Record: Chained finding - primary vuln is open redirect,
     leverage is OAuth token theft. Cross-reference
     `oauth-oidc-hunter`.
 
@@ -310,15 +309,14 @@ the schema in `.claude/skills/_shared/finding-schema.md`.
 
 Specific to this skill:
 
-- **CWE**: CWE-601 (URL Redirection to Untrusted Site — "Open
+- **CWE**: CWE-601 (URL Redirection to Untrusted Site - "Open
   Redirect"). For `javascript:` cases that become XSS, add
   CWE-79.
 - **OWASP**: WSTG-CLNT-04. For APIs, API8:2023 (Security
   Misconfiguration). For chained OAuth, also A07:2021
   (Identification and Authentication Failures).
-- **CVSS vectors**: simple open redirect (phishing aid) —
-  `AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N`. Chained OAuth token
-  leak — `...UI:R/S:C/C:H/I:H/A:N` (severity rises because the
+- **CVSS vectors**: simple open redirect (phishing aid) -   `AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N`. Chained OAuth token
+  leak - `...UI:R/S:C/C:H/I:H/A:N` (severity rises because the
   chain enables account takeover).
 - **Evidence**: the request with the malicious parameter, the
   response showing `Location` header with the attacker host,
@@ -329,7 +327,7 @@ Specific to this skill:
   - ID-mapping pattern: replace URL params with a server-side
     lookup key (`?dest=1` resolves to a fixed URL server-side)
   - Intermediate warning page: "You are leaving {site}. Continue
-    to {destination}? [Confirm]" — defeats passive redirection
+    to {destination}? [Confirm]" - defeats passive redirection
   - Referer validation: match against `{target}`'s own origin
   - `javascript:` / `data:` / `vbscript:` protocol blocking
   - Never trust URL-encoded input without decoding before
@@ -337,9 +335,9 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/oauth-chain-candidates.md` — lists
+- `.claude/planning/{issue}/oauth-chain-candidates.md` - lists
   open-redirects on approved OAuth subdomains for
   `oauth-oidc-hunter` Phase 2 step 5
 
@@ -365,15 +363,14 @@ Before marking complete, verify:
 
 - **Safe reflection without redirect**: The parameter value is
   echoed in the response body (e.g., on a confirmation page)
-  but the server never sends `Location`. Not an open redirect —
-  but may be XSS if it reflects unescaped. Cross-reference
+  but the server never sends `Location`. Not an open redirect -   but may be XSS if it reflects unescaped. Cross-reference
   `xss-hunter`.
 
 - **Intentional external redirects**: Some features legitimately
   redirect externally (exit-page warning, external link click-
   through, share-to-social-media). If the feature requires user
   consent ("are you sure you want to leave?"), it's not an open
-  redirect — it's consent-gated redirection.
+  redirect - it's consent-gated redirection.
 
 - **Inert fragments**: A URL parameter contains a redirect-looking
   value but the client-side code never reads it for navigation.

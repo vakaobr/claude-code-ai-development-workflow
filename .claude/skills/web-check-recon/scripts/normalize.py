@@ -12,7 +12,7 @@ Dependency-free (stdlib only). Defensive parsing: web-check's per-check
 shapes vary, so every accessor tolerates missing/renamed fields and falls
 back to a compact JSON excerpt rather than crashing.
 
-This script NEVER appends to SECURITY_AUDIT.md — that is the skill's job
+This script NEVER appends to SECURITY_AUDIT.md - that is the skill's job
 (it holds the audit lock and assigns monotonic IDs after human triage).
 """
 import argparse
@@ -175,7 +175,7 @@ def build_candidates(data):
         v = data.get(chk)
         if isinstance(v, dict) and json.dumps(v).lower().count('"isspam": true') + \
            json.dumps(v).lower().count('"blacklisted": true') > 0:
-            add("Low", "CWE-noinfo", "—",
+            add("Low", "CWE-noinfo", " - ",
                 f"Host appears on a {label}",
                 f"`{chk}` returned at least one positive reputation hit; verify "
                 "whether it reflects the asset or a shared IP.", None)
@@ -234,7 +234,7 @@ def render_snapshot(target, data, raw_dir, ran_checks):
                 continue
             obj = data[c]
             if is_empty(obj):
-                lines += [f"### {c}", "", "_empty — no data (often a missing API key)_", ""]
+                lines += [f"### {c}", "", "_empty - no data (often a missing API key)_", ""]
                 continue
             lines += [f"### {c}", "", "```json", excerpt(obj), "```", ""]
     return "\n".join(lines) + "\n"
@@ -243,7 +243,7 @@ def render_snapshot(target, data, raw_dir, ran_checks):
 def render_passive_patch(target, data):
     """Append-ready blocks mapped onto web-recon-passive's dossier sections."""
     lines = [
-        f"# PASSIVE_RECON patch — from web-check ({target})",
+        f"# PASSIVE_RECON patch - from web-check ({target})",
         "",
         "Merge these into PASSIVE_RECON.md (append + de-duplicate; do not clobber).",
         "",
@@ -322,7 +322,7 @@ def render_candidates(target, candidates):
     for i, c in enumerate(sorted(candidates, key=lambda x: order.get(x["sev"], 9)), 1):
         refer = f"  \n**Refer to:** {c['refer_to']}" if c["refer_to"] else ""
         lines += [
-            f"## CANDIDATE-{i:03d} — {c['title']}",
+            f"## CANDIDATE-{i:03d} - {c['title']}",
             "",
             f"**Severity (hint):** {c['sev']}  \n"
             f"**CWE:** {c['cwe']}  \n"

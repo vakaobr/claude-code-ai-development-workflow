@@ -1,6 +1,6 @@
 ---
 name: aws-iam-hunter
-description: "Audits AWS IAM posture for over-privileged roles, exposed long-lived access keys, SSRF-reachable IMDS credential leaks, dangling DNS records pointing at decommissioned AWS resources, and API responses leaking internal ARNs. Use when the target runs on AWS and the assessment scope includes cloud-account review; when SSRF has been confirmed by another skill; or when the orchestrator's recon surfaces AWS-style resource names. Produces findings with CWE-732 / CWE-918 mapping, IAM-policy JSON evidence, and least-privilege remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml — READ-ONLY AWS API calls only."
+description: "Audits AWS IAM posture for over-privileged roles, exposed long-lived access keys, SSRF-reachable IMDS credential leaks, dangling DNS records pointing at decommissioned AWS resources, and API responses leaking internal ARNs. Use when the target runs on AWS and the assessment scope includes cloud-account review; when SSRF has been confirmed by another skill; or when the orchestrator's recon surfaces AWS-style resource names. Produces findings with CWE-732 / CWE-918 mapping, IAM-policy JSON evidence, and least-privilege remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml - READ-ONLY AWS API calls only."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -42,15 +42,14 @@ remediation owners.
 
 ## When to Use
 
-- The target application runs on AWS (EC2, ECS, Lambda, Fargate, EKS) —
-  confirmed by the scope file's `cloud: aws` entry or IMDS reachability
+- The target application runs on AWS (EC2, ECS, Lambda, Fargate, EKS) -   confirmed by the scope file's `cloud: aws` entry or IMDS reachability
   from a prior SSRF finding.
 - Another skill (`ssrf-hunter`, `ssrf-cloud-metadata-hunter`) confirmed
-  SSRF reaches 169.254.169.254 — use this skill to enumerate what the
+  SSRF reaches 169.254.169.254 - use this skill to enumerate what the
   recovered role can do.
-- The organization stores data in S3 — audit bucket ACLs and policies.
+- The organization stores data in S3 - audit bucket ACLs and policies.
 - Public code repositories (GitHub, GitLab) for the org need a secrets
-  sweep for AWS keys (overlaps with `secrets-in-code-hunter` — defer
+  sweep for AWS keys (overlaps with `secrets-in-code-hunter` - defer
   code-wide secret hunting there; this skill only VALIDATES discovered
   keys).
 - The orchestrator selects this skill after `attack-surface-mapper`
@@ -59,18 +58,18 @@ remediation owners.
 ## When NOT to Use
 
 - For exploiting the confirmed findings (e.g., chaining an IAM
-  misconfig into cross-account pivot) — this is a defensive audit;
+  misconfig into cross-account pivot) - this is a defensive audit;
   confirmed issues go to `harden` for remediation.
-- For discovering SSRF vulnerabilities themselves — use `ssrf-hunter`
+- For discovering SSRF vulnerabilities themselves - use `ssrf-hunter`
   first, then this skill to enumerate impact.
-- For code-repository secret hunting at scale — use
+- For code-repository secret hunting at scale - use
   `secrets-in-code-hunter`; this skill validates keys that have already
   surfaced.
 - For S3 bucket misconfigurations discovered via enumeration without
-  access — use `s3-misconfig-hunter` for bucket-policy deep-dives;
+  access - use `s3-misconfig-hunter` for bucket-policy deep-dives;
   this skill is account-wide IAM posture.
-- For Azure / GCP — scope must include `cloud: aws`. Different clouds
-  have different skills (none written yet — file a gap).
+- For Azure / GCP - scope must include `cloud: aws`. Different clouds
+  have different skills (none written yet - file a gap).
 - Any asset not listed in `.claude/security-scope.yaml`.
 
 ## Authorization Check (MANDATORY FIRST STEP)
@@ -82,7 +81,7 @@ Before ANY outbound activity:
 2. Confirm the AWS account ID (or the asset name pattern like
    `*.aws-account-12345.s3.amazonaws.com`) appears in the `assets`
    list AND its `testing_level` is at least `passive`. IAM read-only
-   audits count as passive from the target's perspective — no
+   audits count as passive from the target's perspective - no
    workloads are touched.
 3. Confirm the current principal (`aws sts get-caller-identity`) is a
    credentials-vault-provided audit role, NOT a developer's personal
@@ -102,11 +101,10 @@ The skill expects the caller to provide:
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier (usually the AWS account ID or a
   named asset like `api.internal.example.com`)
-- `{aws_profile}`: the named profile in `~/.aws/credentials` to use —
-  must be the audit-read-only profile
+- `{aws_profile}`: the named profile in `~/.aws/credentials` to use -   must be the audit-read-only profile
 - `{region}`: primary AWS region; secondary regions enumerated via
   `ec2 describe-regions`
-- `{candidate_keys}`: optional — list of AWS access key IDs discovered
+- `{candidate_keys}`: optional - list of AWS access key IDs discovered
   via OSINT or code review, to validate (NOT to exploit)
 
 ## Methodology
@@ -129,7 +127,7 @@ The skill expects the caller to provide:
 
    Do: Run `aws iam list-attached-role-policies` and
    `aws iam list-role-policies` on the audit role. Record what the
-   audit itself can see — if visibility is restricted, findings may
+   audit itself can see - if visibility is restricted, findings may
    undercount risk.
 
    Record: Attached and inline policies for the audit role.
@@ -160,8 +158,7 @@ The skill expects the caller to provide:
    - `Principal: {AWS: "arn:aws:iam::<ACCOUNT>:root"}` without
      `Condition` (whole account can assume)
    - Cross-account trusts to accounts outside the org
-   - `Condition: {StringEquals: {sts:ExternalId: "<value>"}}` —
-     confirm the external ID is not a well-known value
+   - `Condition: {StringEquals: {sts:ExternalId: "<value>"}}` -      confirm the external ID is not a well-known value
 
    Record: Each risky trust as a potential FINDING-NNN.
 
@@ -191,14 +188,13 @@ The skill expects the caller to provide:
      (e.g., `audit-candidate-key-1`)
    - Run only `aws sts get-caller-identity` to determine the
      principal the key belongs to
-   - Run `aws iam get-user` (for IAM users) to get user-level perms —
-     do NOT attempt destructive or exploration commands
+   - Run `aws iam get-user` (for IAM users) to get user-level perms -      do NOT attempt destructive or exploration commands
 
    Vulnerable response: Key returns a valid principal with active
-   permissions — finding: leaked credentials with impact.
+   permissions - finding: leaked credentials with impact.
 
    Not-vulnerable response: `InvalidClientTokenId` or
-   `ExpiredToken` — key is already deactivated.
+   `ExpiredToken` - key is already deactivated.
 
    Record: Per-key principal, permissions summary (from simulate),
    recommended rotation action.
@@ -211,7 +207,7 @@ The skill expects the caller to provide:
    Do: `aws ec2 describe-instances` → inspect each instance's
    `MetadataOptions.HttpTokens`.
 
-   Vulnerable condition: `HttpTokens: optional` (IMDSv1 allowed) — an
+   Vulnerable condition: `HttpTokens: optional` (IMDSv1 allowed) - an
    SSRF from a workload can reach IMDS without session-token gymnastics.
 
    Not-vulnerable condition: `HttpTokens: required` (IMDSv2
@@ -246,7 +242,7 @@ The skill expects the caller to provide:
    `*.elasticbeanstalk.com`, `*.cloudfront.net`) for liveness.
 
    Vulnerable condition: CNAME resolves to an AWS resource that no
-   longer exists (bucket deleted, ELB torn down) — subdomain takeover
+   longer exists (bucket deleted, ELB torn down) - subdomain takeover
    risk.
 
    Record: Each dangling CNAME as a FINDING-NNN; cross-reference
@@ -254,7 +250,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No attack payloads for this skill — it's read-only audit commands. The
+No attack payloads for this skill - it's read-only audit commands. The
 key probes are:
 
 - **IMDS path (via SSRF, NOT from this skill)**:
@@ -281,10 +277,8 @@ Specific to this skill:
 - **OWASP**: WSTG-CONF-11. For APIs, map to API9:2023 (Improper
   Inventory Management) for dangling assets, API5:2023 (BFLA) if
   admin IAM roles back end-user authorization.
-- **CVSS vectors**: broad admin policy on service role —
-  `AV:N/AC:L/PR:H/UI:N/S:C/C:H/I:H/A:H`. Leaked active key —
-  `...PR:N/C:H/I:H/A:H`. IMDSv1 without confirmed SSRF — lower
-  (`...PR:N/C:L/I:L/A:L`) — severity rises when paired with a
+- **CVSS vectors**: broad admin policy on service role -   `AV:N/AC:L/PR:H/UI:N/S:C/C:H/I:H/A:H`. Leaked active key -   `...PR:N/C:H/I:H/A:H`. IMDSv1 without confirmed SSRF - lower
+  (`...PR:N/C:L/I:L/A:L`) - severity rises when paired with a
   reachable SSRF.
 - **Evidence**: the policy JSON, the affected principal ARN, the
   `aws iam simulate-principal-policy` output confirming impact, and
@@ -296,7 +290,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -320,13 +314,13 @@ Before marking complete, verify:
 ## Common Issues
 
 - **Deactivated but still-reported keys**: OSINT-discovered keys may
-  already be rotated — STS returns `InvalidClientTokenId`. Not a
-  vulnerability — but note in the audit that the key was found and
+  already be rotated - STS returns `InvalidClientTokenId`. Not a
+  vulnerability - but note in the audit that the key was found and
   that its deactivation is verified.
 
 - **Sandbox account credentials**: Keys grant access to an isolated
   sandbox account with no production data. Lower-severity finding but
-  still worth reporting — sandboxes should also enforce key rotation.
+  still worth reporting - sandboxes should also enforce key rotation.
 
 - **IMDSv2 reachable but never abused**: `HttpTokens: optional` on an
   instance that has no reachable SSRF is latent risk, not an active
@@ -347,9 +341,9 @@ Before marking complete, verify:
 
 ## References
 
-- `references/tooling.md` — AWS CLI command matrix for each
+- `references/tooling.md` - AWS CLI command matrix for each
   audit phase (safe command catalog)
-- `references/remediation.md` — least-privilege IAM policy JSON
+- `references/remediation.md` - least-privilege IAM policy JSON
   snippets for common patterns
 
 External:

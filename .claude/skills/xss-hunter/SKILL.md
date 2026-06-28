@@ -1,6 +1,6 @@
 ---
 name: xss-hunter
-description: "Tests user-reflecting endpoints for Reflected XSS (Type 1 — single request/response) and Stored XSS (Type 2 — persisted payload executed later by any viewer). Covers syntactic-context analysis (HTML body / attribute / JS block / URL), tag breakout, attribute breakout, event handlers, `javascript:` pseudo-URLs, and WAF evasion. Use when the target reflects user input (search terms, profile fields, comments, error pages, custom headers) into HTML responses; when probes like `XSS_MARKER` appear unencoded in source; or when forms / APIs feed rendered content. Produces findings with CWE-79 mapping, context-specific PoCs, and output-encoding + CSP remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Tests user-reflecting endpoints for Reflected XSS (Type 1 - single request/response) and Stored XSS (Type 2 - persisted payload executed later by any viewer). Covers syntactic-context analysis (HTML body / attribute / JS block / URL), tag breakout, attribute breakout, event handlers, `javascript:` pseudo-URLs, and WAF evasion. Use when the target reflects user input (search terms, profile fields, comments, error pages, custom headers) into HTML responses; when probes like `XSS_MARKER` appear unencoded in source; or when forms / APIs feed rendered content. Produces findings with CWE-79 mapping, context-specific PoCs, and output-encoding + CSP remediation. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,7 +27,7 @@ metadata:
 ## Goal
 
 Test user-reflecting endpoints for Reflected (Type 1) and Stored
-(Type 2) Cross-Site Scripting — flaws where user-controlled input
+(Type 2) Cross-Site Scripting - flaws where user-controlled input
 reaches a response body or persisted store without proper
 context-aware encoding, allowing script execution in another
 user's browser. This skill implements WSTG-INPV-01, WSTG-INPV-02,
@@ -53,14 +53,14 @@ context with targeted PoCs and context-appropriate remediation
 ## When NOT to Use
 
 - For pure client-side JavaScript source→sink analysis (no server
-  reflection) — use `dom-xss-hunter`.
+  reflection) - use `dom-xss-hunter`.
 - For server-side template injection that looks like XSS but is
-  actually RCE — use `ssti-hunter`.
+  actually RCE - use `ssti-hunter`.
 - For CSRF (state-change via browser trust, no script execution)
-  — use `csrf-hunter`.
+ - use `csrf-hunter`.
 - For Client-Side Template Injection in AngularJS / Vue where the
   outcome is XSS but the root cause is template evaluation in the
-  browser — can be handled here, but flag in `references/gaps.md`
+  browser - can be handled here, but flag in `references/gaps.md`
   for a dedicated CSTI skill.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -85,7 +85,7 @@ Before ANY outbound activity:
    payloads into admin-viewable tickets or support channels that
    real employees will open.
 5. Never test against admin-panel paths where an admin opens the
-   page — that becomes a live XSS against a human operator.
+   page - that becomes a live XSS against a human operator.
    Restrict Stored XSS tests to user-visible surfaces.
 6. Log the authorization check to
    `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log with
@@ -97,7 +97,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific reflection points
+- `{scope_context}`: optional - specific reflection points
 - `{user_a}`: authenticated session for stored-XSS fields that
   require login
 - `{oob_listener}`: authorized OOB listener URL (from scope) for
@@ -142,7 +142,7 @@ The skill expects the caller to provide:
 
 ### Phase 2: Context-Specific Probes
 
-3. **HTML-body context — tag injection**
+3. **HTML-body context - tag injection**
    [Bug Bounty Bootcamp, Ch 6]
 
    Do: For HTML-body reflections, inject:
@@ -160,7 +160,7 @@ The skill expects the caller to provide:
    Not-vulnerable response: Tags HTML-encoded to
    `&lt;script&gt;...`; rendered as literal text.
 
-4. **HTML-attribute context — attribute breakout**
+4. **HTML-attribute context - attribute breakout**
    [WAHH, Ch 12]
 
    Do: For reflections inside an attribute (e.g., `value="...{input}..."`):
@@ -176,7 +176,7 @@ The skill expects the caller to provide:
    Vulnerable response: The injection breaks out of the attribute
    and introduces either an event handler or a new tag.
 
-5. **JavaScript-string context — string breakout** [WAHH, Ch 12, p. 487]
+5. **JavaScript-string context - string breakout** [WAHH, Ch 12, p. 487]
 
    Do: For reflections inside a JS string literal (`var x =
    "...{input}..."`):
@@ -190,7 +190,7 @@ The skill expects the caller to provide:
    Vulnerable response: Breakout closes the string and executes
    the injected script.
 
-6. **JavaScript-block context — direct injection**
+6. **JavaScript-block context - direct injection**
    [XSS Cheat Sheet]
 
    Do: For reflections in a `<script>` block where input is
@@ -200,11 +200,11 @@ The skill expects the caller to provide:
    alert(1)//
    ```
 
-   Vulnerable response: Direct execution — no breakout needed.
+   Vulnerable response: Direct execution - no breakout needed.
 
    Record: Per-context finding.
 
-7. **URL-context — pseudo-protocol** [XSS Cheat Sheet]
+7. **URL-context - pseudo-protocol** [XSS Cheat Sheet]
 
    Do: For reflections in attributes that become URLs (`href`,
    `src`, `action`, `formaction`):
@@ -228,7 +228,7 @@ The skill expects the caller to provide:
    different browser as guest if publicly visible).
 
    Vulnerable response: Payload fires when the second viewer
-   opens the page — confirms persistence AND cross-user
+   opens the page - confirms persistence AND cross-user
    execution.
 
    **Cleanup**: After confirmation, remove the stored payload
@@ -248,7 +248,7 @@ The skill expects the caller to provide:
    - Unicode escapes: `<script>`
    - Null byte: `<scri%00pt>`
 
-   Vulnerable response: Bypassed filter — payload executes.
+   Vulnerable response: Bypassed filter - payload executes.
 
 10. **Polyglot payload**
     [XSS Cheat Sheet, p. 9]
@@ -259,7 +259,7 @@ The skill expects the caller to provide:
     javascript:/*--></title></style></textarea></script></xmp><svg/onload='+/"/+/onmouseover=1/+/[*/[]/+alert(1)//'>
     ```
 
-    Vulnerable response: Fires in at least one context — narrow
+    Vulnerable response: Fires in at least one context - narrow
     down to which context and file a context-specific cleaner
     finding.
 
@@ -309,10 +309,9 @@ Specific to this skill:
 - **OWASP**: WSTG-INPV-01 (Reflected), WSTG-INPV-02 (Stored). For
   APIs, API8:2023 (Security Misconfiguration) if it's a CSP gap.
   A03:2021 (Injection).
-- **CVSS vectors**: Reflected XSS with session-hijack potential —
-  `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N`. Stored XSS admin-
-  reachable — `...UI:R/S:C/C:H/I:H/A:N`. Reflected XSS without
-  session impact (informational) — `...C:L/I:L/A:N`.
+- **CVSS vectors**: Reflected XSS with session-hijack potential -   `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N`. Stored XSS admin-
+  reachable - `...UI:R/S:C/C:H/I:H/A:N`. Reflected XSS without
+  session impact (informational) - `...C:L/I:L/A:N`.
 - **Evidence**: the reproducing URL (for Reflected) or the stored-
   field-contents + viewer URL (for Stored); screenshot or DevTools
   evidence of execution; the syntactic context identified.
@@ -330,7 +329,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -367,26 +366,26 @@ Before marking complete, verify:
 
 - **Self-XSS**: Payload requires the victim to paste a complex
   string into their own browser console or form. Not a
-  deliverable attack by itself — only file if you can pair it
+  deliverable attack by itself - only file if you can pair it
   with a delivery vector (clickjacking, deceptive social
   engineering).
 
 - **CSP blocks the harmless probe but real attacker bypasses**:
-  A strict CSP blocks `alert(1)` from a reflected payload — but
+  A strict CSP blocks `alert(1)` from a reflected payload - but
   attackers with motivation can use data: URIs, script gadgets,
   or CSP-allowlisted CDNs. CSP mitigates but doesn't eliminate
-  — file the XSS finding AND the CSP-bypass potential
+ - file the XSS finding AND the CSP-bypass potential
   separately.
 
 - **Stored XSS in admin-only view**: The payload stores but only
   fires when an admin opens an admin panel. Severity is very
   high (privileged-user XSS leads to admin takeover). However,
-  during testing, DO NOT leave the payload stored — clean up.
+  during testing, DO NOT leave the payload stored - clean up.
 
 - **Mutation XSS (mXSS)**: Browser HTML parsing mutates input
   between server sanitization and DOM representation. Sanitizers
   correct at serialization-time fail. Advanced mXSS tests need a
-  dedicated harness — note candidates here, refer to PortSwigger
+  dedicated harness - note candidates here, refer to PortSwigger
   research.
 
 - **Framework auto-escape assumed but bypassed**: Modern
@@ -397,7 +396,7 @@ Before marking complete, verify:
 
 ## References
 
-- `references/payloads.md` — full per-context payload catalog
+- `references/payloads.md` - full per-context payload catalog
   including filter-evasion families and polyglots
 
 External:

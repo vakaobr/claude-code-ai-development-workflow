@@ -1,13 +1,13 @@
 ---
 name: web-check-recon
-description: "Runs a self-hosted web-check (lissy93/web-check) instance to collect 30+ structured recon signals for an in-scope host — TLS/SSL posture, DNS/DNSSEC/TXT, security headers, cookies, redirects, tech-stack, subdomains, mail config (SPF/DKIM/DMARC), blocklist/threat reputation, WHOIS, archives, and (active tier only) port scan, traceroute, WAF probe, link crawl and screenshot. Spins the container up on demand via a managed docker compose, calls the JSON API per the asset's testing_level, normalizes results into PASSIVE_RECON.md / WEBCHECK.md, and proposes hygiene findings for analyst review. Use as a fast first-pass that augments web-recon-passive and feeds attack-surface-mapper and the hunters. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Runs a self-hosted web-check (lissy93/web-check) instance to collect 30+ structured recon signals for an in-scope host - TLS/SSL posture, DNS/DNSSEC/TXT, security headers, cookies, redirects, tech-stack, subdomains, mail config (SPF/DKIM/DMARC), blocklist/threat reputation, WHOIS, archives, and (active tier only) port scan, traceroute, WAF probe, link crawl and screenshot. Spins the container up on demand via a managed docker compose, calls the JSON API per the asset's testing_level, normalizes results into PASSIVE_RECON.md / WEBCHECK.md, and proposes hygiene findings for analyst review. Use as a fast first-pass that augments web-recon-passive and feeds attack-surface-mapper and the hunters. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: sonnet
-# Profile: recon-webcheck (see _shared/tool-profiles.md) — the `active` recon
+# Profile: recon-webcheck (see _shared/tool-profiles.md) - the `active` recon
 # profile, narrowed to this skill's needs, plus on-demand container lifecycle:
 #   - Bash(docker:compose*) / Bash(docker:ps|inspect*) to manage the local
 #     web-check container (human-approved extension, see commit message).
 #   - Bash(curl:*) is restricted by methodology to 127.0.0.1:3000 (the local
-#     API) — the only outbound prober is web-check itself, which the scope
+#     API) - the only outbound prober is web-check itself, which the scope
 #     gate constrains. No direct curl to targets.
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -22,7 +22,7 @@ metadata:
   subcategory: recon
   authorization_required: true
   tier: T4
-  source_methodology: "lissy93/web-check (MIT) — OSINT/recon aggregator"
+  source_methodology: "lissy93/web-check (MIT) - OSINT/recon aggregator"
   service_affecting: true
   composed_from: []
 ---
@@ -42,7 +42,7 @@ no confirmed findings on its own (except clearly-exploitable disclosures
 such as leaked credentials). Its value is speed and breadth: in one pass
 it fills most of the `PASSIVE_RECON.md` fingerprint, DNS, TLS, headers,
 cookies, subdomain, and reputation sections that `web-recon-passive`
-otherwise gathers tool-by-tool — freeing the manual passive skill to
+otherwise gathers tool-by-tool - freeing the manual passive skill to
 focus on the OSINT depth web-check does not do (GitHub secret dorks,
 file-metadata pulls, Wayback parameter mining).
 
@@ -58,19 +58,18 @@ the `security-analyst` / Shannon validation phase.
   observable posture (re-run later to diff configuration drift).
 - When the orchestrator's phase-0 plan asks for a fast inventory before
   deciding which hunters to dispatch.
-- When self-hosting matters — you must NOT submit a client target to the
+- When self-hosting matters - you must NOT submit a client target to the
   public `web-check.xyz` instance (scope/RoE: it discloses the target to
   a third party and probes from an IP you don't control).
 
 ## When NOT to Use
 
 - For deep active surface mapping (directory brute-force, hidden-param
-  discovery, HTTP-method enumeration) — that's `web-recon-active`.
-- For API-spec enumeration (OpenAPI/Swagger/GraphQL introspection) —
-  that's `api-recon`.
-- For OSINT requiring credential/secret discovery in public code — that's
+  discovery, HTTP-method enumeration) - that's `web-recon-active`.
+- For API-spec enumeration (OpenAPI/Swagger/GraphQL introspection) -   that's `api-recon`.
+- For OSINT requiring credential/secret discovery in public code - that's
   `web-recon-passive` Phase 4 + `secrets-in-code-hunter`.
-- For confirming/exploiting any signal this skill surfaces — hand the
+- For confirming/exploiting any signal this skill surfaces - hand the
   candidate to the relevant hunter and the analyst.
 - Any asset not listed in `.claude/security-scope.yaml`.
 
@@ -86,7 +85,7 @@ Before bringing the container up or issuing ANY check:
    - `testing_level: passive` (or production `passive_only`) → run the
      **PASSIVE** check set only. These are third-party OSINT lookups plus
      at most a single benign unauthenticated GET / TLS handshake per
-     check — equivalent to `web-recon-passive`'s on-site signals.
+     check - equivalent to `web-recon-passive`'s on-site signals.
    - `testing_level: active` → PASSIVE set **plus** the ACTIVE set
      (`ports`, `trace-route`, `firewall`, `linked-pages`, `quality`,
      `screenshot`). These send real probes/load to the target, so they
@@ -111,10 +110,10 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from `security-scope.yaml` (hostname)
-- `{tier}`: optional override — `passive` | `active`. If omitted, derive
+- `{tier}`: optional override - `passive` | `active`. If omitted, derive
   from the asset's `testing_level` per the Authorization Check. A caller
   may only *narrow* the tier, never widen it past the scope.
-- `{api_keys}`: optional — path to an `.env` file supplying keys for the
+- `{api_keys}`: optional - path to an `.env` file supplying keys for the
   third-party-backed checks (`SHODAN_API_KEY`, `SECURITY_TRAILS_API_KEY`,
   `GOOGLE_CLOUD_API_KEY`, etc.). Without them, those checks degrade
   gracefully (return empty/limited data, not an error).
@@ -129,9 +128,8 @@ pretty-printing.
 ### Phase 1: Run the full collection pipeline (one command)
 
 1. **After the Authorization Check has set `{target}` and `{tier}`, run
-   the one-shot driver.** It performs the entire collection pipeline —
-   image pull (idempotent) → container up (health-gated) → all tier
-   checks → normalize → teardown — so there is nothing to run by hand
+   the one-shot driver.** It performs the entire collection pipeline -    image pull (idempotent) → container up (health-gated) → all tier
+   checks → normalize → teardown - so there is nothing to run by hand
    and no step to forget:
 
    ```bash
@@ -139,13 +137,13 @@ pretty-printing.
    ```
 
    Options (all default-safe): `--keep-up` (leave the container running
-   for a follow-up run), `--tls-labs` (only with scope approval — see
+   for a follow-up run), `--tls-labs` (only with scope approval - see
    Authorization step 4), `--rps N` (match the scope rate limit),
    `--no-pull` (offline / already pulled).
 
    What the driver does, in order:
    - **Pull** `lissy93/web-check` once (≈1 GB, includes Chromium) via
-     `docker compose pull` — no-op if already cached.
+     `docker compose pull` - no-op if already cached.
    - **Up** via `docker compose -p web-check-recon up -d` against the
      bundled hardened `docker-compose.yml` (port bound to **127.0.0.1
      only**, `DISABLE_GUI=true`, rate-limit on, bounded timeout), then
@@ -163,11 +161,11 @@ pretty-printing.
        `trace-route`, `firewall`, `linked-pages`, `quality`, `screenshot`
      - **OPT-IN**: `tls-labs` (only with `--tls-labs`)
    - **Normalize** the raw JSON into the assessment artifacts:
-     - `WEBCHECK.md` — full structured snapshot (every check, grouped).
-     - `PASSIVE_RECON.patch.md` — append-ready blocks mapped onto the
+     - `WEBCHECK.md` - full structured snapshot (every check, grouped).
+     - `PASSIVE_RECON.patch.md` - append-ready blocks mapped onto the
        `web-recon-passive` dossier sections (Subdomains, Tech
        Fingerprint, Metafiles).
-     - `webcheck/findings-candidates.md` — proposed hygiene findings in
+     - `webcheck/findings-candidates.md` - proposed hygiene findings in
        the canonical schema, each marked **Suspected**, for analyst
        review before appending to `SECURITY_AUDIT.md`.
    - **Down** via `docker compose -p web-check-recon down` (skipped with
@@ -186,7 +184,7 @@ pretty-printing.
 
 2. **Merge into `PASSIVE_RECON.md`.** If the dossier exists, fold the
    `PASSIVE_RECON.patch.md` blocks into the matching sections (don't
-   clobber existing manual OSINT — append and de-duplicate). If it
+   clobber existing manual OSINT - append and de-duplicate). If it
    doesn't exist yet, note that `web-recon-passive` should consume
    `WEBCHECK.md` when it runs.
 
@@ -203,7 +201,7 @@ pretty-printing.
    DNSSEC off, SPF/DMARC gaps, reputation hits, version disclosure) stays
    as **Suspected/Informational** candidates handed to the relevant
    hunter (`clickjacking-hunter`, `session-flaw-hunter`,
-   `crypto-flaw-hunter`, `csrf-hunter`) — do not inflate severity.
+   `crypto-flaw-hunter`, `csrf-hunter`) - do not inflate severity.
 
 4. **Confirm teardown.** The driver tears the container down on exit
    unless `--keep-up` was passed. Verify with
@@ -212,7 +210,7 @@ pretty-printing.
 
 ## Payload Library
 
-No exploit payloads — this is reconnaissance. The only "probe patterns"
+No exploit payloads - this is reconnaissance. The only "probe patterns"
 are the web-check API calls, all of GET form:
 
 ```
@@ -226,12 +224,12 @@ Tier membership and third-party touchpoints are catalogued in
 
 This skill's primary outputs are **inventory artifacts**, not findings:
 
-- `.claude/planning/{issue}/WEBCHECK.md` — full structured snapshot.
-- `.claude/planning/{issue}/PASSIVE_RECON.patch.md` — blocks to merge
+- `.claude/planning/{issue}/WEBCHECK.md` - full structured snapshot.
+- `.claude/planning/{issue}/PASSIVE_RECON.patch.md` - blocks to merge
   into the `web-recon-passive` dossier.
-- `.claude/planning/{issue}/webcheck/raw/*.json` — raw per-check output
+- `.claude/planning/{issue}/webcheck/raw/*.json` - raw per-check output
   (kept for evidence / diffing).
-- `.claude/planning/{issue}/webcheck/findings-candidates.md` — proposed
+- `.claude/planning/{issue}/webcheck/findings-candidates.md` - proposed
   findings for analyst triage.
 
 It appends to `SECURITY_AUDIT.md` ONLY for self-standing recon facts
@@ -245,7 +243,7 @@ It appends to `SECURITY_AUDIT.md` ONLY for self-standing recon facts
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security.
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security.
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log.
 
 ## Quality Check (Self-Review)
@@ -281,7 +279,7 @@ Before marking complete, verify:
 - **Third-party-backed checks return empty without keys.** `shodan`,
   `subdomains` (SecurityTrails), `location`/`rank` (Google/Tranco) need
   API keys via the `.env` file. Missing keys yield empty data, not
-  errors — note "no key configured" in `WEBCHECK.md` rather than
+  errors - note "no key configured" in `WEBCHECK.md` rather than
   reporting "clean".
 
 - **CDN/WAF in front of production.** As with all external recon, headers,
@@ -294,7 +292,7 @@ Before marking complete, verify:
 
 - **`screenshot`/`quality`/`linked-pages` execute the page.** They load
   the target in headless Chromium and can trigger client-side analytics
-  or state changes. They live in the ACTIVE tier for this reason — never
+  or state changes. They live in the ACTIVE tier for this reason - never
   run them under a passive scope.
 
 - **Hygiene ≠ vulnerability.** A missing CSP or an absent `security.txt`
@@ -311,9 +309,9 @@ External:
 - CWE: https://cwe.mitre.org/
 
 Internal:
-- `references/check-catalog.md` — per-check tier, third-party, CWE map.
-- `_shared/finding-schema.md` — canonical finding format.
-- `_shared/tool-profiles.md` — the `recon-webcheck` profile.
+- `references/check-catalog.md` - per-check tier, third-party, CWE map.
+- `_shared/finding-schema.md` - canonical finding format.
+- `_shared/tool-profiles.md` - the `recon-webcheck` profile.
 - Cross-references: `web-recon-passive`, `web-recon-active`, `api-recon`,
   `attack-surface-mapper`.
 

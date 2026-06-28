@@ -1,6 +1,6 @@
 ---
 name: auth-flow-mapper
-description: "Passively maps every authentication flow in the target — primary login, MFA, password reset, account registration, alternative channels (mobile API, SSO), and token issuance points — without running active attack probes. Produces AUTH_FLOWS.md with state diagrams, endpoint inventory, token-issuance timing, multi-stage sequences, and alternative-channel deltas. Consumed by auth-flaw-hunter (for attack planning), jwt-hunter (for token handoff), oauth-oidc-hunter (for OAuth-specific flows), and session-flaw-hunter (for session-layer testing). Use as a foundational T4 skill before any authentication-class hunter. Passive profile — observation only."
+description: "Passively maps every authentication flow in the target - primary login, MFA, password reset, account registration, alternative channels (mobile API, SSO), and token issuance points - without running active attack probes. Produces AUTH_FLOWS.md with state diagrams, endpoint inventory, token-issuance timing, multi-stage sequences, and alternative-channel deltas. Consumed by auth-flaw-hunter (for attack planning), jwt-hunter (for token handoff), oauth-oidc-hunter (for OAuth-specific flows), and session-flaw-hunter (for session-layer testing). Use as a foundational T4 skill before any authentication-class hunter. Passive profile - observation only."
 model: sonnet
 allowed-tools: Read, Grep, Glob, WebFetch(domain:*.in-scope-domain.com)
 metadata:
@@ -19,20 +19,19 @@ metadata:
 ## Goal
 
 Systematically identify and document every authentication
-mechanism the target uses — primary login, MFA, password reset,
+mechanism the target uses - primary login, MFA, password reset,
 registration, alternative channels (mobile API, SSO), and token
 issuance points. This skill is the foundational T4 recon for the
 auth-class hunter skills: its output (`AUTH_FLOWS.md`) tells
 `auth-flaw-hunter`, `jwt-hunter`, `oauth-oidc-hunter`, and
 `session-flaw-hunter` exactly what surface to test. This skill is
-PASSIVE — observation only, no attack probes. Implements
-WSTG-ATHN mapping (the discovery portions) and maps findings —
-when any — to CWE-200 for leaked auth mechanisms, CWE-287 for
+PASSIVE - observation only, no attack probes. Implements
+WSTG-ATHN mapping (the discovery portions) and maps findings - when any - to CWE-200 for leaked auth mechanisms, CWE-287 for
 obvious auth design errors visible from traffic alone.
 
 ## When to Use
 
-- At the start of any authentication-focused assessment — before
+- At the start of any authentication-focused assessment - before
   `auth-flaw-hunter` / `jwt-hunter` / `oauth-oidc-hunter` /
   `session-flaw-hunter` run.
 - When the orchestrator's phase-0 plan includes auth hardening.
@@ -43,12 +42,12 @@ obvious auth design errors visible from traffic alone.
 
 ## When NOT to Use
 
-- For active auth attacks (lockout, enumeration, bypass) — use
+- For active auth attacks (lockout, enumeration, bypass) - use
   `auth-flaw-hunter`.
-- For JWT-specific cryptographic attacks — use `jwt-hunter`.
-- For OAuth flow attacks — use `oauth-oidc-hunter`.
-- For session-layer issues — use `session-flaw-hunter`.
-- For targets without any authentication — not applicable.
+- For JWT-specific cryptographic attacks - use `jwt-hunter`.
+- For OAuth flow attacks - use `oauth-oidc-hunter`.
+- For session-layer issues - use `session-flaw-hunter`.
+- For targets without any authentication - not applicable.
 - Any asset not listed in `.claude/security-scope.yaml`.
 
 ## Authorization Check (MANDATORY FIRST STEP)
@@ -59,16 +58,16 @@ Before ANY outbound activity:
    or doesn't parse, halt and report.
 2. Confirm the intended target appears in the `assets` list AND
    its `testing_level` is at least `passive`. This skill only
-   observes legitimate authentication flows — it performs the
+   observes legitimate authentication flows - it performs the
    SAME actions a real user would (login with test credentials,
    walk through password-reset flow, etc.) and captures the
    traffic.
 3. Use ONLY test credentials (from the scope's credentials
    vault). NEVER capture real customer auth flows for analysis
-   — only test-account flows.
+ - only test-account flows.
 4. If any probe observation reveals live customer credentials or
    tokens in transit (e.g., HTTP basic auth visible to a
-   network observer), IMMEDIATELY note and escalate — do NOT
+   network observer), IMMEDIATELY note and escalate - do NOT
    continue observing. Cross-reference `crypto-flaw-hunter`
    for transport-layer issues.
 5. Log the authorization check to
@@ -81,7 +80,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific auth flows to focus on
+- `{scope_context}`: optional - specific auth flows to focus on
 - `{user_a}`: test-account credentials (primary)
 - `{user_b}`: second test-account credentials (for
   comparison between accounts)
@@ -120,7 +119,7 @@ The skill expects the caller to provide:
    - Deprecated auth endpoints (may lack modern hardening)
 
    Cross-check spec-declared endpoints against what the UI
-   actually uses — unused-but-reachable deprecated paths are
+   actually uses - unused-but-reachable deprecated paths are
    candidates for `auth-flaw-hunter` Phase 5 (alternative-channel
    policy drift).
 
@@ -158,7 +157,7 @@ The skill expects the caller to provide:
    - Retry limits visible in UI ("you have 3 attempts
      remaining")
 
-   Record: MFA details — especially the transition-state
+   Record: MFA details - especially the transition-state
    mechanism that `auth-flaw-hunter` Phase 4 will probe for
    bypass.
 
@@ -218,7 +217,7 @@ The skill expects the caller to provide:
    - Same rate-limit / lockout? Or looser?
    - Same token format / lifetime?
 
-   Record: Channel-parity matrix — any drift is a candidate for
+   Record: Channel-parity matrix - any drift is a candidate for
    `auth-flaw-hunter` Phase 5.
 
 9. **SSO / social-login flows** [Bug Bounty Bootcamp, Ch 20, p. 307]
@@ -242,7 +241,7 @@ The skill expects the caller to provide:
       change?)
 
     Long-lived tokens often have weaker scrutiny than primary
-    session tokens — flag for `session-flaw-hunter`.
+    session tokens - flag for `session-flaw-hunter`.
 
 ### Phase 5: Synthesis and Handoff
 
@@ -273,7 +272,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No payloads — this skill is observational. The "probes" are just
+No payloads - this skill is observational. The "probes" are just
 standard login / register / reset flows exercised with test
 credentials, captured via proxy.
 
@@ -301,11 +300,11 @@ For passive-observable findings filed directly:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
-- `.claude/planning/{issue}/jwt-targets.md` — JWT artifact
+- `.claude/planning/{issue}/jwt-targets.md` - JWT artifact
   handoff
-- `.claude/planning/{issue}/AUTH_FLOWS.md` — primary dossier
+- `.claude/planning/{issue}/AUTH_FLOWS.md` - primary dossier
 
 ## Quality Check (Self-Review)
 
@@ -325,7 +324,7 @@ Before marking complete, verify:
 - [ ] Handoff Questions section lists specific probes for each
       downstream hunter
 - [ ] No real customer credentials were captured (grep HAR for
-      non-test usernames — should be zero)
+      non-test usernames - should be zero)
 - [ ] Skills Run Log row updated from `running` to `complete` or
       `halted:{reason}`
 
@@ -334,7 +333,7 @@ Before marking complete, verify:
 - **Uniform 200 OK masking errors**: Walking the flow with
   wrong credentials may return 200 with "invalid credentials"
   in the body. Normal user behavior is wrong-cred → 401 / 400
-  — if the target always returns 200, the mapping needs to
+ - if the target always returns 200, the mapping needs to
   account for body-based error detection.
 
 - **Inert multi-stage URLs**: The URL says `/step2` but the
@@ -350,19 +349,19 @@ Before marking complete, verify:
 
 - **Debug reflection disguised as real redirect**: Apps
   sometimes reflect `redirect_uri` in debug output without
-  actually using it — the mapped flow would look OAuth-like but
+  actually using it - the mapped flow would look OAuth-like but
   isn't. Confirm by watching whether the browser actually
   follows the reflected URL.
 
 - **Captured credentials in HAR**: HAR files capture
   Authorization / Cookie headers. Sanitize HAR before saving or
-  store under restricted access — or strip credentials via a
+  store under restricted access - or strip credentials via a
   post-processing step.
 
 - **Scope-adjacent SSO providers**: Observing an OAuth flow
   captures traffic to the third-party IdP (Google, Okta). That
   traffic goes to an OUT-OF-SCOPE provider. Don't process or
-  analyze IdP-side probes — only client-side callback behavior
+  analyze IdP-side probes - only client-side callback behavior
   is in scope.
 
 ## References

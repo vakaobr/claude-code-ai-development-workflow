@@ -40,18 +40,17 @@ skills under `.claude/skills/{skill-name}/SKILL.md`.
 Before generating anything, read these files in order and confirm you
 understand them:
 
-1. `.claude/skills/_shared/name-mapping.md` — the authoritative mapping
+1. `.claude/skills/_shared/name-mapping.md` - the authoritative mapping
    from Portuguese filenames to English kebab-case skill names, with
    model and tools-profile assignments.
-2. `.claude/skills/_shared/tool-profiles.md` — the allowed-tools
+2. `.claude/skills/_shared/tool-profiles.md` - the allowed-tools
    profiles. Every skill references one of these by name.
-3. `.claude/skills/_shared/finding-schema.md` — the canonical schema
+3. `.claude/skills/_shared/finding-schema.md` - the canonical schema
    for SECURITY_AUDIT.md entries. Every skill's Output Format section
    must produce findings in this schema.
-4. `.claude/security-scope.yaml` — the authorization declaration.
+4. `.claude/security-scope.yaml` - the authorization declaration.
    Every skill reads this before any outbound activity.
-5. `CLAUDE.md` section "Security Testing Scope and Authorization" —
-   the rules of engagement every skill inherits.
+5. `CLAUDE.md` section "Security Testing Scope and Authorization" -    the rules of engagement every skill inherits.
 
 After reading these, summarize back to me in 5 bullets what you
 understood. Do not start converting until I confirm.
@@ -63,7 +62,7 @@ For each of the 41 notes in `pentest-agent-development/notebooklm-notes/`:
 1. Look up the note's skill name, category, model, and tools profile
    in the mapping table.
 
-2. Handle the three SSTI notes specially — they're the same topic. Read
+2. Handle the three SSTI notes specially - they're the same topic. Read
    all three, pick the most comprehensive as the base, fold useful
    material from the other two into the `references/` folder. Produce
    one skill: `ssti-hunter`.
@@ -92,17 +91,17 @@ orchestrator.
 ```markdown
 ---
 name: {skill-name}
-description: "{ONE SENTENCE of what it does}. Use when {TRIGGERING CONDITIONS — 2-3 specific scenarios}. {CAPABILITIES in 1 sentence}. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "{ONE SENTENCE of what it does}. Use when {TRIGGERING CONDITIONS - 2-3 specific scenarios}. {CAPABILITIES in 1 sentence}. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: {sonnet|opus from mapping}
 allowed-tools: {paste the exact allowed-tools block from the matching profile in tool-profiles.md}
 metadata:
   version: 1.0.0
   category: security-testing
-  subcategory: {category from mapping — injection, access-control, etc.}
+  subcategory: {category from mapping - injection, access-control, etc.}
   authorization_required: true
   tier: {T1|T2|T3|T4 from mapping}
   source_methodology: {original Portuguese filename}
-  service_affecting: {true|false — true for rate-limit, fuzzing, brute-force classes}
+  service_affecting: {true|false - true for rate-limit, fuzzing, brute-force classes}
   composed_from: []  # populated by merge skills, empty here
 ---
 
@@ -116,7 +115,7 @@ reference it implements: WSTG-XXX-NN, API{N}:2023, or ASVS Vnn.}
 
 ## When to Use
 
-- {Specific trigger 1 — an observable condition in the target}
+- {Specific trigger 1 - an observable condition in the target}
 - {Specific trigger 2}
 - {Specific trigger 3}
 - {Specific trigger 4}
@@ -125,7 +124,7 @@ reference it implements: WSTG-XXX-NN, API{N}:2023, or ASVS Vnn.}
 
 ## When NOT to Use
 
-- {Adjacent class this skill should defer to — e.g., "Use bola-bfla-hunter
+- {Adjacent class this skill should defer to - e.g., "Use bola-bfla-hunter
   for API-level object authorization, this skill is for web-app IDOR"}
 - {Target condition that rules out this test}
 - Any asset not listed in `.claude/security-scope.yaml`.
@@ -154,8 +153,8 @@ Before ANY outbound activity:
 The skill expects the caller to provide:
 - `{issue}`: the planning folder name (e.g., `security-audit-q2`)
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints/parameters to focus on
-- {any skill-specific inputs — e.g., for idor-hunter: authenticated
+- `{scope_context}`: optional - specific endpoints/parameters to focus on
+- {any skill-specific inputs - e.g., for idor-hunter: authenticated
   session tokens for two different users}
 
 ## Methodology
@@ -187,7 +186,7 @@ name its source book citation inline, like this:}
 
 {Keep going until all source material is captured. Minimum 8 distinct
 test steps. If the source has fewer than 8, note "source methodology
-covers limited techniques for this class" and stop there — do not
+covers limited techniques for this class" and stop there - do not
 invent additional steps.}
 
 ## Payload Library
@@ -196,7 +195,7 @@ invent additional steps.}
 put the full list in `references/payloads.md`. Do not paste long
 payload dumps into SKILL.md directly.}
 
-- **Category 1**: {1-line description} — see `references/payloads.md`
+- **Category 1**: {1-line description} - see `references/payloads.md`
 - **Category 2**: {...}
 
 ## Output Format
@@ -208,15 +207,15 @@ This skill produces findings that append to
 Specifically for this skill, each finding:
 - Uses CWE: CWE-{default for this class}
 - Uses OWASP reference: {WSTG or API Top 10 default}
-- Includes evidence: {what this skill captures as PoC — request/response
+- Includes evidence: {what this skill captures as PoC - request/response
   pair, DOM snippet, HTTP response code, etc.}
-- Remediation framing: {who the fix is for — backend dev, frontend dev,
+- Remediation framing: {who the fix is for - backend dev, frontend dev,
   DBA, infra, etc.}
 
 The skill also updates:
-- `.claude/planning/{issue}/STATUS.md` — checkbox for this skill under
+- `.claude/planning/{issue}/STATUS.md` - checkbox for this skill under
   Phase 7: Security
-- `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log — start
+- `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log - start
   and finish rows
 
 ## Quality Check (Self-Review)
@@ -227,7 +226,7 @@ Before declaring the skill run complete, verify:
 - [ ] No finding cites a source not in the loaded methodology
 - [ ] No finding is a duplicate of an earlier FINDING-NNN for the same
       endpoint + technique combination
-- [ ] Remediation text is concrete (code or config) — not generic
+- [ ] Remediation text is concrete (code or config) - not generic
       advice like "use proper validation"
 - [ ] Skills Run Log row is updated from `running` to `complete` or
       `halted:{reason}`
@@ -242,11 +241,11 @@ here. Format: "**{Pattern}**: {why it looks vulnerable but isn't} →
 
 ## References
 
-- `references/payloads.md` — {what's in it}
-- `references/tooling.md` — {what's in it, only if note had tool
+- `references/payloads.md` - {what's in it}
+- `references/tooling.md` - {what's in it, only if note had tool
   commands}
-- `references/signatures.md` — {only if note had detection regex}
-- `references/remediation.md` — {only if note had fix code library}
+- `references/signatures.md` - {only if note had detection regex}
+- `references/remediation.md` - {only if note had fix code library}
 
 External:
 - {OWASP WSTG section URL}
@@ -272,8 +271,7 @@ These rules are non-negotiable:
 
 1. **Never invent methodology.** If the source note doesn't cover
    something, don't add it. If you think a well-known technique is
-   missing, add it to `references/gaps.md` for a human to review —
-   never into the methodology itself.
+   missing, add it to `references/gaps.md` for a human to review -    never into the methodology itself.
 
 2. **Never broaden allowed-tools.** The tools profile in the mapping
    is the ceiling. A skill may narrow it; it may not widen it.
@@ -291,7 +289,7 @@ These rules are non-negotiable:
    only what the note supports.
 
 6. **No Portuguese in the output.** The source notes are in English
-   despite Portuguese filenames, so this should be natural — but
+   despite Portuguese filenames, so this should be natural - but
    watch for any Portuguese section headers that leak through.
 
 7. **Update STATUS.md format compatibly.** The existing repo uses

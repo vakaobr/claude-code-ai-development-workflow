@@ -1,6 +1,6 @@
 ---
 name: ad-kerberos-hunter
-description: "Tests an authorized Active Directory domain for Kerberos-abuse paths: Kerberoasting (TGS for SPN accounts → offline crack), AS-REP roasting (accounts without pre-auth), and enumeration/proof of unconstrained, constrained (S4U), and resource-based constrained delegation (RBCD) plus shadow-credentials (msDS-KeyCredentialLink) candidates. Consumes ad-recon-hunter's ad-quickwins.md. Use after ad-recon-hunter once internal_pentest is approved and domain credentials are available. Cracking and any impersonation proof are gated. Maps findings to CWE-287/CWE-522/CWE-284 and MITRE T1558. Internal pentest only — requires .claude/security-scope.yaml internal_pentest: approved and credentials from ad_credentials_vault_path. Grounded in redteam-ad-ops."
+description: "Tests an authorized Active Directory domain for Kerberos-abuse paths: Kerberoasting (TGS for SPN accounts → offline crack), AS-REP roasting (accounts without pre-auth), and enumeration/proof of unconstrained, constrained (S4U), and resource-based constrained delegation (RBCD) plus shadow-credentials (msDS-KeyCredentialLink) candidates. Consumes ad-recon-hunter's ad-quickwins.md. Use after ad-recon-hunter once internal_pentest is approved and domain credentials are available. Cracking and any impersonation proof are gated. Maps findings to CWE-287/CWE-522/CWE-284 and MITRE T1558. Internal pentest only - requires .claude/security-scope.yaml internal_pentest: approved and credentials from ad_credentials_vault_path. Grounded in redteam-ad-ops."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -30,9 +30,8 @@ metadata:
 Prove which Kerberos misconfigurations in an authorized domain lead to
 credential compromise or impersonation: roastable accounts whose tickets
 can be cracked offline, and delegation primitives that let one principal
-act as another. The skill stops at the cheapest defensible proof —
-recovering a ticket hash, or demonstrating a delegation primitive is
-writable — and hands escalation to the operator. Findings map to
+act as another. The skill stops at the cheapest defensible proof - recovering a ticket hash, or demonstrating a delegation primitive is
+writable - and hands escalation to the operator. Findings map to
 CWE-287 (improper authentication), CWE-522 (weak service-account
 passwords), CWE-284 (improper delegation ACLs), MITRE T1558
 (Steal/Forge Kerberos Tickets).
@@ -46,13 +45,13 @@ passwords), CWE-284 (improper delegation ACLs), MITRE T1558
 
 ## When NOT to Use
 
-- No domain credentials yet — run `ad-recon-hunter` first.
-- Credential dumping (LSASS/SAM/NTDS) or DCSync — out of scope; separate
+- No domain credentials yet - run `ad-recon-hunter` first.
+- Credential dumping (LSASS/SAM/NTDS) or DCSync - out of scope; separate
   approval + human operator.
-- Domain dominance (golden/silver/diamond tickets, forged certs) — these
+- Domain dominance (golden/silver/diamond tickets, forged certs) - these
   are full-compromise actions requiring `domain_dominance: approved`;
   this skill only reaches the precursor proof.
-- Web/API targets — wrong tier entirely.
+- Web/API targets - wrong tier entirely.
 
 ## Authorization Check (MANDATORY FIRST STEP)
 
@@ -106,7 +105,7 @@ passwords), CWE-284 (improper delegation ACLs), MITRE T1558
    Do: list `msDS-AllowedToDelegateTo` principals. Record the
    delegation target SPNs.
    Proof (only if `impersonation_proof: approved`): demonstrate S4U2Self
-   + S4U2Proxy yields a service ticket — capture the ticket metadata as
+   + S4U2Proxy yields a service ticket - capture the ticket metadata as
    evidence, do NOT use it to access the service.
 5. **RBCD writability check.**
    Do: check whether `{creds}`' principal has write over
@@ -138,8 +137,8 @@ Specific to this skill:
 - **Evidence**: the request command + redacted hash (`$krb5tgs$...`
   truncated), crack result if approved, ACL/edge evidence for delegation.
   Never store full crackable hashes or recovered plaintext in the report
-  beyond a truncated proof — keep full material in the engagement vault.
-- **Remediation framing**: AD admin — strong (25+ char) managed service
+  beyond a truncated proof - keep full material in the engagement vault.
+- **Remediation framing**: AD admin - strong (25+ char) managed service
   account passwords or gMSA, set pre-auth on all accounts, remove
   unnecessary SPNs, audit and remove unconstrained delegation, tighten
   write ACLs on computer objects, monitor for TGS requests with RC4.
@@ -165,16 +164,15 @@ Updates `STATUS.md` and the Skills Run Log row to `complete`.
   privileges may be a decoy/canary. Flag, do not assume, and confirm
   with the client before acting on it.
 - **Machine-account SPN false positives**: filter out `$`-suffixed
-  accounts — their 120-char random passwords are not crackable.
+  accounts - their 120-char random passwords are not crackable.
 
 ## References
 
-- The Hacker Recipes — Kerberos: https://www.thehacker.recipes/a-d/movement/kerberos
+- The Hacker Recipes - Kerberos: https://www.thehacker.recipes/a-d/movement/kerberos
 - Impacket: https://github.com/fortra/impacket
 - MITRE ATT&CK T1558: https://attack.mitre.org/techniques/T1558/
 
 ## Source Methodology
 
 Grounded in `redteam-ad-ops` (section 2.4) and `ad-recon-hunter`,
-distilled from RedefiningReality/Cheatsheets (`RTO I` — Kerberos) —
-treated as MIT per author confirmation. Conversion date: 2026-06-27.
+distilled from RedefiningReality/Cheatsheets (`RTO I` - Kerberos) - treated as MIT per author confirmation. Conversion date: 2026-06-27.

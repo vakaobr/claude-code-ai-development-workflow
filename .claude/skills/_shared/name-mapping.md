@@ -63,7 +63,7 @@ into them as a "Phase 1: inventory" section.
 
 Rows 33 and 25 are both SSRF. Keep `ssrf-hunter` as the main skill and
 `ssrf-cloud-metadata-hunter` as a specialist for the IMDS/cloud metadata
-variant — the techniques and payloads are distinct enough to warrant it.
+variant - the techniques and payloads are distinct enough to warrant it.
 
 ## Tools Profiles
 

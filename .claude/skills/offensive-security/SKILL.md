@@ -13,17 +13,17 @@ metadata:
 
 # Offensive Security Reference
 
-## OWASP Top 10 (2021) — Quick Checklist
+## OWASP Top 10 (2021) - Quick Checklist
 
-### A01 — Broken Access Control
-- [ ] Horizontal privilege escalation (IDOR) — can user access other users' data?
-- [ ] Vertical privilege escalation — can user perform admin actions?
+### A01 - Broken Access Control
+- [ ] Horizontal privilege escalation (IDOR) - can user access other users' data?
+- [ ] Vertical privilege escalation - can user perform admin actions?
 - [ ] Missing function-level access control on API endpoints
 - [ ] JWT / session token manipulation
 - [ ] CORS misconfiguration allowing unauthorized origins
 - [ ] Force-browsing to authenticated pages
 
-### A02 — Cryptographic Failures
+### A02 - Cryptographic Failures
 - [ ] Sensitive data transmitted without TLS
 - [ ] Weak cipher suites (RC4, 3DES, MD5, SHA-1 for signing)
 - [ ] Hardcoded secrets / API keys in source code
@@ -31,23 +31,23 @@ metadata:
 - [ ] Insufficient key length (RSA < 2048, symmetric < 128-bit)
 - [ ] Missing HSTS, certificate pinning for mobile
 
-### A03 — Injection
+### A03 - Injection
 - [ ] SQL injection (classic, blind, time-based, out-of-band)
 - [ ] NoSQL injection (MongoDB `$where`, `$regex`)
 - [ ] OS command injection (`exec`, `shell_exec`, `system`, `subprocess`)
 - [ ] LDAP injection
-- [ ] Template injection (SSTI) — Jinja2, Twig, Handlebars, etc.
+- [ ] Template injection (SSTI) - Jinja2, Twig, Handlebars, etc.
 - [ ] XPath injection
 - [ ] Log injection / log forging
 
-### A04 — Insecure Design
+### A04 - Insecure Design
 - [ ] Missing rate limiting on auth endpoints
 - [ ] Lack of multi-factor authentication on sensitive operations
 - [ ] No account lockout policy
 - [ ] Business logic flaws (negative quantities, price manipulation)
 - [ ] Insecure password recovery flows
 
-### A05 — Security Misconfiguration
+### A05 - Security Misconfiguration
 - [ ] Default credentials on admin panels
 - [ ] Directory listing enabled
 - [ ] Debug mode / stack traces exposed in production
@@ -55,13 +55,13 @@ metadata:
 - [ ] Missing security headers (CSP, X-Frame-Options, X-Content-Type-Options)
 - [ ] XML External Entity (XXE) processing enabled
 
-### A06 — Vulnerable and Outdated Components
+### A06 - Vulnerable and Outdated Components
 - [ ] CVEs in direct dependencies (`npm audit`, `pip-audit`, `composer audit`)
 - [ ] CVEs in transitive dependencies
 - [ ] End-of-life language runtimes or frameworks
 - [ ] Container base images with known vulnerabilities
 
-### A07 — Identification and Authentication Failures
+### A07 - Identification and Authentication Failures
 - [ ] Weak password policy
 - [ ] Credential stuffing / brute force (no rate limiting)
 - [ ] JWT algorithm confusion (RS256 → HS256, alg:none)
@@ -69,20 +69,20 @@ metadata:
 - [ ] Session fixation
 - [ ] OAuth misconfigurations (open redirect, state param missing)
 
-### A08 — Software and Data Integrity Failures
+### A08 - Software and Data Integrity Failures
 - [ ] Unsigned package / dependency downloads
 - [ ] CI/CD pipeline with insufficient integrity checks
 - [ ] Insecure deserialization (Java, PHP, Python pickle)
 - [ ] Auto-update without signature verification
 
-### A09 — Security Logging and Monitoring Failures
+### A09 - Security Logging and Monitoring Failures
 - [ ] Authentication events not logged
 - [ ] Insufficient log detail (no IP, user, timestamp)
 - [ ] Logs contain sensitive data (passwords, tokens)
 - [ ] No alerting on brute force / anomalous patterns
 - [ ] Log injection possible (user input in log messages)
 
-### A10 — Server-Side Request Forgery (SSRF)
+### A10 - Server-Side Request Forgery (SSRF)
 - [ ] User-supplied URLs fetched server-side
 - [ ] Cloud metadata endpoint reachable (`169.254.169.254`)
 - [ ] Internal service URLs accessible via SSRF
@@ -213,7 +213,7 @@ $(id)
 | **Integrity** | None (N), Low (L), High (H) |
 | **Availability** | None (N), Low (L), High (H) |
 
-Critical (9.0–10.0) examples:
+Critical (9.0 - 10.0) examples:
 - Network / Low complexity / No privileges / No interaction / High CIA = 9.8
 
 Use https://www.first.org/cvss/calculator/3.1 for precise scoring.
@@ -229,7 +229,7 @@ Use https://www.first.org/cvss/calculator/3.1 for precise scoring.
 | Model has no tool access, output is displayed | XSS / content manipulation | Medium |
 | Model has tool access (read files, APIs) | Data exfiltration | High |
 | Model has tool access (write files, exec code) | Full system compromise | Critical |
-| Indirect injection via uploaded files | Depends on tools | High–Critical |
+| Indirect injection via uploaded files | Depends on tools | High - Critical |
 
 ### Secure LLM Integration Checklist
 - [ ] User input is never placed in the system prompt

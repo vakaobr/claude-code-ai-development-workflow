@@ -1,6 +1,6 @@
 ---
 name: auth-flaw-hunter
-description: "Tests authentication subsystems for username enumeration, weak / absent lockout, multi-stage bypass (skipping MFA / security-questions stage), JWT signature integrity (dispatching to jwt-hunter), alternative-channel weakness (web vs mobile vs API), default-credential probing, and cleartext credential transmission. Use when login / password-reset / MFA flows are in scope; after `web-recon-active` maps the auth surface; or when the orchestrator's phase-0 plan prioritizes authentication hardening. Produces findings with CWE-287 / CWE-307 / CWE-522 mapping and layered auth hardening. Defensive testing only, against assets listed in .claude/security-scope.yaml — service_affecting: true."
+description: "Tests authentication subsystems for username enumeration, weak / absent lockout, multi-stage bypass (skipping MFA / security-questions stage), JWT signature integrity (dispatching to jwt-hunter), alternative-channel weakness (web vs mobile vs API), default-credential probing, and cleartext credential transmission. Use when login / password-reset / MFA flows are in scope; after `web-recon-active` maps the auth surface; or when the orchestrator's phase-0 plan prioritizes authentication hardening. Produces findings with CWE-287 / CWE-307 / CWE-522 mapping and layered auth hardening. Defensive testing only, against assets listed in .claude/security-scope.yaml - service_affecting: true."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -43,7 +43,7 @@ lockout, and consistent-policy remediation.
 - The target has login / password-reset / MFA-verify / signup /
   account-recovery flows in scope.
 - `api-recon` surfaced multiple auth endpoints (web form + mobile
-  API + SSO + "remember me") — policy-drift risk.
+  API + SSO + "remember me") - policy-drift risk.
 - Responses hint at enumeration (`"User not found"` vs `"Incorrect
   password"`).
 - Multi-stage login / MFA appears in the inventory.
@@ -52,14 +52,12 @@ lockout, and consistent-policy remediation.
 
 ## When NOT to Use
 
-- For session-layer flaws (post-auth cookie / token behavior) —
-  use `session-flaw-hunter`.
-- For JWT-specific cryptographic attacks — use `jwt-hunter`
+- For session-layer flaws (post-auth cookie / token behavior) -   use `session-flaw-hunter`.
+- For JWT-specific cryptographic attacks - use `jwt-hunter`
   (this skill dispatches to it).
 - For OAuth 2.0 / OIDC flow-level issues (PKCE missing, redirect-
-  URI validation, scope creep) — use `oauth-oidc-hunter`.
-- For rate-limit testing specifically on brute-force resistance —
-  use `rate-limit-hunter` (this skill dispatches to it for the
+  URI validation, scope creep) - use `oauth-oidc-hunter`.
+- For rate-limit testing specifically on brute-force resistance -   use `rate-limit-hunter` (this skill dispatches to it for the
   quantitative throughput tests; the qualitative lockout check
   stays here).
 - Any asset not listed in `.claude/security-scope.yaml` or whose
@@ -73,7 +71,7 @@ Before ANY outbound activity:
    doesn't parse, halt and report.
 2. Confirm the intended target appears in the `assets` list AND its
    `testing_level` is `active`.
-3. `service_affecting: true` — lockout testing generates real
+3. `service_affecting: true` - lockout testing generates real
    failed-login events in logs and may trigger real alerts to the
    security team. Confirm the asset's `service_affecting` is
    `approved`. Notify the security team BEFORE running Phase 2 so
@@ -84,7 +82,7 @@ Before ANY outbound activity:
    accounts, halt and request a dedicated test account.
 5. Default-credential probes (Phase 6) use a limited wordlist of
    framework-default pairs; NEVER use leaked password dumps or
-   credential-stuffing lists — that's `credential_stuffing` which
+   credential-stuffing lists - that's `credential_stuffing` which
    is explicitly on the `never_run` technique list in the scope
    file.
 6. Log the authorization check to
@@ -98,7 +96,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific auth endpoints
+- `{scope_context}`: optional - specific auth endpoints
 - `{user_a}`: credentials for a controlled test account
 - `{user_b}`: credentials for a second test account (needed for
   MFA-stage-skip tests where one path has MFA and the other
@@ -168,7 +166,7 @@ The skill expects the caller to provide:
    Do: Attempt to register with valid and invalid emails.
 
    Vulnerable response: "This email is already registered" vs
-   "Registered — check your inbox".
+   "Registered - check your inbox".
 
 ### Phase 3: Lockout Testing (Coordinated)
 
@@ -200,8 +198,7 @@ The skill expects the caller to provide:
    2 (MFA). Then, bypassing the MFA challenge, directly request
    a post-MFA endpoint (dashboard / API profile).
 
-   Vulnerable response: The server returns authenticated content —
-   authentication trusted the intermediate state without
+   Vulnerable response: The server returns authenticated content -    authentication trusted the intermediate state without
    completing MFA.
 
    Not-vulnerable response: Redirect back to MFA challenge, or
@@ -264,7 +261,7 @@ The skill expects the caller to provide:
    Vulnerable response: Successful auth with a default pair.
 
    Record: FINDING-NNN Critical. Severity requires no further
-   demonstration — the default-cred admission alone is the
+   demonstration - the default-cred admission alone is the
    finding.
 
 ### Phase 7: JWT / SAML Dispatch
@@ -274,7 +271,7 @@ The skill expects the caller to provide:
     Do: If any auth flow issues JWTs (check headers / bodies for
     `ey`-prefixed strings), capture one token per user per channel
     and add to `jwt-targets.md`. Do NOT attempt cryptographic
-    attacks here — delegate to `jwt-hunter`.
+    attacks here - delegate to `jwt-hunter`.
 
     Record: Token inventory; note any immediately-obvious red
     flags (`alg: none`, missing signature) for jwt-hunter's
@@ -285,7 +282,7 @@ The skill expects the caller to provide:
 Categories:
 
 - **Default credentials (limited)**: admin:admin, root:root, etc.
-  (≤10 pairs — never credential-stuffing dump)
+  (≤10 pairs - never credential-stuffing dump)
 - **Invalid-username probes**: UUID-pattern usernames unlikely to
   exist (`nonexistent-user-a1b2c3d4`)
 - **Stage parameters**: `stage=complete`, `step=final`,
@@ -307,11 +304,7 @@ Specific to this skill:
   response diff.
 - **OWASP**: WSTG-ATHN-01 through WSTG-ATHN-10. For APIs, API2:2023
   (Broken Authentication).
-- **CVSS vectors**: MFA-skip —
-  `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H`. Default admin cred —
-  `...PR:N/.../C:H/I:H/A:H`. Username enumeration alone —
-  `...AC:L/C:L/I:N/A:N`. Cleartext creds on HTTP —
-  `...AC:H/.../C:H/I:N/A:N` (requires MITM).
+- **CVSS vectors**: MFA-skip -   `AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H`. Default admin cred -   `...PR:N/.../C:H/I:H/A:H`. Username enumeration alone -   `...AC:L/C:L/I:N/A:N`. Cleartext creds on HTTP -   `...AC:H/.../C:H/I:N/A:N` (requires MITM).
 - **Evidence**: for enumeration, the diff between valid and invalid
   responses. For lockout, the attempt number and observed defense
   behavior. For bypass, the request that skipped the missing
@@ -330,7 +323,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 - `.claude/planning/{issue}/jwt-targets.md` (appends discovered
   JWT tokens for jwt-hunter)
@@ -345,7 +338,7 @@ Before marking complete, verify:
       observed response
 - [ ] `{user_a}` was restored after lockout testing (or escalation
       noted)
-- [ ] No credential-stuffing wordlist was used — only the limited
+- [ ] No credential-stuffing wordlist was used - only the limited
       default-cred list
 - [ ] No real customer account's credentials were tested
 - [ ] Multi-channel tests covered all alternative auth endpoints
@@ -365,8 +358,7 @@ Before marking complete, verify:
 
 - **WAF interference misread as app defense**: An edge WAF blocks
   the IP after N requests. The app itself has no lockout. This
-  still improves the posture but isn't an app-level defense —
-  differentiate in findings (e.g., "lockout enforced at CDN/WAF;
+  still improves the posture but isn't an app-level defense -   differentiate in findings (e.g., "lockout enforced at CDN/WAF;
   app-level defense absent").
 
 - **Generic timing hits**: Response time increases during
@@ -382,7 +374,7 @@ Before marking complete, verify:
 
 - **Lockout that unblocks too fast**: 60-second lockouts are
   essentially no defense against attackers with unlimited time.
-  File as a finding ("insufficient lockout duration") — Medium.
+  File as a finding ("insufficient lockout duration") - Medium.
 
 - **MFA-skip that requires a stolen intermediate cookie**: The
   bypass requires an attacker-owned intermediate-state cookie,
@@ -392,7 +384,7 @@ Before marking complete, verify:
 
 ## References
 
-- `references/remediation.md` — framework-specific lockout /
+- `references/remediation.md` - framework-specific lockout /
   error-template snippets
 
 External:

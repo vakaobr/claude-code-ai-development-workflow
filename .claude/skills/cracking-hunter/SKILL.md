@@ -1,6 +1,6 @@
 ---
 name: cracking-hunter
-description: "Offline password / hash cracking during an authorized engagement using hashcat and John the Ripper. Identifies hash types (hashid/hashcat --identify), runs wordlist + rule + mask attacks against hashes already captured by other skills (ad-kerberos AS-REP/TGS, jwt HS256 secrets, dumped SAM/NTDS/shadow, recovered archives), and reports cracked/uncracked with the password-policy weakness it proves. Offline only — never online brute force. The shared cracking utility the AD and JWT hunters depend on. Requires .claude/security-scope.yaml red_team_ops.offline_cracking: approved. Hashes/plaintext stay in the engagement vault. Grounded in redteam-ops."
+description: "Offline password / hash cracking during an authorized engagement using hashcat and John the Ripper. Identifies hash types (hashid/hashcat --identify), runs wordlist + rule + mask attacks against hashes already captured by other skills (ad-kerberos AS-REP/TGS, jwt HS256 secrets, dumped SAM/NTDS/shadow, recovered archives), and reports cracked/uncracked with the password-policy weakness it proves. Offline only - never online brute force. The shared cracking utility the AD and JWT hunters depend on. Requires .claude/security-scope.yaml red_team_ops.offline_cracking: approved. Hashes/plaintext stay in the engagement vault. Grounded in redteam-ops."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -25,7 +25,7 @@ metadata:
 ## Goal
 
 Take hashes ALREADY captured by other skills and determine, offline,
-which are crackable and how fast — proving weak password policy and the
+which are crackable and how fast - proving weak password policy and the
 real-world impact of a hash leak. This is the shared offline-cracking
 utility that `ad-kerberos-hunter` (AS-REP/TGS), `jwt-hunter` (HS256
 secret), and `host-privesc-hunter` (SAM/shadow/NTDS, recovered archives)
@@ -42,10 +42,10 @@ requirements) / CWE-916 (weak hash) with cracked-vs-uncracked stats.
 
 ## When NOT to Use
 
-- Online brute force / password spraying against a live login — that is
+- Online brute force / password spraying against a live login - that is
   ROE-gated service traffic, handled (lockout-aware) by
   `auth-flaw-hunter` / `ad-recon-hunter`, never here.
-- Capturing the hashes in the first place — that is the upstream skill's
+- Capturing the hashes in the first place - that is the upstream skill's
   job (`ad-kerberos-hunter`, `host-privesc-hunter`, etc.).
 - No `offline_cracking` approval, or hashes obtained out of scope.
 
@@ -53,12 +53,12 @@ requirements) / CWE-916 (weak hash) with cracked-vs-uncracked stats.
 
 1. Read `.claude/security-scope.yaml`. If missing/placeholder, halt.
 2. Confirm `red_team_ops.offline_cracking: approved` (the AD chain may
-   also gate via `red_team_extension.offline_cracking` — honor whichever
+   also gate via `red_team_extension.offline_cracking` - honor whichever
    the calling engagement set).
 3. Confirm the hashes were captured under this engagement's authorization
    (reference the source finding ID). Refuse hashes of unknown origin.
 4. All hash material and recovered plaintext stay under the engagement
-   vault / case folder — never echo full plaintext into shared reports or
+   vault / case folder - never echo full plaintext into shared reports or
    upload to third-party cracking services.
 5. Append a `running` row to the Skills Run Log.
 
@@ -117,7 +117,7 @@ Specific to this skill:
 - **Evidence**: hash type + mode, attack run (wordlist/rules/mask +
   keyspace), cracked/total stats, time-to-crack. Plaintext REDACTED in
   the report; full results in the vault, linked by reference.
-- **Remediation framing**: identity owner — enforce length/complexity,
+- **Remediation framing**: identity owner - enforce length/complexity,
   ban breached/seasonal passwords (HIBP), use slow hashes (bcrypt/
   argon2/PBKDF2) for storage, MFA, rotation on the cracked accounts.
 - Updates `STATUS.md` and the Skills Run Log.
@@ -125,7 +125,7 @@ Specific to this skill:
 ## Quality Check (Self-Review)
 
 - [ ] `offline_cracking` approved; hash origin tied to a source finding
-- [ ] Offline only — no online/live-service attempts
+- [ ] Offline only - no online/live-service attempts
 - [ ] Keyspace/time budget documented so "uncracked" is meaningful
 - [ ] Plaintext kept in vault; report shows counts + redacted samples only
 - [ ] No upload to third-party/online cracking services
@@ -134,14 +134,14 @@ Specific to this skill:
 
 ## Common Issues
 
-- **Slow hashes**: bcrypt/argon2/scrypt are intentionally slow — large
+- **Slow hashes**: bcrypt/argon2/scrypt are intentionally slow - large
   brute is infeasible and that is itself the (good) finding. Report
   resistance, don't burn days.
 - **Wrong mode**: misidentified hash type yields zero cracks. Re-verify
   with `--identify` and sample format before concluding "strong".
 - **Encoding/format**: Kerberoast/AS-REP/JWT need exact hashcat format;
   malformed input fails silently. Validate one line first.
-- **GPU availability**: without a GPU, throughput is low — note the
+- **GPU availability**: without a GPU, throughput is low - note the
   hardware so the result reflects your capability, not the password's.
 
 ## References

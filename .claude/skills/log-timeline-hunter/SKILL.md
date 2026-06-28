@@ -1,6 +1,6 @@
 ---
 name: log-timeline-hunter
-description: "Analyzes acquired logs during an authorized incident — Windows Event Logs (EVTX, incl. Sysmon) via Chainsaw/Hayabusa with Sigma rules, Linux auth/syslog/audit, and network logs/PCAP via tshark/Zeek — to reconstruct the attack timeline and detect logon anomalies, credential attacks, lateral movement, service/task install, and C2 beaconing. Correlates into a single UTC timeline and maps events to MITRE ATT&CK (T1110, T1021, T1059, T1543, T1071). Use when log/EVTX/PCAP evidence exists in Detection & Analysis. Requires .claude/security-scope.yaml dfir_scope.incident_response: approved and evidence from dfir_scope.evidence_store_path. Read-only on evidence copies; no containment. Grounded in incident-response."
+description: "Analyzes acquired logs during an authorized incident - Windows Event Logs (EVTX, incl. Sysmon) via Chainsaw/Hayabusa with Sigma rules, Linux auth/syslog/audit, and network logs/PCAP via tshark/Zeek - to reconstruct the attack timeline and detect logon anomalies, credential attacks, lateral movement, service/task install, and C2 beaconing. Correlates into a single UTC timeline and maps events to MITRE ATT&CK (T1110, T1021, T1059, T1543, T1071). Use when log/EVTX/PCAP evidence exists in Detection & Analysis. Requires .claude/security-scope.yaml dfir_scope.incident_response: approved and evidence from dfir_scope.evidence_store_path. Read-only on evidence copies; no containment. Grounded in incident-response."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -48,11 +48,11 @@ containment.
 ## When NOT to Use
 
 - Live log collection / SIEM querying on production infrastructure
-  without `dfir_scope.allow_live_response: approved` — this skill works on
+  without `dfir_scope.allow_live_response: approved` - this skill works on
   acquired log copies.
-- Memory or disk artifacts — use the sibling skills.
+- Memory or disk artifacts - use the sibling skills.
 - Real-time alerting / detection-engineering (writing new Sigma content
-  for the SOC) — that is a separate workflow.
+  for the SOC) - that is a separate workflow.
 
 ## Authorization Check (MANDATORY FIRST STEP)
 
@@ -70,7 +70,7 @@ containment.
 - `{logs}`: path(s) to acquired logs (EVTX dir, syslog, PCAP)
 - `{hosts}`: hosts the logs come from
 - `{window}`: suspected incident time window (UTC) for slicing
-- `{iocs}`: optional — IOCs from prior phases to pivot on
+- `{iocs}`: optional - IOCs from prior phases to pivot on
 
 ## Methodology
 
@@ -85,12 +85,12 @@ containment.
 2. **Authentication analysis.**
    Do: filter for 4624/4625/4634/4647/4648 (logon/logoff/explicit-creds)
    and 4672 (special privileges). Flag: brute force (many 4625 then a
-   4624 — T1110), pass-the-hash (logon type 3, NTLM, anomalous source),
+   4624 - T1110), pass-the-hash (logon type 3, NTLM, anomalous source),
    anomalous logon hours/sources.
 3. **Execution & persistence events.**
-   Do: 4688 / Sysmon 1 (process create — decode command lines), 7045
-   (service install — T1543.003), 4698 (scheduled task — T1053.005),
-   4720/4732 (account create / group add — T1136/T1098), Sysmon 7
+   Do: 4688 / Sysmon 1 (process create - decode command lines), 7045
+   (service install - T1543.003), 4698 (scheduled task - T1053.005),
+   4720/4732 (account create / group add - T1136/T1098), Sysmon 7
    (image load), 11/13 (file/registry).
 
 ### Phase 2: Lateral Movement
@@ -110,8 +110,8 @@ containment.
 6. **PCAP / flow analysis.**
    Do: `capinfos` for scope; `tshark`/`zeek` to extract DNS, HTTP(S) SNI,
    and conversation stats. Flag beaconing (regular-interval connections),
-   suspicious DNS (DGA/long TXT — possible tunneling), large outbound
-   transfers (exfil — T1071/T1048/T1041). Extract C2 IPs/domains as IOCs.
+   suspicious DNS (DGA/long TXT - possible tunneling), large outbound
+   transfers (exfil - T1071/T1048/T1041). Extract C2 IPs/domains as IOCs.
 
 ### Phase 5: Correlate into the Super-Timeline
 7. **Unify.**
@@ -135,7 +135,7 @@ Specific to this skill:
 - **IOCs**: source IPs, accounts, C2 domains/IPs, service/task names → IOC
   table.
 - **Timeline**: this skill is the primary contributor to the case
-  super-timeline — every confirmed event becomes a UTC-normalized row.
+  super-timeline - every confirmed event becomes a UTC-normalized row.
 - **Recommended response**: D3FEND-mapped (credential reset for abused
   accounts, blocking C2, disabling rogue services) for the operator.
 
@@ -146,7 +146,7 @@ Specific to this skill:
 - [ ] Logon findings distinguish logon types (2/3/10) and note PtH signals
 - [ ] Beaconing claims backed by interval evidence, not a single connection
 - [ ] Each finding reproducible (tool command + event IDs) and ATT&CK-tagged
-- [ ] Gaps noted where logging was disabled/cleared (1102/wevtutil cl — T1070.001)
+- [ ] Gaps noted where logging was disabled/cleared (1102/wevtutil cl - T1070.001)
 - [ ] Skills Run Log row updated `running` → `complete`/`halted:{reason}`
 
 ## Common Issues
@@ -155,7 +155,7 @@ Specific to this skill:
   anti-forensics (T1070.001). Record the gap explicitly; absence of logs
   is itself a finding, not "clean".
 - **Timezone drift**: EVTX stores UTC, but exported CSVs and Linux logs
-  may be local. Mixing them silently corrupts the timeline — normalize
+  may be local. Mixing them silently corrupts the timeline - normalize
   and label every source.
 - **Sigma false positives**: admin tools (PsExec, WMI, PowerShell) are
   used legitimately. Corroborate Sigma hits with account context and

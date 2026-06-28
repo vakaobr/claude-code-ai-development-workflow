@@ -1,4 +1,4 @@
-# remediation — auth-flaw-hunter
+# remediation - auth-flaw-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia de Testes e Mitigação de Falhas de Autenticação.md` (Section 8: REMEDIATION)
 
@@ -26,7 +26,7 @@ def login_view(request):
 ```
 
 Django's `authenticate` already returns `None` for both wrong user and
-wrong password — don't add a branch that logs "user not found".
+wrong password - don't add a branch that logs "user not found".
 
 ### Spring Security
 
@@ -36,8 +36,7 @@ public UserDetails loadUserByUsername(String username) {
     return userRepo.findByUsername(username)
         .map(this::toUserDetails)
         .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
-    // Do NOT throw UsernameNotFoundException here —
-    // Spring maps it to a distinct "user not found" message by default.
+    // Do NOT throw UsernameNotFoundException here -     // Spring maps it to a distinct "user not found" message by default.
 }
 ```
 
@@ -67,7 +66,7 @@ the user exists.
 Every authentication-adjacent endpoint needs rate limiting: login, MFA
 challenge, password reset, account enumeration (e.g., `/forgot?email=`).
 
-### Django — `django-ratelimit`
+### Django - `django-ratelimit`
 
 ```python
 from ratelimit.decorators import ratelimit
@@ -78,7 +77,7 @@ def login_view(request):
     ...
 ```
 
-### Flask — `flask-limiter`
+### Flask - `flask-limiter`
 
 ```python
 from flask_limiter import Limiter
@@ -113,9 +112,9 @@ def login(email, password):
 
 ### Lockout pitfalls to avoid
 
-- Don't lock the account permanently — that's a DoS vector. Use a
+- Don't lock the account permanently - that's a DoS vector. Use a
   time-based cooldown or progressive delay.
-- Don't lock per-username only — attackers rotate usernames. Track per-IP
+- Don't lock per-username only - attackers rotate usernames. Track per-IP
   AND per-username (whichever trips first).
 - CAPTCHA after N failures is a softer alternative than hard lockout.
 
@@ -172,7 +171,7 @@ client controls.
 
 ## 5. MFA Code Entropy and Rate Limit
 
-- MFA codes must be at least 6 digits — 4 digits = 10,000 attempts, bruteforceable.
+- MFA codes must be at least 6 digits - 4 digits = 10,000 attempts, bruteforceable.
 - TOTP / HOTP is preferred over SMS (SIM-swap risk) for high-value accounts.
 - Enforce rate limit on the MFA-verify endpoint (`5/min per session`).
 - Mark MFA codes single-use server-side; invalidate on verification.
@@ -234,11 +233,11 @@ ph.verify(hashed, user_submitted)    # raises on mismatch
 
 Credential stuffing uses valid credentials stolen from other breaches.
 Detect with:
-- Have-I-Been-Pwned's k-anonymity API — block passwords present in
+- Have-I-Been-Pwned's k-anonymity API - block passwords present in
   known breaches.
-- Device-fingerprint anomaly detection — reject unfamiliar
+- Device-fingerprint anomaly detection - reject unfamiliar
   device + IP combinations.
-- Risk-based auth — require step-up (MFA) when a login comes from a
+- Risk-based auth - require step-up (MFA) when a login comes from a
   new IP / country / user-agent.
 
 ---
@@ -247,7 +246,7 @@ Detect with:
 
 - Reset tokens must be cryptographically random, single-use, time-limited
   (e.g. 15 minutes).
-- Reset links must be delivered out-of-band (email) — never returned
+- Reset links must be delivered out-of-band (email) - never returned
   directly in the API response.
 - Don't reveal whether an email address exists: "If the address is
   registered, you'll receive an email shortly."

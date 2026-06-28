@@ -1,6 +1,6 @@
 ---
 name: disk-triage-hunter
-description: "Triages an acquired disk image (read-only, hash-verified copy) during an authorized incident using The Sleuth Kit and plaso. Recovers the partition/filesystem layout, deleted files, and key host-forensic artifacts — Windows $MFT/$UsnJrnl, registry hives (Amcache/Shimcache/Run keys), Prefetch, scheduled tasks, services, WMI persistence, browser history, LNK/jumplists; Linux cron/systemd, auth logs, shell history, SSH authorized_keys — and builds a filesystem timeline. Surfaces persistence, execution, and anti-forensics evidence mapped to MITRE ATT&CK. Use when a disk image exists in Detection & Analysis. Requires .claude/security-scope.yaml dfir_scope.incident_response: approved and evidence from dfir_scope.evidence_store_path. Read-only on evidence copies; no containment. Grounded in incident-response."
+description: "Triages an acquired disk image (read-only, hash-verified copy) during an authorized incident using The Sleuth Kit and plaso. Recovers the partition/filesystem layout, deleted files, and key host-forensic artifacts - Windows $MFT/$UsnJrnl, registry hives (Amcache/Shimcache/Run keys), Prefetch, scheduled tasks, services, WMI persistence, browser history, LNK/jumplists; Linux cron/systemd, auth logs, shell history, SSH authorized_keys - and builds a filesystem timeline. Surfaces persistence, execution, and anti-forensics evidence mapped to MITRE ATT&CK. Use when a disk image exists in Detection & Analysis. Requires .claude/security-scope.yaml dfir_scope.incident_response: approved and evidence from dfir_scope.evidence_store_path. Read-only on evidence copies; no containment. Grounded in incident-response."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,8 +27,7 @@ metadata:
 ## Goal
 
 From an acquired disk image, recover the host-forensic artifacts that
-establish how an intrusion executed, persisted, and what it touched —
-and assemble a filesystem timeline. This is the disk-side companion to
+establish how an intrusion executed, persisted, and what it touched - and assemble a filesystem timeline. This is the disk-side companion to
 `memory-forensics-hunter`: memory shows the live state, disk shows the
 durable record (persistence, execution history, deleted droppers). The
 skill works ONLY on a verified read-only copy, never mounts the original
@@ -46,10 +45,10 @@ not contain or eradicate.
 
 ## When NOT to Use
 
-- Live disk acquisition / imaging — operator action, not this skill.
-- Memory-only or log-only evidence — use the sibling skills.
-- Full-disk malware RE — extract the artifact and hand off; this is triage.
-- Any write/repair/mount-rw operation on evidence — forbidden by profile.
+- Live disk acquisition / imaging - operator action, not this skill.
+- Memory-only or log-only evidence - use the sibling skills.
+- Full-disk malware RE - extract the artifact and hand off; this is triage.
+- Any write/repair/mount-rw operation on evidence - forbidden by profile.
 
 ## Authorization Check (MANDATORY FIRST STEP)
 
@@ -67,7 +66,7 @@ not contain or eradicate.
 - `{case}`: case folder name
 - `{image}`: path to the disk image copy
 - `{host}` / `{os}`: source host + OS family (drives artifact set)
-- `{iocs}`: optional — IOCs / YARA rules / suspect paths from prior phases
+- `{iocs}`: optional - IOCs / YARA rules / suspect paths from prior phases
 
 ## Methodology
 
@@ -114,7 +113,7 @@ not contain or eradicate.
 ### Phase 5: User & Web Artifacts
 8. **Browser + LNK + recent files.**
    Do: recover browser history/downloads, LNK/jumplists, `$Recycle.Bin`,
-   recent-docs — to establish initial access (phishing download) and
+   recent-docs - to establish initial access (phishing download) and
    data-staging (ATT&CK T1566/T1074).
 
 ### Phase 6: Super-Timeline & IOC Sweep
@@ -156,12 +155,12 @@ Specific to this skill:
 ## Common Issues
 
 - **Timestomping**: `$STANDARD_INFORMATION` vs `$FILE_NAME` timestamp
-  mismatch in `$MFT` indicates timestomping (T1070.006) — compare both;
+  mismatch in `$MFT` indicates timestomping (T1070.006) - compare both;
   don't trust SI times alone.
 - **Offset errors**: forgetting `-o {offset}` runs TSK against the wrong
   volume and returns nothing. Always derive offset from `mmls` first.
 - **Encrypted volumes** (BitLocker/LUKS): need the recovery key (from
-  memory image or escrow) before triage — note as a blocker if absent.
+  memory image or escrow) before triage - note as a blocker if absent.
 
 ## References
 

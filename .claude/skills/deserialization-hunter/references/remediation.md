@@ -1,4 +1,4 @@
-# remediation — deserialization-hunter
+# remediation - deserialization-hunter
 
 **Source:** `pentest-agent-development/notebooklm-notes/Guia Técnico de Desserialização Insegura e Metodologia de Testes.md` (Section 8: REMEDIATION)
 
@@ -7,17 +7,16 @@
 ## 1. Do Not Deserialize User-Supplied Objects
 
 The strongest fix. If the data crosses a trust boundary, use a simple
-schema-validated format (JSON, Protocol Buffers, Avro with a schema) —
-NOT language-native serialization.
+schema-validated format (JSON, Protocol Buffers, Avro with a schema) - NOT language-native serialization.
 
-### Wrong vs right — Python
+### Wrong vs right - Python
 
 ```python
-# WRONG — pickle of untrusted input
+# WRONG - pickle of untrusted input
 import pickle, base64
 obj = pickle.loads(base64.b64decode(cookie_value))
 
-# RIGHT — validated JSON with a schema
+# RIGHT - validated JSON with a schema
 from pydantic import BaseModel
 
 class Session(BaseModel):
@@ -27,21 +26,21 @@ class Session(BaseModel):
 obj = Session.parse_raw(base64.b64decode(cookie_value))
 ```
 
-### Wrong vs right — Java
+### Wrong vs right - Java
 
 ```java
-// WRONG — readObject on arbitrary input
+// WRONG - readObject on arbitrary input
 ObjectInputStream in = new ObjectInputStream(request.getInputStream());
 Object o = in.readObject();
 
-// RIGHT — Jackson with explicit DTO
+// RIGHT - Jackson with explicit DTO
 ObjectMapper mapper = new ObjectMapper();
 mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 mapper.deactivateDefaultTyping();                    // disable polymorphic
 SessionDto dto = mapper.readValue(request.getInputStream(), SessionDto.class);
 ```
 
-### Wrong vs right — Ruby
+### Wrong vs right - Ruby
 
 ```ruby
 # WRONG
@@ -54,7 +53,7 @@ obj = JSON.parse(base64_decode(cookie_value), symbolize_names: true)
 raise unless obj[:user_id].is_a?(Integer)
 ```
 
-### Wrong vs right — PHP
+### Wrong vs right - PHP
 
 ```php
 // WRONG
@@ -104,7 +103,7 @@ Use a library when possible: `itsdangerous` (Python), `cookie-signature`
 If the application must deserialize its own binary format, restrict the
 classes allowed.
 
-### Java — `ObjectInputFilter` (JEP 290, since Java 9)
+### Java - `ObjectInputFilter` (JEP 290, since Java 9)
 
 ```java
 ObjectInputFilter filter = ObjectInputFilter.Config.createFilter(
@@ -121,7 +120,7 @@ Set globally via JVM flag:
 -Djdk.serialFilter="com.myapp.**;java.lang.String;!*"
 ```
 
-### Python — restricted unpickler
+### Python - restricted unpickler
 
 ```python
 import pickle, io
@@ -136,7 +135,7 @@ class Restricted(pickle.Unpickler):
 obj = Restricted(io.BytesIO(blob)).load()
 ```
 
-### Jackson — disable default typing
+### Jackson - disable default typing
 
 ```java
 ObjectMapper mapper = new ObjectMapper();
@@ -164,12 +163,12 @@ require "yaml"
 data = YAML.safe_load(content, permitted_classes: [Symbol, Date])
 ```
 
-### .NET — avoid BinaryFormatter
+### .NET - avoid BinaryFormatter
 
 BinaryFormatter is deprecated (and unsafe by design). Use:
 
 ```csharp
-// System.Text.Json — safe
+// System.Text.Json - safe
 var opts = new JsonSerializerOptions {
     TypeInfoResolverChain = { new DefaultJsonTypeInfoResolver() }
 };
@@ -202,7 +201,7 @@ application server can't reach the internet. Block outbound from the
 application tier to all destinations except required ones:
 
 ```yaml
-# Kubernetes NetworkPolicy — allow only database + vault
+# Kubernetes NetworkPolicy - allow only database + vault
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -253,7 +252,7 @@ probe.
 | Laravel       | Encrypted cookies by default; do not manually `serialize()` user input       |
 | Ruby on Rails | `ActiveSupport::MessageEncryptor` / `MessageVerifier`; never `Marshal.load`  |
 | ASP.NET Core  | `System.Text.Json`; never `BinaryFormatter`                                  |
-| Go            | Standard `encoding/json` with defined structs — no risk surface              |
+| Go            | Standard `encoding/json` with defined structs - no risk surface              |
 
 ---
 

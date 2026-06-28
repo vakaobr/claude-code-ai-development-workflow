@@ -9,7 +9,7 @@
 #
 #   Env:
 #     INCLUDE_TLS_LABS=1   also run the public Qualys SSL Labs scan
-#                          (OFF by default — see SKILL.md authorization step 4)
+#                          (OFF by default - see SKILL.md authorization step 4)
 #     RATE_LIMIT_RPS=N     spacing between requests (default 4)
 #     API_BASE=...         override (default http://127.0.0.1:3000/api)
 #
@@ -23,7 +23,7 @@ OUT_DIR="${3:?out_dir required}"
 API_BASE="${API_BASE:-http://127.0.0.1:3000/api}"
 RATE_LIMIT_RPS="${RATE_LIMIT_RPS:-4}"
 
-# Reject schemes / paths in the target — we only accept a bare host.
+# Reject schemes / paths in the target - we only accept a bare host.
 if [[ "$TARGET" == *"://"* || "$TARGET" == *"/"* ]]; then
   echo "ERROR: pass a bare hostname (no scheme, no path): got '$TARGET'" >&2
   exit 2
@@ -37,7 +37,7 @@ PASSIVE_CHECKS=(
   subdomains tech-stack threats tls-connection txt-records whois
 )
 
-# Send real probes / load to the target — require testing_level: active.
+# Send real probes / load to the target - require testing_level: active.
 ACTIVE_CHECKS=( ports trace-route firewall linked-pages quality screenshot )
 
 case "$TIER" in

@@ -30,7 +30,7 @@ metadata:
 ## Goal
 
 Test server-side template engines for injection flaws that let user-supplied
-content be evaluated as template directives — typically resulting in remote
+content be evaluated as template directives - typically resulting in remote
 code execution, config disclosure, or arbitrary attribute access. This skill
 implements WSTG-INPV-18 and maps findings to CWE-1336 (Improper Neutralization
 of Special Elements Used in a Template Engine) and CWE-94 (Improper Control
@@ -57,12 +57,12 @@ Tornado, Handlebars, Liquid).
 ## When NOT to Use
 
 - For client-side template engines (AngularJS 1.x, Vue, Handlebars in the
-  browser) — that's Client-Side Template Injection, handled by
+  browser) - that's Client-Side Template Injection, handled by
   `xss-hunter` or `dom-xss-hunter` since the outcome is XSS not RCE.
-- For SQL-based interpreters — use `sqli-hunter`.
+- For SQL-based interpreters - use `sqli-hunter`.
 - For OS-command injection where the flaw is direct shell interpolation,
-  not template rendering — use `command-injection-hunter`.
-- For deserialization flaws in template-adjacent code paths — use
+  not template rendering - use `command-injection-hunter`.
+- For deserialization flaws in template-adjacent code paths - use
   `deserialization-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -77,7 +77,7 @@ Before ANY outbound activity:
    `testing_level` is `active`.
 3. RCE confirmation uses only harmless commands (`whoami`, `id`,
    `hostname`, or `touch /tmp/ssti-probe-{timestamp}`). Do not pivot
-   beyond initial confirmation — no internal reconnaissance, credential
+   beyond initial confirmation - no internal reconnaissance, credential
    dumping, or persistence, even on in-scope assets. Record the finding
    and let `harden` drive the fix.
 4. If the target is ambiguous, write it to
@@ -93,11 +93,10 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints or fields to focus on
+- `{scope_context}`: optional - specific endpoints or fields to focus on
   (e.g., `/admin/email-templates`, `user.bio`)
 - `{user_a}`: authenticated session if endpoints are behind auth
-- `{oob_listener}`: the authorized OOB listener URL (from scope) —
-  required for blind-SSTI detection
+- `{oob_listener}`: the authorized OOB listener URL (from scope) -   required for blind-SSTI detection
 
 ## Methodology
 
@@ -195,8 +194,7 @@ The skill expects the caller to provide:
    Not-vulnerable response: Response is blank or the entire string is
    literalized.
 
-   Record: Which fields are in statement context vs expression context —
-   affects payload choice.
+   Record: Which fields are in statement context vs expression context -    affects payload choice.
 
 ### Phase 5: RCE Proof-of-Concept (Harmless)
 
@@ -251,10 +249,10 @@ The skill expects the caller to provide:
    Do: If full RCE is blocked (sandbox, restricted engine) but template
    evaluation works, enumerate framework-specific config objects:
 
-   - Jinja2: `{{config}}`, `{{config.items()}}` — Flask config leaks
+   - Jinja2: `{{config}}`, `{{config.items()}}` - Flask config leaks
      `SECRET_KEY`, DB URLs, cloud credentials
-   - Twig: `{{dump(_context)}}` — if dump is available, leaks variables
-   - Freemarker: `${.globals}`, `${.vars}` — leaks globals
+   - Twig: `{{dump(_context)}}` - if dump is available, leaks variables
+   - Freemarker: `${.globals}`, `${.vars}` - leaks globals
    - Velocity: `$servletContext.getAttributeNames()`
 
    Vulnerable response: Sensitive values in response (e.g., a Flask
@@ -302,7 +300,7 @@ Specific to this skill:
   or secret disclosure, and the fingerprint evidence (which engine, from
   which probe).
 - **Remediation framing**: backend engineer. Include engine-specific
-  snippets in `references/remediation.md` — Jinja2
+  snippets in `references/remediation.md` - Jinja2
   (`SandboxedEnvironment`, `allowlist` on attrs), Twig (sandbox
   extension), Freemarker (`setNewBuiltinClassResolver`, `TemplateClassResolver.ALLOWS_NOTHING_RESOLVER`),
   ERB (use safe mode, or replace with Liquid / Mustache), Velocity
@@ -310,7 +308,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -323,7 +321,7 @@ Before marking complete, verify:
 - [ ] No finding came from a character-stripping filter false positive
       (see Common Issues)
 - [ ] No destructive payloads (rm, chmod, network scanning from target)
-      were used — only whoami/id/hostname and HTTP OOB
+      were used - only whoami/id/hostname and HTTP OOB
 - [ ] Probe requests removed any test files they created (`touch`
       probes) where possible
 - [ ] Secret values discovered via config enumeration are redacted in the
@@ -335,7 +333,7 @@ Before marking complete, verify:
 ## Common Issues
 
 - **Character-stripping false positive**: Input `{{4*4}}` returns
-  `{{44}}` — a filter is stripping the `*` character rather than
+  `{{44}}` - a filter is stripping the `*` character rather than
   evaluating template syntax. The injection is inert. Confirm with
   `{{7*'7'}}` which returns a string multiplication in truly-vulnerable
   Jinja2 but is also stripped by a naive `*`-filter.
@@ -361,7 +359,7 @@ Before marking complete, verify:
 
 ## References
 
-- `references/payloads.md` — full engine-specific payload library
+- `references/payloads.md` - full engine-specific payload library
 
 External:
 - WSTG-INPV-18: https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/18-Testing_for_Server-side_Template_Injection
@@ -373,7 +371,7 @@ External:
 ## Source Methodology
 
 Converted from (three SSTI notes merged per SESSION_CONTEXT directive;
-most comprehensive methodology base — `Guia de Exploração...` — used as
+most comprehensive methodology base - `Guia de Exploração...` - used as
 the primary, with Tornado + ERB payload variants folded in from the
 others):
 

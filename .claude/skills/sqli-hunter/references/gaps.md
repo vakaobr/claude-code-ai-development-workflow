@@ -1,4 +1,4 @@
-# gaps — sqli-hunter
+# gaps - sqli-hunter
 
 **Source:** Author notes on what the source methodology did NOT cover.
 
@@ -11,16 +11,16 @@ pentest should still address beyond what the source details.
 ## NoSQL Injection (MongoDB, Redis, Elasticsearch, CouchDB)
 
 The source is SQL-only. NoSQL uses operator-injection syntax
-(`{"$ne": null}`, `{"$gt": ""}`) — see Hacking APIs Ch 12 for methodology.
+(`{"$ne": null}`, `{"$gt": ""}`) - see Hacking APIs Ch 12 for methodology.
 If the target uses a document / key-value store, this skill should
-delegate to a NoSQLi hunter (not currently in the skill set — flag as
+delegate to a NoSQLi hunter (not currently in the skill set - flag as
 an enhancement).
 
 ## Second-Order / Stored SQL Injection
 
 The methodology focuses on first-order (immediate-execution) injection.
-Second-order SQLi — where malicious input is stored, then concatenated
-into a later query — is not explicitly covered. Test stored SQLi by:
+Second-order SQLi - where malicious input is stored, then concatenated
+into a later query - is not explicitly covered. Test stored SQLi by:
 1. Submit payload (e.g. `test'; SELECT ... --`) to a write endpoint.
 2. Trigger the READ endpoint that displays/uses that value.
 3. Observe whether the payload executes at read time.
@@ -64,6 +64,6 @@ f-string inside `raw()` string, `literal_column()` misuse in SQLAlchemy).
 
 A payload submitted via an API endpoint may only be evaluated in a
 queued background job (Sidekiq, Celery, AWS SQS consumer). Callbacks
-from the job — not the initial response — are the only signal. This
+from the job - not the initial response - are the only signal. This
 requires long-polling an OOB listener, which the methodology does not
 describe.

@@ -7,7 +7,7 @@ allowlist in one place if a tool is later deemed unsafe.
 ## Profile: passive
 
 For reconnaissance, configuration review, and static analysis. No
-outbound probes to targets. No Bash at all — forces skills that
+outbound probes to targets. No Bash at all - forces skills that
 "just want to curl one thing" to justify upgrading to `active`.
 
 ```yaml
@@ -134,7 +134,7 @@ Explicitly forbidden:
 
 For **authorized internal penetration tests** of Active Directory /
 internal networks. This profile DELIBERATELY breaks the no-credential-
-attacks rule that `active` enforces — it permits credential validation,
+attacks rule that `active` enforces - it permits credential validation,
 password spray, Kerberos roasting, and credential dumping. It is
 therefore the highest-blast-radius profile in the library and carries
 extra gating (see below).
@@ -205,7 +205,7 @@ allowed-tools: >
 ```
 
 Explicitly forbidden:
-- Uploading client APKs to the MobSF **public/hosted** instance — run a
+- Uploading client APKs to the MobSF **public/hosted** instance - run a
   local MobSF only (the APK is client IP).
 - Frida / dynamic hooking / live-device instrumentation without a
   scope-approved upgrade to a dynamic profile.
@@ -239,7 +239,7 @@ Authorization Check):
   `case_id`; the skill computes/verifies SHA-256 BEFORE analysis and
   records it. If the hash does not match the acquisition record, HALT.
 - Live-response against a running production host requires
-  `dfir_scope.allow_live_response: approved` (default denied — work on
+  `dfir_scope.allow_live_response: approved` (default denied - work on
   acquired images, not live systems).
 - Every command run and every artifact extracted is logged to the case
   folder for chain-of-custody / reproducibility.
@@ -248,7 +248,7 @@ Explicitly forbidden:
 - Any write/mount-rw/acquisition verb against original evidence
   (`dd if=…of=original`, `mount` without `ro`, `tsk_recover` onto the
   source, registry hive writes).
-- Containment/eradication actions (kill, isolate, disable account) — those
+- Containment/eradication actions (kill, isolate, disable account) - those
   are operator-driven, change-controlled, and out of profile.
 - Uploading evidence or extracted samples to third-party / public
   sandboxes without explicit `dfir_scope.external_sandbox: approved`
@@ -308,7 +308,7 @@ kernel exploits on production unless explicitly approved.
 ## Profile: cracking
 
 For **offline** password / hash cracking of material captured by other
-skills. Offline only — never online brute force.
+skills. Offline only - never online brute force.
 
 ```yaml
 allowed-tools: >
@@ -349,7 +349,7 @@ sample) only in a disposable, network-isolated sandbox.
 ## Profile: exploit-validation
 
 For confirming exploitability with vetted PoCs / controlled local
-exploit dev. `service_affecting` — replica-first, benign proof, stop at
+exploit dev. `service_affecting` - replica-first, benign proof, stop at
 proof.
 
 ```yaml
@@ -368,7 +368,7 @@ persistence/weaponization beyond proof. (sqlmap/hydra/nikto stay banned.)
 
 ## Profile: social-eng
 
-For authorized phishing / awareness campaigns. Targets people — requires
+For authorized phishing / awareness campaigns. Targets people - requires
 separate written consent + an approved recipient list.
 
 ```yaml

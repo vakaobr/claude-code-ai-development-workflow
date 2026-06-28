@@ -1,4 +1,4 @@
-# gaps — jwt-hunter
+# gaps - jwt-hunter
 
 **Source:** Author notes on what the source methodology did NOT cover.
 
@@ -11,13 +11,13 @@ worth flagging for a full JWT assessment:
 ## JWE (Encrypted JWT) Not Covered
 
 The source discusses JWS (signed JWTs) exclusively. JWE adds:
-- `alg` — key-wrap algorithm (RSA-OAEP, A256KW, dir)
-- `enc` — content-encryption algorithm (A256GCM, A128CBC-HS256)
+- `alg` - key-wrap algorithm (RSA-OAEP, A256KW, dir)
+- `enc` - content-encryption algorithm (A256GCM, A128CBC-HS256)
 - Different attack surface: key-wrap confusion, GCM nonce reuse, CBC-HS
   padding issues, `crit` header handling.
 
 If the target token has FIVE base64url-encoded segments separated by
-four dots, it's JWE — the skill should stop and flag this as a
+four dots, it's JWE - the skill should stop and flag this as a
 coverage gap.
 
 ## JWKS Key Rotation / Stale Key Caching
@@ -27,13 +27,13 @@ The source mentions JWKS in passing. A full audit should check:
   JWKS should be rejected.)
 - Is the JWKS endpoint cached appropriately? (Too long → revoked keys
   still honoured. Too short → performance hit / DoS amplification.)
-- Does the library refresh JWKS on unknown `kid` — and is there a
+- Does the library refresh JWKS on unknown `kid` - and is there a
   rate limit on that, or can an attacker force unbounded refreshes?
 
 ## Blind `jku` Header SSRF
 
 The payloads.md mentions `jku`-based public-key injection. A SECOND
-attack via `jku` is SSRF — the server fetches the supplied URL before
+attack via `jku` is SSRF - the server fetches the supplied URL before
 rejecting it, leaking its outbound IP / enabling internal network probes
 even without signature forgery. The source doesn't call this out.
 
@@ -50,7 +50,7 @@ this distinction.
 
 Proof-of-possession mechanisms (RFC 8705 mTLS, RFC 9449 DPoP) bind a
 JWT to a specific client TLS cert or key pair, so a stolen bearer token
-is useless. Not covered by the source — worth testing whether the
+is useless. Not covered by the source - worth testing whether the
 target implements them and, if so, whether binding is verified.
 
 ## Confused-Deputy via Audience
@@ -62,7 +62,7 @@ user-facing API and try it on the admin API.
 
 ## `typ` / `cty` Header Abuses
 
-`{"typ":"at+jwt"}` vs `{"typ":"JWT"}` vs `{"cty":"JWT"}` — wrapping a
+`{"typ":"at+jwt"}` vs `{"typ":"JWT"}` vs `{"cty":"JWT"}` - wrapping a
 JWT inside another JWT's content type can cause double-parsing issues.
 Not covered.
 
@@ -75,5 +75,5 @@ isn't separately discussed.
 ## Session Cookie + JWT Hybrid
 
 Many apps store a JWT in a cookie AND send it as a bearer header. The
-skill should test both vectors — if only one path validates properly,
+skill should test both vectors - if only one path validates properly,
 the weak path is the exploit path.

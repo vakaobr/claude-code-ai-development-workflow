@@ -1,6 +1,6 @@
 ---
 name: mobile-android-hunter
-description: "Static security assessment of an authorized Android APK using MobSF (static engine), mobsfscan, and apkleaks. Covers hardcoded secrets / API keys, insecure data storage, exported components (activities / services / receivers / providers) and intent surface, weak crypto, cleartext traffic / network-security-config gaps, dangerous permissions, debuggable / backup-allowed flags, and embedded endpoint URLs. Net-new category — your stack has no mobile coverage. Static-only by default; dynamic instrumentation (Frida / emulator) is out of scope. Use when an Android client app is in scope. Requires .claude/security-scope.yaml with mobile_testing: approved and the artifact under mobile_artifacts. Maps findings to the OWASP MASVS / Mobile Top 10 and CWE-312/CWE-798/CWE-926. Defensive testing only."
+description: "Static security assessment of an authorized Android APK using MobSF (static engine), mobsfscan, and apkleaks. Covers hardcoded secrets / API keys, insecure data storage, exported components (activities / services / receivers / providers) and intent surface, weak crypto, cleartext traffic / network-security-config gaps, dangerous permissions, debuggable / backup-allowed flags, and embedded endpoint URLs. Net-new category - your stack has no mobile coverage. Static-only by default; dynamic instrumentation (Frida / emulator) is out of scope. Use when an Android client app is in scope. Requires .claude/security-scope.yaml with mobile_testing: approved and the artifact under mobile_artifacts. Maps findings to the OWASP MASVS / Mobile Top 10 and CWE-312/CWE-798/CWE-926. Defensive testing only."
 model: sonnet
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -25,8 +25,7 @@ metadata:
 
 Statically assess an authorized Android application package (APK/AAB) for
 the most common mobile-specific weaknesses and feed the results into the
-canonical finding schema. This is a net-new category for the stack —
-none of the 40 existing skills look at mobile clients. Findings map to
+canonical finding schema. This is a net-new category for the stack - none of the 40 existing skills look at mobile clients. Findings map to
 OWASP MASVS / OWASP Mobile Top 10 and CWE-312 (cleartext storage),
 CWE-798 (hardcoded credentials), CWE-926 (improper export of Android
 components).
@@ -43,12 +42,12 @@ components).
 
 ## When NOT to Use
 
-- iOS apps (IPA) — this skill is Android-only; build an iOS sibling if
+- iOS apps (IPA) - this skill is Android-only; build an iOS sibling if
   needed.
 - Dynamic analysis (Frida hooking, runtime traffic interception,
-  emulator instrumentation) — out of profile; requires a human-approved
+  emulator instrumentation) - out of profile; requires a human-approved
   upgrade to a dynamic mobile profile.
-- The backend API the app talks to — that is `api-recon` + the API
+- The backend API the app talks to - that is `api-recon` + the API
   hunters (this skill hands off discovered endpoints to them).
 
 ## Authorization Check (MANDATORY FIRST STEP)
@@ -56,7 +55,7 @@ components).
 1. Read `.claude/security-scope.yaml`. Halt if missing/placeholder.
 2. Confirm `mobile_testing: approved` and the exact artifact filename /
    hash appears under `mobile_artifacts`.
-3. Confirm the MobSF instance is **local/self-hosted** — never upload a
+3. Confirm the MobSF instance is **local/self-hosted** - never upload a
    client APK to the public MobSF instance (the APK is client IP).
 4. Append a `running` row to the Skills Run Log.
 
@@ -122,7 +121,7 @@ Specific to this skill:
   Insecure Data Storage, M8 Security Misconfiguration). Tag each finding.
 - **Evidence**: the manifest snippet / decompiled code location / MobSF
   rule id, with secrets redacted. Cite the MobSF report path.
-- **Remediation framing**: mobile dev — remove hardcoded secrets (use
+- **Remediation framing**: mobile dev - remove hardcoded secrets (use
   Android Keystore / server-issued tokens), set `exported=false` or guard
   with signature permissions, enable network-security-config with pinning,
   disable debuggable/backup in release builds, use authenticated
@@ -161,5 +160,5 @@ backend endpoints are written to a handoff note for `api-recon`.
 ## Source Methodology
 
 Cannibalized from the `guardian-cli` (zakirkun/guardian-cli, MIT)
-MobSF/apkleaks integration pattern — adapted to this stack's finding
+MobSF/apkleaks integration pattern - adapted to this stack's finding
 schema and scope-gating model. Conversion date: 2026-06-27.

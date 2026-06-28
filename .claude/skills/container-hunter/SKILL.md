@@ -41,7 +41,7 @@ base images. Reads deployment artifacts (Dockerfile,
 docker-compose.yml, Kubernetes YAML) from already-cloned
 repositories + queries AWS / EKS / ECS inventory via read-only
 APIs. Does NOT run `kubectl describe` or `kubectl exec` on live
-clusters — delegates live-cluster inspection to the operator.
+clusters - delegates live-cluster inspection to the operator.
 Implements OWASP API4:2019 + API9:2019 (container-specific) and
 CIS Kubernetes Benchmark adjacencies.
 
@@ -58,14 +58,13 @@ CIS Kubernetes Benchmark adjacencies.
 
 ## When NOT to Use
 
-- For account-wide IAM posture — use `aws-iam-hunter`.
-- For image-vulnerability scanning (CVEs in base images) — use
+- For account-wide IAM posture - use `aws-iam-hunter`.
+- For image-vulnerability scanning (CVEs in base images) - use
   a dedicated scanner (Trivy, Snyk Container) outside this
   skill; cross-reference for handoff.
-- For live cluster exec / debug — operator-level action
+- For live cluster exec / debug - operator-level action
   outside this skill's boundary.
-- For non-container deployments (pure VMs, serverless, PaaS) —
-  out of scope.
+- For non-container deployments (pure VMs, serverless, PaaS) -   out of scope.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not at least `passive`.
 
@@ -84,8 +83,7 @@ Before ANY outbound activity:
    NO `create`, `update`, `delete`, `run-task`. The tool profile
    blocks write AWS verbs; this skill must not attempt.
 5. Kubernetes artifact analysis uses `yq` / `jq` on locally-
-   cloned YAML. Live `kubectl` is NOT in the tool profile —
-   delegate any live-cluster inspection to the operator.
+   cloned YAML. Live `kubectl` is NOT in the tool profile -    delegate any live-cluster inspection to the operator.
 6. Log the authorization check to
    `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
    with status `running`.
@@ -99,7 +97,7 @@ The skill expects the caller to provide:
 - `{aws_profile}`: named AWS profile for EKS/ECS inventory
 - `{repo_paths}`: paths to cloned repos containing Dockerfile /
   K8s YAML
-- `{cluster_manifests}`: optional — path to exported cluster
+- `{cluster_manifests}`: optional - path to exported cluster
   YAML manifests for deep analysis
 
 ## Methodology
@@ -207,15 +205,14 @@ The skill expects the caller to provide:
 
    For each workload, check `spec.template.spec.securityContext`
    and `spec.template.spec.containers[].securityContext`:
-   - `privileged: true` — CRITICAL (full host access)
-   - `allowPrivilegeEscalation: true` or missing (default) —
-     allows setuid binaries
-   - `runAsNonRoot: false` or missing — may run as root
-   - `runAsUser: 0` — explicit root
-   - `readOnlyRootFilesystem: false` — writable rootfs
+   - `privileged: true` - CRITICAL (full host access)
+   - `allowPrivilegeEscalation: true` or missing (default) -      allows setuid binaries
+   - `runAsNonRoot: false` or missing - may run as root
+   - `runAsUser: 0` - explicit root
+   - `readOnlyRootFilesystem: false` - writable rootfs
    - `capabilities.add: [SYS_ADMIN, NET_ADMIN, SYS_PTRACE, ...]`
    - `hostPID: true`, `hostIPC: true`, `hostNetwork: true`
-   - `volumes: [{hostPath: {path: "/"}}]` — host-root mount
+   - `volumes: [{hostPath: {path: "/"}}]` - host-root mount
 
    Vulnerable signal: Any of the above on pods that aren't
    intentionally privileged (e.g., node-agents, CNI pods).
@@ -312,7 +309,7 @@ The skill expects the caller to provide:
 
 ## Payload Library
 
-No payloads — configuration audit. Key analysis patterns:
+No payloads - configuration audit. Key analysis patterns:
 
 - **SecurityContext dangerous flags**: `privileged`,
   `allowPrivilegeEscalation`, `runAsUser: 0`, `hostPath: /`,
@@ -332,19 +329,19 @@ the schema in `.claude/skills/_shared/finding-schema.md`.
 
 Specific to this skill:
 
-- **CWE**: CWE-732 (permission assignment — privileged
-  containers). CWE-276 (Incorrect Default Permissions — missing
+- **CWE**: CWE-732 (permission assignment - privileged
+  containers). CWE-276 (Incorrect Default Permissions - missing
   SecurityContext). CWE-250 (Execution with Unnecessary
-  Privileges — runAsRoot). CWE-798 for hardcoded creds in
+  Privileges - runAsRoot). CWE-798 for hardcoded creds in
   Dockerfiles.
 - **OWASP**: For APIs, API4:2019 (Resource Consumption) for
   missing limits. API7:2019 / API8:2023 (Security
   Misconfiguration) for SecurityContext. A05:2021.
 - **CVSS vectors**: privileged container on production cluster
-  — `AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H` (requires initial
+ - `AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H` (requires initial
   container access but full escape). hostPath / socket mount
-  — similar. cluster-admin bound to SA — same. Missing
-  NetworkPolicy — lower severity unless combined with breach
+ - similar. cluster-admin bound to SA - same. Missing
+  NetworkPolicy - lower severity unless combined with breach
   scenario.
 - **Evidence**: the YAML excerpt with the problematic setting,
   the resource name + namespace (for K8s) or task-definition
@@ -352,13 +349,13 @@ Specific to this skill:
   intentional vs accidental.
 - **Remediation framing**: platform / SRE engineer + devops.
   Include:
-  - SecurityContext snippets — `runAsNonRoot: true`,
+  - SecurityContext snippets - `runAsNonRoot: true`,
     `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem:
     true`, `capabilities.drop: [ALL]`
   - Default-deny NetworkPolicy template per namespace
-  - RBAC audit — `kubectl auth can-i --list` for each SA;
+  - RBAC audit - `kubectl auth can-i --list` for each SA;
     remove cluster-admin where not needed
-  - Dockerfile hardening — pin tags, use distroless base images,
+  - Dockerfile hardening - pin tags, use distroless base images,
     non-root USER, COPY only what's needed (not `.`)
   - Image-signature verification (cosign + Sigstore)
   - Container-runtime hardening: PodSecurity admission,
@@ -366,7 +363,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -381,7 +378,7 @@ Before marking complete, verify:
       RoleBinding in the manifests
 - [ ] NetworkPolicy coverage gaps are quantified (N namespaces
       without policies)
-- [ ] No live-cluster `kubectl` calls were attempted — only
+- [ ] No live-cluster `kubectl` calls were attempted - only
       YAML / AWS CLI
 - [ ] No AWS write verb was executed
 - [ ] Image-registry credentials discovered via
@@ -421,13 +418,12 @@ Before marking complete, verify:
   dynamically. Check operator configuration if available.
 
 - **Base-image CVE scope creep**: Users often expect this skill
-  to scan base-image CVEs. It doesn't — CVE scanning is a
+  to scan base-image CVEs. It doesn't - CVE scanning is a
   dedicated tool's job (Trivy, Snyk). This skill flags config
   issues; file a gap to Trivy if base-image scanning is
   desired.
 
-- **AWS IAM roles for service accounts (IRSA)**: EKS-specific —
-  a pod can assume an IAM role via OIDC. If the SA annotation
+- **AWS IAM roles for service accounts (IRSA)**: EKS-specific -   a pod can assume an IAM role via OIDC. If the SA annotation
   grants a role with broad permissions, pod compromise →
   cloud takeover. Cross-reference `aws-iam-hunter` for IRSA
   role audits.

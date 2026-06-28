@@ -1,6 +1,6 @@
 ---
 name: sqli-hunter
-description: "Tests user-input paths for SQL injection — error-based, Boolean-based, time-based, UNION-based, and authentication-bypass variants — across MySQL, PostgreSQL, MSSQL, Oracle, and SQLite backends. Use when endpoints pass URL params, body data, cookies, or headers into database queries; when responses leak DB error messages or reflect probe characters; or when the orchestrator's recon surfaces numeric/string parameters likely bound into WHERE clauses. Produces findings with CWE-89 mapping, per-payload request/response evidence, and parameterized-query remediation snippets. Defensive testing only, against assets listed in .claude/security-scope.yaml."
+description: "Tests user-input paths for SQL injection - error-based, Boolean-based, time-based, UNION-based, and authentication-bypass variants - across MySQL, PostgreSQL, MSSQL, Oracle, and SQLite backends. Use when endpoints pass URL params, body data, cookies, or headers into database queries; when responses leak DB error messages or reflect probe characters; or when the orchestrator's recon surfaces numeric/string parameters likely bound into WHERE clauses. Produces findings with CWE-89 mapping, per-payload request/response evidence, and parameterized-query remediation snippets. Defensive testing only, against assets listed in .claude/security-scope.yaml."
 model: opus
 allowed-tools: >
   Read, Grep, Glob, Write(path:.claude/planning/**),
@@ -27,7 +27,7 @@ metadata:
 ## Goal
 
 Test every user-controllable input that reaches the database layer for SQL
-injection flaws — places where concatenation or incorrect escaping lets
+injection flaws - places where concatenation or incorrect escaping lets
 attacker-supplied syntax alter the SQL statement the server executes. This
 skill implements WSTG-INPV-05 and maps findings to CWE-89 (Improper
 Neutralization of Special Elements used in an SQL Command). The goal is to
@@ -49,19 +49,19 @@ Sequelize, Eloquent, Active Record).
 - The orchestrator selects this skill after `api-recon` or
   `web-recon-active` surfaces parameters bound to DB lookups.
 - Sort/column parameters (`?sort=name`) that can't be parameterized are
-  worth extra attention — those are the most common residual injection
+  worth extra attention - those are the most common residual injection
   path in modern stacks.
 
 ## When NOT to Use
 
 - For NoSQL injection (MongoDB `$where`, `$ne`, CouchDB, Firestore rules)
-  — source methodology doesn't cover NoSQL; file a `gap` entry in
+ - source methodology doesn't cover NoSQL; file a `gap` entry in
   `references/gaps.md` if NoSQL recon surfaces candidates.
-- For LDAP / XPath / command injection — different classes with different
+- For LDAP / XPath / command injection - different classes with different
   payloads; use the matching hunter skill.
 - For OS command injection that happens to involve a DB connection string
-  — use `command-injection-hunter`.
-- For Boolean-logic bugs that aren't SQL (e.g., IDOR ID guessing) — use
+ - use `command-injection-hunter`.
+- For Boolean-logic bugs that aren't SQL (e.g., IDOR ID guessing) - use
   `idor-hunter`.
 - Any asset not listed in `.claude/security-scope.yaml` or whose
   `testing_level` is not `active`.
@@ -78,7 +78,7 @@ Before ANY outbound activity:
    database. Use only read-side probes (SELECT, UNION, `SLEEP`, version
    fingerprint). NEVER execute `DROP`, `DELETE`, `UPDATE`, `INSERT`,
    `xp_cmdshell`, stacked-query writes, or `LOAD_FILE`/`INTO OUTFILE`
-   even when `destructive_testing: approved` — this skill is defensive
+   even when `destructive_testing: approved` - this skill is defensive
    only.
 4. If the target is ambiguous, write it to
    `.claude/planning/{issue}/SCOPE_QUESTIONS.md` and halt for that
@@ -93,7 +93,7 @@ The skill expects the caller to provide:
 
 - `{issue}`: the planning folder name
 - `{target}`: the asset identifier from security-scope.yaml
-- `{scope_context}`: optional — specific endpoints/parameters to focus on
+- `{scope_context}`: optional - specific endpoints/parameters to focus on
 - `{user_a}`: authenticated session for authenticated endpoints
 - `{oob_listener}`: authorized OOB listener for out-of-band exfiltration
   variants (only used if blind methods fail and the scope file explicitly
@@ -190,7 +190,7 @@ The skill expects the caller to provide:
    baseline <1s.
 
    Not-vulnerable response: No time difference, or time difference
-   observable on both baseline and payload (network jitter — re-run 3
+   observable on both baseline and payload (network jitter - re-run 3
    times and take median).
 
    Record: Timing data (min/median/max over 3 runs).
@@ -221,7 +221,7 @@ The skill expects the caller to provide:
 
    Do: Probe `information_schema` (MySQL/PostgreSQL/MSSQL) or
    `sqlite_master` (SQLite) using a UNION payload. ONLY extract table
-   names and column names — do NOT dump user data.
+   names and column names - do NOT dump user data.
 
    ```
    ' UNION SELECT table_name,NULL,NULL FROM information_schema.tables-- 
@@ -308,7 +308,7 @@ Specific to this skill:
   `AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N`. Auth bypass:
   `...PR:N/.../C:H/I:H/A:N`. RCE via `xp_cmdshell` /
   `COPY FROM PROGRAM`: `...C:H/I:H/A:H` (but testing for those is
-  excluded by this skill's authorization contract — flag as
+  excluded by this skill's authorization contract - flag as
   "escalation path known, not tested").
 - **Evidence**: the exact probe, the response signature (DB error
   message, timing data, or UNION result), the fingerprinted engine and
@@ -321,7 +321,7 @@ Specific to this skill:
 
 The skill also updates:
 
-- `.claude/planning/{issue}/STATUS.md` — its row under Phase 7: Security
+- `.claude/planning/{issue}/STATUS.md` - its row under Phase 7: Security
 - `.claude/planning/{issue}/SECURITY_AUDIT.md` Skills Run Log
 
 ## Quality Check (Self-Review)
@@ -332,7 +332,7 @@ Before marking complete, verify:
       showing the signature (error/timing/length diff)
 - [ ] Every finding names the DB engine and version when known
 - [ ] No finding used a destructive payload (DROP/DELETE/UPDATE/xp_cmdshell)
-- [ ] No UNION query was used to dump user records — only schema names
+- [ ] No UNION query was used to dump user records - only schema names
 - [ ] Remediation snippets match the detected driver / ORM
 - [ ] Time-based findings report median-of-3-runs to rule out jitter
 - [ ] Skills Run Log row updated from `running` to `complete` or
@@ -343,7 +343,7 @@ Before marking complete, verify:
 - **Business-logic errors look like SQL errors**: A 500 caused by a
   validation check (not a SQL syntax error) can be misread as SQL
   injection. Distinguish by triggering with a SQL metacharacter AND a
-  benign-but-invalid value — if both produce 500 with similar bodies,
+  benign-but-invalid value - if both produce 500 with similar bodies,
   it's a generic error handler, not SQLi.
 
 - **Performance-induced delays**: Slow responses can be misread as
@@ -352,14 +352,14 @@ Before marking complete, verify:
   variance, the delay is network-side, not DB-side.
 
 - **Reflected alphanumeric strings**: The probe string appears in the
-  response body, but not because it was executed — the app just echoes
+  response body, but not because it was executed - the app just echoes
   the user input. Confirm by trying probes that produce observable
   side effects (math, errors, delays) rather than relying on reflection
   alone.
 
 - **Session-state confusion**: A different response on the second
   probe can be caused by session state, cache invalidation, or another
-  user's activity — not by the probe's logic. Run probes back-to-back
+  user's activity - not by the probe's logic. Run probes back-to-back
   and compare timestamps.
 
 - **False negatives from second-order injection**: Input stored via one
@@ -369,9 +369,9 @@ Before marking complete, verify:
 
 ## References
 
-- `references/payloads.md` — full payload catalog per category and
+- `references/payloads.md` - full payload catalog per category and
   engine
-- `references/remediation.md` — parameterized-query snippets per
+- `references/remediation.md` - parameterized-query snippets per
   driver/ORM
 
 External:

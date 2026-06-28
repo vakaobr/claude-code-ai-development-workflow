@@ -1,21 +1,20 @@
-# Kali Linux Operator VM — Reproducible Setup (Apple Silicon / VMware Fusion)
+# Kali Linux Operator VM - Reproducible Setup (Apple Silicon / VMware Fusion)
 
 The Linux box the executable red-team-ops AND DFIR hunters run from. Built
 and verified 2026-06-28 on an Apple M3 Pro (arm64), macOS 26, VMware
 Fusion 26. Rebuild from this in ~30-40 min (mostly the GUI install +
 compiles).
 
-> Software tooling only. Wireless monitor mode is a separate concern —
-> see `../../wireless-hunter/references/capture-host-setup.md` (driver/
+> Software tooling only. Wireless monitor mode is a separate concern - > see `../../wireless-hunter/references/capture-host-setup.md` (driver/
 > kernel caveat) and prefer a mainline-driver adapter.
 
 ---
 
 ## 1. Host prep (macOS)
 - Need ~40 GB free. (We reclaimed it via `docker system prune -a` +
-  `docker volume prune` — 37 GB.)
+  `docker volume prune` - 37 GB.)
 - VMware Fusion 13+/26 (free personal use; manual Broadcom-account
-  download — no Homebrew cask anymore).
+  download - no Homebrew cask anymore).
 
 ## 2. Get + verify the ISO
 ```bash
@@ -26,7 +25,7 @@ curl -fL -o kali-linux-2026.2-installer-arm64.iso \
 shasum -a 256 kali-linux-2026.2-installer-arm64.iso
 # expected (2026.2): b9a08050ee522fbee7cac703b1bc48178f79eb974c962d4ed9dc1ccfdfa77fb6
 ```
-Kali ships **no prebuilt arm64 VM image** — only the installer ISO. So it's
+Kali ships **no prebuilt arm64 VM image** - only the installer ISO. So it's
 an ISO install either way.
 
 ## 3. Create the VM (scripted with Fusion's vmcli)
@@ -34,11 +33,11 @@ an ISO install either way.
 export PATH="/Applications/VMware Fusion.app/Contents/Public:/Applications/VMware Fusion.app/Contents/Library:$PATH"
 VMDIR="$HOME/Virtual Machines"; mkdir -p "$VMDIR"; cd "$VMDIR"
 vmcli VM Create -n "Kali-2026.2-arm64" -d "$VMDIR" -c arm-debian12-64
-# vmcli's skeleton is minimal (512 MB, no disk attached) — fix it:
+# vmcli's skeleton is minimal (512 MB, no disk attached) - fix it:
 rm -f Kali-2026.2-arm64.vmdk
 vmware-vdiskmanager -c -s 40GB -a nvme -t 0 "Kali-2026.2-arm64.vmdk"
 ```
-Then write the `.vmx` (key lines — full file in git history of this repo):
+Then write the `.vmx` (key lines - full file in git history of this repo):
 ```
 guestOS = "arm-debian12-64"
 firmware = "efi"
@@ -59,7 +58,7 @@ usb_xhci.present = "TRUE"
 ```
 Power on: `vmrun -T fusion start "$VMDIR/Kali-2026.2-arm64.vmx" gui`
 
-## 4. Install Kali (GUI — can't be scripted)
+## 4. Install Kali (GUI - can't be scripted)
 Graphical install → user + password → **Guided, entire disk** (the 40 GB
 nvme) → default software selection (XFCE + Kali default) → GRUB to
 `/dev/nvme0n1` → reboot → **disconnect the CD** (VM menu → Removable
@@ -84,7 +83,7 @@ searchsploit, ghidra, gophish, pipx, git, 7z.
 sudo apt-get update
 sudo apt-get install -y plaso cargo golang-go git
 
-# plaso on Kali ships as plaso-* — add the .py names the skills expect
+# plaso on Kali ships as plaso-* - add the .py names the skills expect
 mkdir -p ~/.local/bin
 ln -sf /usr/bin/plaso-log2timeline ~/.local/bin/log2timeline.py
 ln -sf /usr/bin/plaso-psort        ~/.local/bin/psort.py
@@ -135,7 +134,7 @@ All present = the VM can run every executable red-team-ops + DFIR hunter.
 - `~/.local/bin` is on PATH via `pipx ensurepath` (login shells). Use
   `ssh user@vm 'bash -lc "..."'` for non-interactive runs that need it.
 - Wireless (`aircrack-ng` is installed) needs a monitor-mode adapter +
-  a kernel-compatible driver — see the capture-host doc; on arm64 + Kali
+  a kernel-compatible driver - see the capture-host doc; on arm64 + Kali
   6.19 the RTL8812AU DKMS won't build, so use a mainline-driver adapter
   (MT7612U) or the Pi.
 - Snapshot the VM after step 7 so you can roll back between engagements.
