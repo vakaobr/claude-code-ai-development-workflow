@@ -61,6 +61,10 @@ post-association traffic analysis that surfaces the honest risk story
 
 ## Capture-Host Setup (read before running)
 
+> Step-by-step runnable checklist (Kali VM USB-passthrough + Raspberry Pi
+> 4/5, driver install, monitor/injection verification, workshop AP
+> bring-up + teardown): `references/capture-host-setup.md`.
+
 **Primary (supported now): VM + USB passthrough.**
 - Linux guest (Kali/Ubuntu) in the VM; pass the USB Wi-Fi adapter through
   to the guest (VMware/VirtualBox USB passthrough on Intel hosts is most

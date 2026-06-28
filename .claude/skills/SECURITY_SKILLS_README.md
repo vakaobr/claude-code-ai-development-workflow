@@ -13,7 +13,11 @@ populated with real company assets before any live use).
 1. **Populate the scope file.** Edit `.claude/security-scope.yaml` with
    real company-owned assets, test credentials vault paths, and an
    authorized OOB listener host. Every skill halts if the scope file
-   contains only placeholder values.
+   contains only placeholder values. A fully worked, filled-in example
+   (using reserved `example.com`/`contoso.com` domains, covering the
+   web/AD/mobile/LLM/red-team-ops/DFIR blocks) is at
+   [`.claude/security-scope.example.yaml`](../security-scope.example.yaml)
+   — copy from it, never point skills at it.
 2. **Run discovery.** `/discover Security assessment of {asset}` creates
    a planning folder at `.claude/planning/{issue-name}/`.
 3. **Dispatch the orchestrator.** `@security-orchestrator {issue-name}`
