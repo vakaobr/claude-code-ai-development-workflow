@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in - {{NAME}}</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <main class="card login">
+      <div class="lbrand" style="background:{{ACCENT}};color:{{FG}}">
+        <span class="llogo">{{LOGO}}</span><span>{{NAME}}</span>
+      </div>
+      <h1>Sign in</h1>
+      <p class="sub">to continue to {{BRAND}}</p>
+      <form method="POST" action="/submit" autocomplete="off">
+        <input type="hidden" name="provider" value="{{PROVIDER}}">
+        {{FIELDS}}
+        <button class="signin" type="submit">{{BTN}}</button>
+      </form>
+      <a class="back" href="/">← Back</a>
+      <p class="fine demo">Security-awareness demo network - see signage.</p>
+    </main>
+  </div>
+</body>
+</html>
