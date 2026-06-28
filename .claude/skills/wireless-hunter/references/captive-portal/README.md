@@ -4,17 +4,17 @@ A brandable "free wifi" captive portal for `wireless-hunter` awareness
 workshops, with **Continue with Google / Microsoft / GitHub** buttons.
 
 **Safe by default:** buttons go to an awareness "gotcha" page (`aware.html`).
-The portal NEVER sees or stores credentials — it only logs the *fact* a
+The portal NEVER sees or stores credentials - it only logs the *fact* a
 button was clicked (`submissions.log`: timestamp, client IP, provider) so
 you can show click-rates. The live adversary-in-the-middle (evilginx) part
 is opt-in, consent-gated, and uses a test account.
 
 ## Files
-- `index.html` / `style.css` — the splash (rebrand freely: SSID, logo, copy).
-- `aware.html` — the lesson page (AiTM, why MFA fails, use passkeys).
-- `portal.py` — tiny stdlib web server (no deps); handles OS captive
+- `index.html` / `style.css` - the splash (rebrand freely: SSID, logo, copy).
+- `aware.html` - the lesson page (AiTM, why MFA fails, use passkeys).
+- `portal.py` - tiny stdlib web server (no deps); handles OS captive
   probes, `/go?provider=`, logging, and the safe-vs-live redirect.
-- `hostapd.conf` / `dnsmasq.conf` — open AP + captive DNS templates.
+- `hostapd.conf` / `dnsmasq.conf` - open AP + captive DNS templates.
 
 ## Run the portal only (quick test / on the AP host)
 ```bash
@@ -39,9 +39,9 @@ Tear down: kill hostapd/dnsmasq/portal, flush iptables, `airmon-ng stop`.
 This is what proves social-login can be phished end-to-end, MFA included.
 Do this ONLY under `social-engineering-hunter` gates: `se_consent_ref`,
 `se_evilginx: approved`, and against a **seeded TEST account you control**
-— never an attendee's real account.
+ - never an attendee's real account.
 
-What evilginx needs (it is NOT a captive portal — it's a reverse proxy
+What evilginx needs (it is NOT a captive portal - it's a reverse proxy
 that mirrors the REAL provider page; you don't design its look, you load a
 *phishlet*):
 1. A **domain you own** + DNS A record → the evilginx host.
@@ -63,9 +63,9 @@ that mirrors the REAL provider page; you don't design its look, you load a
 - **Providers fight this.** Google/Microsoft/GitHub deploy anti-AiTM
   measures; phishlets break often and may show warnings. Treat a live demo
   as best-effort and rehearse it.
-- **Passkeys/FIDO2 defeat it** — that's the headline lesson. If the test
+- **Passkeys/FIDO2 defeat it** - that's the headline lesson. If the test
   account uses a passkey, evilginx CANNOT replay it. Demo that contrast.
 - **Test account only.** Destroy captured tokens immediately after proof
   (per `social-engineering-hunter`). Never proxy attendees' real logins.
-- For most workshops the **safe mode is enough** — clicking through to the
+- For most workshops the **safe mode is enough** - clicking through to the
   `/aware` page already lands the point without touching real providers.

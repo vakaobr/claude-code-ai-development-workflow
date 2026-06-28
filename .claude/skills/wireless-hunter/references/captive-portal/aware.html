@@ -3,42 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hold on — that was the point</title>
+<title>Hold on - that was the point</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main class="card aware">
-    <div class="logo warn">🛑 Stop</div>
-    <h1>This was a security-awareness demo</h1>
-    <p class="sub">You were about to log into a real account on a network a
-       stranger controls. Here’s why that’s dangerous — even with MFA.</p>
+  <div class="wrap">
+    <main class="card aware">
+      <div class="logo warn">🛑 Stop</div>
+      <h1>This was a security-awareness demo</h1>
+      {{CAPTURE}}
+      <p class="sub">You signed into a real-looking page on a network a
+         stranger controls - and the page already profiled your device.
+         Here’s why that’s dangerous, even with MFA.</p>
 
-    <ul class="points">
-      <li><b>An attacker’s page can proxy the real login.</b> Tools like
-          evilginx sit in the middle: you see the genuine Google/Microsoft/
-          GitHub page, but the attacker relays it — and steals your
-          <b>session cookie</b> after you authenticate.</li>
-      <li><b>Most MFA does NOT stop this.</b> SMS codes, authenticator
-          OTPs, and push approvals are all replayed through the proxy. The
-          attacker ends up logged in as you.</li>
-      <li><b>Social login multiplies the blast radius.</b> One phished
-          Google/Microsoft/GitHub session can unlock every app you
-          “Continue with” — email, code, cloud, everything.</li>
-    </ul>
+      <ul class="points">
+        <li><b>An attacker’s page can proxy the real login.</b> Tools like
+            evilginx relay the genuine Google/Microsoft/GitHub page and steal
+            your <b>session cookie</b> after you authenticate.</li>
+        <li><b>Most MFA does NOT stop this.</b> SMS codes, authenticator OTPs
+            and push approvals are replayed through the proxy.</li>
+        <li><b>Everything below was grabbed with zero clicks</b> - just by
+            loading the page on this network.</li>
+      </ul>
 
-    <h2>How to actually stay safe</h2>
-    <ul class="points good">
-      <li><b>Use passkeys / FIDO2 security keys.</b> They are
-          <i>phishing-resistant</i> — bound to the real domain, so a proxy
-          can’t replay them. This is the one defense that beats this attack.</li>
-      <li><b>Don’t sign into important accounts on untrusted WiFi.</b> Use
-          your phone’s hotspot, or a VPN + encrypted DNS.</li>
-      <li><b>Check the domain</b> before you type — but assume you can be
-          fooled, and rely on passkeys, not vigilance.</li>
-    </ul>
+      <section class="devbox">
+        <div class="devbox-h">📡 What this network saw about your device</div>
+        <table class="devinfo"><tbody><tr><td>Reading your device…</td><td></td></tr></tbody></table>
+        {{GEO}}
+        <div class="devfine">Your IP on this network: <b>{{CLIENT_IP}}</b><br>
+          Grabbed silently on page load. A malicious network can obtain even more (device login name, OS patch level, your browsing) by other means.</div>
+      </section>
 
-    <p class="fine">No credentials were captured by this page. Clicks were
-       logged only to measure how many people would have proceeded.</p>
-  </main>
+      <h2>How to actually stay safe</h2>
+      <ul class="points good">
+        <li><b>Use passkeys / FIDO2 keys</b> - phishing-resistant; a proxy
+            can’t replay them. The one defense that beats this attack.</li>
+        <li><b>Don’t sign into important accounts on untrusted WiFi</b> - use
+            your phone’s hotspot, or a VPN + encrypted DNS.</li>
+        <li><b>Assume you can be fooled</b> - rely on passkeys, not vigilance.</li>
+      </ul>
+
+      <p class="fine">No full credentials were captured or stored - only the
+         first few characters were shown to prove the point, then discarded.
+         The device details were read in your browser for this demo and were
+         not sent anywhere.</p>
+      <a class="back" href="/">← Back to start</a>
+    </main>
+  </div>
+  <script src="/fingerprint.js"></script>
 </body>
 </html>
