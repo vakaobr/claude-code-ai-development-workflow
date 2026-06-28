@@ -12,7 +12,7 @@ WARNINGS=0
 
 # Skills we're checking (excludes _shared and pre-existing framework skills
 # that predate the security-skill batch — they use a different template)
-EXCLUDE_RE='^(_shared|implementing-code|planning-solutions|reviewing-code|review-fix|researching-code|visual-explainer|offensive-security|redteam-ad-ops)$'
+EXCLUDE_RE='^(_shared|implementing-code|planning-solutions|reviewing-code|review-fix|researching-code|visual-explainer|offensive-security|redteam-ad-ops|incident-response)$'
 # bash 3.2-compatible array fill (macOS ships bash 3.2; `mapfile` is 4+)
 SKILLS=()
 while IFS= read -r _skill_name; do

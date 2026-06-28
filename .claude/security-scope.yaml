@@ -144,3 +144,23 @@ red_team_extension:
   mobile_testing: denied              # denied | approved — master gate for mobile-sast profile
   mobile_artifacts: []                # e.g. ["builds/app-release.apk (sha256:abc…)"]
   mobsf_instance: "local"             # MUST be a local/self-hosted MobSF — never the public hosted instance
+
+# =====================================================================
+#  DFIR / INCIDENT RESPONSE
+# ---------------------------------------------------------------------
+#  Gates for the digital-forensics / incident-response extension
+#  (dfir-readonly profile): memory-forensics-hunter, disk-triage-hunter,
+#  log-timeline-hunter, grounded by the incident-response reference skill.
+#
+#  These analyze ACQUIRED EVIDENCE COPIES read-only. The prime directive
+#  is evidence integrity: skills hash-verify each item before analysis and
+#  HALT on mismatch. They never acquire, mount read-write, contain, or
+#  eradicate. Gates default to `denied`.
+# =====================================================================
+dfir_scope:
+  incident_response: denied           # denied | approved — master gate for dfir-readonly profile
+  case_id: ""                         # e.g. "IR-2026-0042" — the active incident case
+  evidence_store_path: ""             # secure path to verified evidence COPIES, e.g. "/cases/IR-2026-0042/evidence"
+  chain_of_custody_log: ""            # append-only custody log path, e.g. "/cases/IR-2026-0042/coc.md"
+  allow_live_response: denied         # denied | approved — analysis on a LIVE production host (default: offline images only)
+  external_sandbox: denied            # denied | approved — upload extracted samples to a third-party sandbox (evidence may be regulated)

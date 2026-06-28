@@ -210,6 +210,50 @@ Explicitly forbidden:
 - Frida / dynamic hooking / live-device instrumentation without a
   scope-approved upgrade to a dynamic profile.
 
+## Profile: dfir-readonly
+
+For **digital forensics / incident response** analysis of acquired
+evidence. The defining constraint is **evidence integrity**: all tools
+operate **read-only on verified COPIES** of evidence (write-blocked
+images, hash-verified). No acquisition, no live-system mutation, no
+remounting read-write.
+
+```yaml
+allowed-tools: >
+  Read, Grep, Glob, Write(path:.claude/planning/**),
+  Bash(vol:*), Bash(vol.py:*), Bash(volatility3:*),
+  Bash(mmls:*), Bash(fls:*), Bash(icat:*), Bash(fsstat:*),
+  Bash(istat:*), Bash(blkls:*), Bash(tsk_recover:*), Bash(mactime:*),
+  Bash(log2timeline.py:*), Bash(psort.py:*), Bash(pinfo.py:*),
+  Bash(chainsaw:*), Bash(hayabusa:*), Bash(evtx_dump:*),
+  Bash(yara:*), Bash(tshark:*), Bash(zeek:*), Bash(capinfos:*),
+  Bash(strings:*), Bash(file:*), Bash(exiftool:*), Bash(binwalk:*),
+  Bash(bulk_extractor:*), Bash(regripper:*),
+  Bash(sha256sum:*), Bash(md5sum:*), Bash(jq:*)
+```
+
+Extra gating (enforced by every `dfir-readonly` skill in its
+Authorization Check):
+- The scope file MUST set `dfir_scope.incident_response: approved`.
+- Evidence is referenced from `dfir_scope.evidence_store_path` by
+  `case_id`; the skill computes/verifies SHA-256 BEFORE analysis and
+  records it. If the hash does not match the acquisition record, HALT.
+- Live-response against a running production host requires
+  `dfir_scope.allow_live_response: approved` (default denied — work on
+  acquired images, not live systems).
+- Every command run and every artifact extracted is logged to the case
+  folder for chain-of-custody / reproducibility.
+
+Explicitly forbidden:
+- Any write/mount-rw/acquisition verb against original evidence
+  (`dd if=…of=original`, `mount` without `ro`, `tsk_recover` onto the
+  source, registry hive writes).
+- Containment/eradication actions (kill, isolate, disable account) — those
+  are operator-driven, change-controlled, and out of profile.
+- Uploading evidence or extracted samples to third-party / public
+  sandboxes without explicit `dfir_scope.external_sandbox: approved`
+  (evidence may contain regulated data).
+
 ## Per-Skill Override
 
 A skill may request a more restrictive subset of its profile by listing
