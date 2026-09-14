@@ -250,7 +250,23 @@ Alongside these, a **5-skill internal / mobile / AI red-team extension** covers 
 
 **Navigation:** [`.claude/skills/SECURITY_SKILLS_README.md`](.claude/skills/SECURITY_SKILLS_README.md) is the library entry point — full inventory with tier / profile / output-artifact per skill and the cross-skill dispatch map.
 
-**Validation:** `./scripts/validate-skills.sh` enforces structural correctness — name matches directory, required frontmatter fields, required body sections (Goal / When to Use / When NOT to Use / Authorization Check / Methodology / Output Format / Quality Check), forbidden-tool catch (sqlmap / metasploit / hydra / nikto), and `cloud-readonly` write-verb catch. Expected output: **0 errors, 0 warnings**.
+**Validation:** `./scripts/validate-skills.sh` enforces structural correctness — name matches directory, required frontmatter fields, required body sections (Goal / When to Use / When NOT to Use / Authorization Check / Methodology / Output Format / Quality Check), forbidden-tool catch (sqlmap / metasploit / hydra / nikto), and `cloud-readonly` write-verb catch. Expected output: **0 errors, 0 warnings**. It skips the framework and architecture skills, which follow a different template.
+
+---
+
+## Architecture & Design Skills
+
+12 architecture skills live under `.claude/skills/{name}/SKILL.md`, distilled from the O'Reilly software-architecture catalog (Building Microservices, Software Architecture: The Hard Parts, Learning DDD, Building Evolutionary Architectures, The Software Architect Elevator, and more). They complement the SDLC phases — reach for them during `/design-system` (Phase 3), `/plan` (Phase 4), and `/implement` (Phase 5) when a design decision needs a grounded methodology rather than improvisation. Each ships with `## Goal / When to Use / When NOT to Use / Methodology / Output Format / Quality Check`, and routes to Opus for the heavier reasoning skills, Sonnet for the mechanical ones.
+
+| Theme | Skills | What it gives you |
+|---|---|---|
+| Domain & modelling | `ddd-context-mapping`, `semantic-domain-deconstruction` | Bounded contexts, context maps and anticorruption layers; untangling rigid hierarchies, enums and coupled models |
+| Distributed systems | `distributed-sagas-and-workflows`, `contract-first-api-evolution` | Orchestrated / choreographed sagas with compensation; OpenAPI-first design with consumer-driven contracts to stop breaking changes |
+| Evolutionary architecture | `architectural-fitness-functions`, `python-architecture-patterns` | Turn architecture rules into automated CI test gates; refactor into Repository / Service Layer / Unit of Work (Onion / Hexagonal) |
+| Platform & data | `saas-multi-tenant-isolation`, `medallion-lakehouse-pipelines`, `green-ops-sustainability` | Tenant-isolation and noisy-neighbour audits; Bronze / Silver / Gold lakehouse layers; carbon-efficiency audit of code, Dockerfiles and cloud templates |
+| Practice & communication | `facilitative-adr-and-governance`, `sociotechnical-iceberg-analysis`, `executive-elevator-translation` | Architecture Advice Process and ADRs; systems-thinking Iceberg diagnosis of chronic incidents; translating technical decisions into C-level business value |
+
+Invoke one explicitly with `/<skill-name>`, or let Claude Code auto-activate it when your request matches. Only the frontmatter (~100 tokens) is loaded per session; the full body (~2K tokens) loads on match.
 
 ---
 
@@ -741,11 +757,13 @@ your-project/
 │   │   │   └── SKILL.md            # Red-team-ops reference: PTES, ROE, proof-for-clients, kill-chain (model: opus)
 │   │   │                           # + executable: network-pentest, host-privesc, cracking, reverse-engineering,
 │   │   │                           #   exploit-validation, social-engineering, wireless (hunters)
-│   │   └── visual-explainer/        # HTML visualization skill (visual-explainer)
-│   │       ├── SKILL.md            # Workflow, diagram types, anti-slop rules (model: sonnet)
-│   │       ├── references/          # CSS patterns, libraries, slide patterns (~120KB)
-│   │       ├── templates/           # HTML reference templates (architecture, table, mermaid, slides)
-│   │       └── scripts/share.sh    # Vercel deployment script
+│   │   ├── visual-explainer/        # HTML visualization skill (visual-explainer)
+│   │   │   ├── SKILL.md            # Workflow, diagram types, anti-slop rules (model: sonnet)
+│   │   │   ├── references/          # CSS patterns, libraries, slide patterns (~120KB)
+│   │   │   ├── templates/           # HTML reference templates (architecture, table, mermaid, slides)
+│   │   │   └── scripts/share.sh    # Vercel deployment script
+│   │   └── {ddd-context-mapping, distributed-sagas-and-workflows, ...}/
+│   │       └── SKILL.md            # 12 architecture & design skills (O'Reilly catalog)
 │   ├── LEARNINGS.md                  # Full retro learnings archive (on-demand, not always loaded)
 │   ├── QUICK_REFERENCE.md           # Tool cheat sheets — terraform, docker, kubectl, ansible (on-demand)
 │   ├── scripts/

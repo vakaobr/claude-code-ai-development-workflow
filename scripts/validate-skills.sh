@@ -11,8 +11,10 @@ ERRORS=0
 WARNINGS=0
 
 # Skills we're checking (excludes _shared and pre-existing framework skills
-# that predate the security-skill batch — they use a different template)
-EXCLUDE_RE='^(_shared|implementing-code|planning-solutions|reviewing-code|review-fix|researching-code|visual-explainer|offensive-security|redteam-ad-ops|incident-response|redteam-ops)$'
+# that predate the security-skill batch — they use a different template).
+# The architecture & design skills (O'Reilly catalog) also use a different
+# template and are validated separately, so they are excluded here too.
+EXCLUDE_RE='^(_shared|implementing-code|planning-solutions|reviewing-code|review-fix|researching-code|visual-explainer|offensive-security|redteam-ad-ops|incident-response|redteam-ops|architectural-fitness-functions|contract-first-api-evolution|ddd-context-mapping|distributed-sagas-and-workflows|executive-elevator-translation|facilitative-adr-and-governance|green-ops-sustainability|medallion-lakehouse-pipelines|python-architecture-patterns|saas-multi-tenant-isolation|semantic-domain-deconstruction|sociotechnical-iceberg-analysis)$'
 # bash 3.2-compatible array fill (macOS ships bash 3.2; `mapfile` is 4+)
 SKILLS=()
 while IFS= read -r _skill_name; do
