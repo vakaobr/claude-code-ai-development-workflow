@@ -49,6 +49,10 @@ find_python() {
       [[ -x "$v/bin/python3" ]] && { echo "$v/bin/python3"; return 0; }
     done
   fi
+  # uv-managed interpreters live outside PATH (~/.local/share/uv/python)
+  if command -v uv >/dev/null 2>&1; then
+    v="$(uv python find '>=3.10,<3.14' 2>/dev/null)" && [[ -x "$v" ]] && { echo "$v"; return 0; }
+  fi
   if command -v python3 >/dev/null 2>&1 && \
      python3 -c 'import sys; sys.exit(0 if (3,10)<=sys.version_info<(3,14) else 1)' 2>/dev/null; then
     echo python3; return 0
@@ -77,7 +81,8 @@ fi
 
 # --- 3. copy hook script ----------------------------------------------------
 mkdir -p "$HOME/.claude/hooks"
-cp "$REPO_HOOK" "$DEST_HOOK"
+# Skip when run from ~/.claude/scripts itself (source == destination)
+[[ "$REPO_HOOK" -ef "$DEST_HOOK" ]] || cp "$REPO_HOOK" "$DEST_HOOK"
 chmod +x "$DEST_HOOK"
 log "Installed hook script → $DEST_HOOK"
 
