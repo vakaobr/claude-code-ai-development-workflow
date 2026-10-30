@@ -1,6 +1,6 @@
 ---
 name: sdlc
-description: Execute complete SDLC: Research → Plan → Implement → CVE Gate → Review. Autonomous, single command for full feature development.
+description: Execute complete SDLC: Research → Plan → Goldfish Design Review → Implement → CVE Gate → Review. Autonomous, single command for full feature development.
 model: sonnet
 ---
 
@@ -13,7 +13,7 @@ Parse user input and invoke the SDLC Orchestrator Agent. **Contain NO workflow l
 ## Command Syntax
 
 ```
-/sdlc <issue-name> [description] [--resume | --plan | --implement | --cve | --review]
+/sdlc <issue-name> [description] [--design <path>] [--no-design-review] [--resume | --plan | --design-review | --implement | --cve | --review]
 ```
 
 ## Arguments
@@ -22,10 +22,15 @@ Parse user input and invoke the SDLC Orchestrator Agent. **Contain NO workflow l
 - `issue-name` (required): Kebab-case identifier, 1-50 chars
 - `description` (optional): What to build, max 1000 chars
 
-**Flags:**
+**Options:**
+- `--design <path>`: Start from an approved design document inside the project, for example one written with `/egm-brainstorm`, `/egm-draft` and `/egm-review`. Architecture and Planning work within it instead of re-deciding it.
+- `--no-design-review`: Skip the Goldfish design review (Phase 3b). The skip is recorded. Small, low-risk fixes skip it automatically.
+
+**Entry points:**
 - `--resume`: Continue from where STATUS.md left off
 - `--plan`: Start from Planning phase (requires RESEARCH.md)
-- `--implement`: Start from Implementation (requires PLAN.md)
+- `--design-review`: Run only the Goldfish design review on the existing plan (requires RESEARCH.md, ADR.md and PLAN.md)
+- `--implement`: Start from Implementation (requires PLAN.md; runs the design review first unless it was approved or skipped)
 - `--cve`: Start from the Dependency CVE Gate (requires IMPLEMENTATION.md)
 - `--review`: Start from Review (requires IMPLEMENTATION.md; runs the CVE Gate first if CVE_REMEDIATION.md is missing)
 
@@ -57,8 +62,18 @@ INVOKE AGENT: .claude/agents/sdlc-orchestrator.md
 PARAMETERS:
 - issue_name: <parsed issue-name>
 - description: <parsed description>
-- entry_point: <default|resume|plan|implement|cve|review>
+- entry_point: <default|resume|plan|design_review|implement|cve|review>
+- design_doc: <path from --design, or null>
+- skip_design_review: <true for --no-design-review, else false>
 ```
+
+`--design` paths follow the same rules as issue names for safety: relative to the project, no `..`, no absolute paths.
+
+## Goldfish design review
+
+Between Planning and Implementation, fresh-context reviewers from the vendored Elephant-Goldfish Model (`.claude/vendor/egm` in a project install, `~/.claude/vendor/egm` in a user install; pinned, see its `NOTICE.md`) review the design and plan without the conversation that produced them. Clear findings are fixed in ADR.md and PLAN.md, wrong ones are contested with evidence, and real trade-offs come to you at the plan confirmation. The review runs at most 2 rounds.
+
+The EGM skills are also available on their own, outside `/sdlc`: `/egm-brainstorm`, `/egm-draft`, `/egm-review`, `/egm-review-loop`, `/egm-resolve`, `/egm-bootstrap`. Upgrade the vendored copy with `python3 ~/.claude/scripts/sync-egm.py --ref <reviewed commit>` (for a project install: `python3 .claude/scripts/sync-egm.py --root .claude --ref <reviewed commit>`).
 
 ## Examples
 
@@ -71,6 +86,15 @@ PARAMETERS:
 
 # Start from specific phase
 /sdlc add-oauth-auth --plan
+
+# Build from an approved EGM design document
+/sdlc add-webhook-delivery --design docs/designs/webhook_delivery.md
+
+# Small fix, no design review
+/sdlc fix-null-timezone Handle a missing timezone in the report job --no-design-review
+
+# Re-run only the design review after editing the plan
+/sdlc add-oauth-auth --design-review
 ```
 
 ## Error Responses

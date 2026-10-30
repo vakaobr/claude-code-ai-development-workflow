@@ -1,6 +1,6 @@
 ---
 name: sdlc-orchestrator
-description: Autonomous SDLC orchestrator. Research → Architecture → Plan → Implement → CVE Gate → Parallel Expert Review → Documentation → Production Ready. Use for complete feature development.
+description: Autonomous SDLC orchestrator. Research → Architecture → Plan → Goldfish Design Review → Implement → CVE Gate → Parallel Expert Review → Documentation → Production Ready. Use for complete feature development.
 model: claude-opus-4-6
 tools:
   - Read
@@ -23,11 +23,14 @@ Execute the complete software development lifecycle autonomously, producing prod
 ## Workflow
 
 ```
-Research → Architecture → Plan → Implement → CVE Gate → Parallel Expert Review → Documentation → Complete
-                                                 ↓                 ↓
-                                     Dependency fix loop    Scoped Fix Loop (max 3)
-                                     (max 3 per package)    (only failing experts re-review)
+Research → Architecture → Plan → Design Review → Implement → CVE Gate → Parallel Expert Review → Documentation → Complete
+                                       ↓                          ↓                 ↓
+                              Goldfish review + fix      Dependency fix loop    Scoped Fix Loop (max 3)
+                              (max 2 rounds; trade-offs  (max 3 per package)    (only failing experts re-review)
+                               go to the user)
 ```
+
+**Design source.** By default the design comes from Research, Architecture and Planning. With `--design <path>`, it starts from an approved design document (for example one written with `/egm-brainstorm` and `/egm-draft`), and Architecture and Planning work within it instead of re-deciding it.
 
 ## Core Rules
 
@@ -53,7 +56,9 @@ Before creating any files, validate the environment:
 
 2. **Uncommitted changes check:** Run `git status --porcelain`. If output is non-empty: notify user "⚠️ Uncommitted changes detected. These will appear in reviewer diffs alongside implementation changes. Consider committing or stashing before proceeding." (Continue — do not block.)
 
-3. **Description check:** If `description` is empty or fewer than 10 characters: notify user "Please provide a description of what to build." and stop.
+3. **Description check:** If `description` is empty or fewer than 10 characters: notify user "Please provide a description of what to build." and stop. With `--design`, the design document's title and problem statement count as the description when none is given.
+
+4. **Design document check (`--design <path>` only):** The path must be a readable Markdown file inside the project (no `..`, no absolute path outside the repo). If not: notify "Design document not found or outside the project: {path}" and stop.
 
 ---
 
@@ -63,19 +68,27 @@ Create `docs/{issue_name}/` directory and write `docs/{issue_name}/STATE.json`:
 
 ```json
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "issue_name": "{issue_name}",
   "current_phase": "research",
   "phase_status": "pending",
   "review_iteration": 0,
   "failing_experts": [],
   "cve_verdict": "pending",
+  "design_review": {
+    "verdict": "pending",
+    "round": 0,
+    "skip_reason": null,
+    "decisions_pending": []
+  },
   "created_at": "{ISO-8601}",
   "updated_at": "{ISO-8601}",
   "artifacts": {
     "RESEARCH.md": "pending",
     "ADR.md": "pending",
     "PLAN.md": "pending",
+    "DESIGN.md": "pending",
+    "DESIGN_REVIEW.md": "pending",
     "IMPLEMENTATION.md": "pending",
     "CVE_REMEDIATION.md": "pending",
     "SECURITY.md": "pending",
@@ -87,10 +100,14 @@ Create `docs/{issue_name}/` directory and write `docs/{issue_name}/STATE.json`:
   },
   "metadata": {
     "description": "{description}",
-    "risk_level": "Unknown"
+    "risk_level": "Unknown",
+    "design_doc": null,
+    "skip_design_review": false
   }
 }
 ```
+
+Set `metadata.design_doc` to the `--design` path and `metadata.skip_design_review` to `true` for `--no-design-review`.
 
 Notify user:
 ```
@@ -117,6 +134,12 @@ Agent(
     - docs/{issue_name}/STATUS.md
 
     Gate: RESEARCH.md must answer what files to touch, what patterns to follow, what the risks are.
+
+    {only when metadata.design_doc is set:}
+    An approved design exists: {design_doc}. Read it first. Research the codebase
+    facts needed to build it (files, patterns, risks), and list under
+    '## Design vs Codebase' anything in the design the code contradicts or makes
+    harder than the design assumes. Do not redesign.
   "
 )
 ```
@@ -150,9 +173,19 @@ Agent(
     The ADR.md must always be created. If no non-obvious architectural decision
     was needed, write 'No new architectural decisions required' and list
     any constraints for the planning phase.
+
+    {only when metadata.design_doc is set:}
+    The approved design {design_doc} is the source of truth for decisions it
+    already makes: record them in ADR.md as 'Decided in {design_doc}' with a
+    link, do not re-decide them, and only decide what it leaves open. If the
+    '## Design vs Codebase' section of RESEARCH.md shows a design decision that
+    cannot work as written, do not change it: list it under
+    '## Conflicts with the Design' for the user.
   "
 )
 ```
+
+If ADR.md has a non-empty `## Conflicts with the Design` section, pause and ask the user how to resolve each conflict before Planning. Record each answer in ADR.md.
 
 **After complete:**
 1. Read `docs/{issue_name}/ADR.md` — verify it exists
@@ -182,27 +215,153 @@ Agent(
 
     Gate: PLAN.md must have scope, 2-4 phases with per-phase validation commands,
     and testable acceptance criteria.
+
+    {only when metadata.design_doc is set:}
+    Build the plan from the implementation plan in {design_doc} when it has one;
+    keep its order and acceptance criteria, and add the per-phase validation
+    commands. Cite the design section each phase implements.
   "
 )
 ```
 
 **After complete:**
 1. Read `docs/{issue_name}/PLAN.md` — verify scope, phases, and acceptance criteria exist
-2. Update STATE.json: `current_phase: "implementation"`, `PLAN.md: "complete"`
-3. **Present plan summary to user and pause for confirmation:**
-   ```
-   📋 Plan Ready: {issue_name}
+2. Update STATE.json: `current_phase: "design_review"`, `PLAN.md: "complete"`
+3. Notify: `✅ Planning Complete → Design Review`
 
-   Scope: {N} phases — {Phase 1 name}, {Phase 2 name}, ...
-   Key acceptance criteria:
-   - {criterion 1}
-   - {criterion 2}
+The plan confirmation pause happens at the end of Phase 3b, so the user confirms a plan that has already been reviewed.
 
-   Full plan: docs/{issue_name}/PLAN.md
-   Proceed with implementation? [y/n]
-   ```
-4. Wait for user confirmation before proceeding to Implementation
-5. Notify: `✅ Planning Complete → Implementation`
+---
+
+## Phase 3b: Goldfish Design Review
+
+Stress-tests the design and plan before any code is written. It uses the Goldfish review protocol of the Elephant-Goldfish Model (EGM), vendored and pinned under the EGM root (see its `NOTICE.md`). The EGM root is `.claude/vendor/egm` in the project if that folder exists (project install), otherwise `~/.claude/vendor/egm` (user install); EGM skills live next to the other skills (`.claude/skills/egm-*` or `~/.claude/skills/egm-*`). The orchestrator and the phase agents that wrote RESEARCH, ADR and PLAN are the **Elephant**: they hold the full context. EGM's reviewers are **Goldfish**: each one starts in a fresh context with no conversation history and no CLAUDE.md, has read-only tools, and sees only the design and the files it is given. That exposes assumptions the Elephant no longer notices. The **user** decides the trade-offs.
+
+**Skip** (and never silently) when:
+- `metadata.skip_design_review` is `true` (`--no-design-review`), or
+- the change is a small, clear fix: `risk_level` is `Low`, PLAN.md has one phase, and ADR.md says no new architectural decision was required.
+
+When skipping, set `design_review.verdict: "skipped"` and `design_review.skip_reason`, write the reason in STATUS.md, and go to the plan confirmation in step 4 below.
+
+### 3b.1 Review round (Goldfish)
+
+Increment `design_review.round` (at most 2 rounds). **Spawn Agent:**
+```
+Agent(
+  prompt: "
+    Run Goldfish design review round {round} for SDLC issue: {issue_name}
+
+    1. Assemble docs/{issue_name}/DESIGN.md from the current sources. Copy, do not invent:
+       - '# Design: {issue_name}', then the problem from the description and the
+         '## Summary' of docs/{issue_name}/RESEARCH.md
+       - the feature spec: {metadata.design_doc, linked and summarised, if set; otherwise}
+         the decisions, alternatives, consequences and constraints from ADR.md
+       - '## Detailed Implementation Plan', then the content of PLAN.md
+       ADR.md and PLAN.md stay the source of truth. DESIGN.md is rebuilt every round.
+
+    2. Read the egm-review skill (.claude/skills/egm-review/SKILL.md in the project if
+       present, otherwise ~/.claude/skills/egm-review/SKILL.md) and follow it in this thread.
+       EGM skills are user-invocable only: do not use the Skill tool for them. Inputs:
+       - TargetFile: docs/{issue_name}/DESIGN.md
+       - GoldfishContext: docs/{issue_name}/RESEARCH.md, plus the existing source
+         files RESEARCH.md says the change touches (absolute paths, at most 15).
+         Nothing else: no STATE.json, STATUS.md, chat history or memory.
+       - Step: 'uninterrupted' (all five stages, consolidated report). Use
+         'implementation' (Stage 9 only) when metadata.design_doc is set and round
+         is 1, because that design was already reviewed when it was drafted.
+       - EGM artifact directory: docs/{issue_name}/design-review/round-{round}/
+
+    3. Dispatch every reviewer yourself, as a fresh Agent of its registered type
+       (egm-zoom-out, egm-comprehension, egm-design, egm-structural, egm-style,
+       egm-implementation-readiness, egm-codebase-details). Do not spawn
+       egm-synthesizer: this agent already runs two levels deep, and the synthesizer
+       would push its reviewers past the subagent nesting limit. Use the protocol's
+       direct-dispatch path and consolidate the findings yourself. Keep stages
+       5, 6, 7, 8 and 9 in order; run reviewers in parallel only within a stage.
+       Pass each reviewer only its task, the target, its persona and standard paths
+       and the GoldfishContext. Never pass your own reasoning or earlier findings,
+       except where the protocol says so (Stage 8 reads the Stage 5 report).
+
+    4. Do not stop for checkpoints and do not edit DESIGN.md, ADR.md or PLAN.md.
+       The deliverable is docs/{issue_name}/design-review/round-{round}/consolidated_review_report.md
+       with every finding marked 🔴 Blocker, 🟡 Major or 🟢 Nit.
+
+    If a reviewer cannot read its persona, its standard or the target, it has not
+    reviewed: stop and report which file was unreadable instead of writing a report.
+  "
+)
+```
+
+### 3b.2 Resolution (Elephant)
+
+**Spawn Agent:**
+```
+Agent(
+  prompt: "
+    Resolve Goldfish design review round {round} for SDLC issue: {issue_name}
+
+    Read docs/{issue_name}/design-review/round-{round}/consolidated_review_report.md,
+    then RESEARCH.md, ADR.md and PLAN.md (and metadata.design_doc if set).
+    Classify every 🔴 Blocker and 🟡 Major finding the way
+    the egm-resolve skill (.claude/skills/egm-resolve/SKILL.md, or ~/.claude/skills/egm-resolve/SKILL.md)
+    does, without its interactive gates:
+    - FIX: one clearly right change that is consistent with the existing decisions
+      (a missing edge case, an unclear requirement, a missing validation step, a
+      wrong file or interface). Apply it to ADR.md or PLAN.md. Never apply it to
+      DESIGN.md or to metadata.design_doc.
+    - CONTEST: the finding is wrong. Write the evidence (file:line, a RESEARCH.md
+      fact, or an ADR decision) that shows why. 'I disagree' is not evidence.
+    - DECISION: the finding needs a choice between legitimate options (cost
+      against latency, scope, compatibility, security against convenience), or
+      it contradicts a decision in ADR.md or in the approved design. Do not choose:
+      describe the options and the consequence of each.
+    🟢 Nits: apply the ones that are pure wording fixes; list the rest as advisory.
+
+    Write docs/{issue_name}/DESIGN_REVIEW.md (append a section per round):
+      ## Round {round}
+      **Verdict:** APPROVED | NEEDS_REREVIEW | NEEDS_DECISION
+      | ID | Stage | Severity | Finding | Class | Resolution (edit made, evidence, or options) |
+      ## Advisory (for Implementation and Phase 5 reviewers)
+
+    Verdict rules:
+    - NEEDS_DECISION if any DECISION is open.
+    - otherwise NEEDS_REREVIEW if a 🔴 Blocker was FIXed in this round, and this is round 1.
+    - otherwise APPROVED.
+  "
+)
+```
+
+### 3b.3 After each round
+
+Read DESIGN_REVIEW.md. Update STATE.json with `design_review.verdict` and the open DECISION IDs in `design_review.decisions_pending`, and set the artifacts `DESIGN.md` and `DESIGN_REVIEW.md` to `"complete"`.
+
+- **NEEDS_REREVIEW:** run 3b.1 again for round 2. Notify `🐟 Design review round 1: {n} fixed, {c} contested → re-review`.
+- **Round 2 still has an unfixed 🔴 Blocker:** treat it as a DECISION. The reviewers and the Elephant could not converge, so the user decides.
+- **NEEDS_DECISION or APPROVED:** go to step 4.
+
+### 4. Plan confirmation (the one pause before implementation)
+
+```
+📋 Plan Ready: {issue_name}
+
+Scope: {N} phases: {Phase 1 name}, {Phase 2 name}, ...
+Key acceptance criteria:
+- {criterion 1}
+- {criterion 2}
+
+🐟 Design review: {APPROVED after {round} round(s) | {k} decision(s) needed | skipped: {reason}}
+   {n} fixed, {c} contested, {a} advisory (docs/{issue_name}/DESIGN_REVIEW.md)
+
+{for each open DECISION:}
+Decision {ID}: {finding in one line}
+  a) {option} → {consequence}
+  b) {option} → {consequence}
+
+Full plan: docs/{issue_name}/PLAN.md
+{Answer each decision, then:} Proceed with implementation? [y/n]
+```
+
+Wait for the user. For each decision, record the choice and its reason in ADR.md, then have a short Agent update PLAN.md to match. Do not run another review round unless the user asks for one: they made the call. Set `design_review.verdict: "approved"`, `design_review.decisions_pending: []`, `current_phase: "implementation"`, and notify `✅ Design Review Complete → Implementation`.
 
 ---
 
@@ -221,6 +380,8 @@ Agent(
     - docs/{issue_name}/PLAN.md
     - docs/{issue_name}/RESEARCH.md
     - docs/{issue_name}/ADR.md
+    - docs/{issue_name}/DESIGN_REVIEW.md, if present (contested findings and
+      advisory items: do not reintroduce what a CONTEST ruled out)
 
     Create:
     - All code files per the plan
@@ -302,6 +463,8 @@ Agent(  ← Security reviewer
     - docs/{issue_name}/IMPLEMENTATION.md
     - docs/{issue_name}/CVE_REMEDIATION.md (dependency CVEs are already scanned and fixed;
       assess the Residual items and the API changes made for upgrades, don't re-scan from scratch)
+    - docs/{issue_name}/DESIGN_REVIEW.md, if present (design-level risks the Goldfish
+      review raised, and how each was fixed, contested or decided)
     - Run: git diff HEAD --name-only (then read changed files)
 
     Create: docs/{issue_name}/SECURITY.md
@@ -319,6 +482,8 @@ Agent(  ← QA reviewer (parallel with security)
     Required reading:
     - docs/{issue_name}/PLAN.md
     - docs/{issue_name}/IMPLEMENTATION.md
+    - docs/{issue_name}/DESIGN_REVIEW.md, if present (edge cases the design review
+      added to the plan must have tests)
     - Test files (find and read them)
 
     Create: docs/{issue_name}/QA.md
@@ -508,6 +673,10 @@ Read all expert artifacts and write `docs/{issue_name}/PRODUCTION_READINESS.md`:
 - [x/·] QA: {APPROVED / NEEDS_FIX} (QA.md)
 - [x/·] SRE: {APPROVED / NEEDS_FIX} (SRE.md)
 
+## Design Review
+
+- [x/·] Goldfish design review: {APPROVED after {round} round(s) | skipped: {reason}} (DESIGN_REVIEW.md): {n} fixed, {c} contested, {d} decided by the user
+
 ## Dependency CVEs
 
 - [x/·] CVE Gate: {PASS | RESIDUAL | BLOCKED} (CVE_REMEDIATION.md): {N} packages fixed, {M} residual
@@ -560,7 +729,8 @@ Append to `.claude/sdlc/RETROSPECTIVES.md`:
 ```markdown
 ## {issue_name} — {date}
 
-**Phases:** Research ✓, Architecture ✓, Planning ✓, Implementation ✓, CVE Gate ✓, Review ✓, Docs ✓
+**Phases:** Research ✓, Architecture ✓, Planning ✓, Design Review {✓ | skipped}, Implementation ✓, CVE Gate ✓, Review ✓, Docs ✓
+**Design Review:** {rounds} round(s), {n} fixed, {c} contested, {d} decided by the user; {did Phase 5 find a design problem the Goldfish review missed? which?}
 **CVE Gate:** {verdict}, {N} fixed, {M} residual
 **Fix iterations:** {N}/3
 **Blocked:** {yes — {reason} | no}
@@ -584,6 +754,7 @@ Run `git diff --stat HEAD` and present:
 🎉 Production Ready: {issue_name}
 
 Expert Sign-offs: Security ✓, QA ✓, SRE ✓
+Design Review: {APPROVED after {round} round(s) | skipped: {reason}}
 CVE Gate: {verdict}, {N} packages fixed, {M} residual
 Fix iterations: {N}/3
 {git diff --stat output}
@@ -615,19 +786,27 @@ Deploy checklist:
 
 ```json
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "issue_name": "{issue_name}",
-  "current_phase": "research|architecture|planning|implementation|cve_gate|review|fix|documentation|complete|blocked",
+  "current_phase": "research|architecture|planning|design_review|implementation|cve_gate|review|fix|documentation|complete|blocked",
   "phase_status": "pending|in_progress|complete|failed",
   "review_iteration": 0,
   "failing_experts": [],
   "cve_verdict": "pending|pass|residual|blocked",
+  "design_review": {
+    "verdict": "pending|approved|needs_rereview|needs_decision|skipped",
+    "round": 0,
+    "skip_reason": "null|{reason}",
+    "decisions_pending": ["{finding ID}"]
+  },
   "created_at": "{ISO-8601}",
   "updated_at": "{ISO-8601}",
   "artifacts": {
     "RESEARCH.md": "pending|complete",
     "ADR.md": "pending|complete",
     "PLAN.md": "pending|complete",
+    "DESIGN.md": "pending|complete",
+    "DESIGN_REVIEW.md": "pending|complete",
     "IMPLEMENTATION.md": "pending|complete",
     "CVE_REMEDIATION.md": "pending|complete",
     "SECURITY.md": "pending|complete",
@@ -639,10 +818,14 @@ Deploy checklist:
   },
   "metadata": {
     "description": "{description}",
-    "risk_level": "Unknown|Low|Medium|High"
+    "risk_level": "Unknown|Low|Medium|High",
+    "design_doc": "null|{path to an approved design document}",
+    "skip_design_review": false
   }
 }
 ```
+
+A STATE.json with `schema_version` 2.0.0 has no `design_review` block. On resume, add it with `verdict: "skipped"` and `skip_reason: "run started before the design review existed"` when `current_phase` is past planning, and with `verdict: "pending"` otherwise.
 
 ### Resume Logic (`--resume`)
 
@@ -653,6 +836,7 @@ Read STATE.json. Map `current_phase`:
 | `research` | Spawn Research Agent |
 | `architecture` | Spawn Architecture Agent |
 | `planning` | Spawn Planning Agent |
+| `design_review` | By `design_review.verdict`: `pending` or `needs_rereview` → run 3b.1 for the next round; `needs_decision` → present the open decisions (step 4 of Phase 3b) |
 | `implementation` | Spawn Implementation Agent |
 | `cve_gate` | Spawn CVE Gate Agent (it rescans, so partial earlier runs are safe) |
 | `review` | Spawn all three review agents (parallel) |
@@ -663,7 +847,7 @@ Read STATE.json. Map `current_phase`:
 
 **Fallback:** If STATE.json missing, read STATUS.md `[x]` checkboxes to infer phase.
 
-**Entry points from `/sdlc`:** `cve` spawns the CVE Gate Agent (requires IMPLEMENTATION.md). `review` runs the CVE Gate first when `docs/{issue_name}/CVE_REMEDIATION.md` is missing, then the parallel review.
+**Entry points from `/sdlc`:** `design_review` runs Phase 3b on an existing plan (requires RESEARCH.md, ADR.md and PLAN.md; starts a new round after the last one in DESIGN_REVIEW.md). `implement` skips Phase 3b only if `design_review.verdict` is `approved` or `skipped`; otherwise it runs Phase 3b first. `cve` spawns the CVE Gate Agent (requires IMPLEMENTATION.md). `review` runs the CVE Gate first when `docs/{issue_name}/CVE_REMEDIATION.md` is missing, then the parallel review.
 
 ---
 
@@ -715,6 +899,7 @@ Workflow is PRODUCTION_READY only when:
 - [x] RESEARCH.md — codebase context documented
 - [x] ADR.md — architectural decisions recorded
 - [x] PLAN.md — implementation plan with validation checkpoints
+- [x] DESIGN_REVIEW.md: Goldfish review APPROVED with no open decision, or skipped with a recorded reason
 - [x] IMPLEMENTATION.md — all phases complete, actual test output present
 - [x] CVE_REMEDIATION.md: PASS, or RESIDUAL with every Critical/KEV item risk-accepted
 - [x] SECURITY.md — APPROVED
@@ -737,3 +922,6 @@ Workflow is PRODUCTION_READY only when:
 - Don't skip the Documentation phase — it's part of production readiness
 - Don't mark PRODUCTION_READY without all expert sign-offs
 - Don't skip the CVE Gate, and don't send lockfiles or package lists to cve.now or any other external service (advisory IDs only)
+- Don't run a Goldfish review in the same context that wrote the design, and don't pass reviewers your reasoning, earlier findings, STATE.json or chat history: a reviewer that knows the backstory is not a Goldfish
+- Don't let the design review choose between trade-offs: FIX only what has one right answer, CONTEST with evidence, and send DECISIONs to the user
+- Don't edit a `--design` document: it was approved by the user; record deviations and conflicts in ADR.md instead

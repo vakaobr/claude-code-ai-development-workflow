@@ -288,6 +288,32 @@ Full inventory with per-skill source book: [`.claude/skills/SECURITY_KNOWLEDGE_S
 
 ---
 
+## Goldfish Design Review (Elephant-Goldfish Model)
+
+`/sdlc` reviews the design before any code is written. Between Planning and Implementation, Phase 3b runs the Goldfish review protocol of Google's [Elephant-Goldfish Model](https://github.com/google/elephant-goldfish-model) (EGM). The agents that researched, designed and planned the change are the **Elephant**: they hold the full context. The reviewers are **Goldfish**: each starts in a fresh context with no conversation history and no CLAUDE.md, has read-only tools, and sees only the design, its standard and the source files it is given. That exposes the assumptions the Elephant no longer notices.
+
+How it runs:
+
+1. The orchestrator assembles `docs/{issue}/DESIGN.md` from `ADR.md` (the spec) and `PLAN.md` (the `## Detailed Implementation Plan`).
+2. EGM's five review stages run without pauses: zoom out, comprehension, design critique (design, structure, style), a second zoom out, and implementation readiness (readiness, codebase fit, style). Every finding is marked Blocker, Major or Nit.
+3. The Elephant resolves each Blocker and Major: **FIX** when there is one right change (applied to `ADR.md`/`PLAN.md`), **CONTEST** with evidence when the finding is wrong, **DECISION** when it needs a trade-off. A round that fixed a Blocker is re-reviewed once (at most 2 rounds).
+4. Decisions go to you at the plan confirmation, the one pause before implementation. Your choice is recorded in `ADR.md`.
+
+The result is `docs/{issue}/DESIGN_REVIEW.md`, which Implementation, Security and QA read. Small, low-risk fixes skip the review automatically (the skip is recorded); force a skip with `--no-design-review`.
+
+**Start from an approved design.** EGM's own skills are also available as slash commands: `/egm-brainstorm` (concept brief), `/egm-draft` (design document), `/egm-review`, `/egm-review-loop`, `/egm-resolve` and `/egm-bootstrap`. They are interactive by design (one question at a time, your approval at each step). Hand the approved document to the pipeline with `/sdlc <issue> --design docs/designs/<name>.md`: Architecture and Planning then work within it instead of re-deciding it, and the review checks implementation readiness.
+
+**Vendored, not installed as a plugin.** EGM is copied at a reviewed commit into `.claude/vendor/egm/` (Apache-2.0, see its `LICENSE` and `NOTICE.md`), so upstream prompt changes reach your sessions only through a reviewed re-sync. The reviewer agents (`.claude/agents/egm-*.md`) and skills (`.claude/skills/egm-*`) are EGM's Claude Code adapters with the plugin root rewritten. To upgrade after reading the upstream diff:
+
+```bash
+python3 .claude/scripts/sync-egm.py --root .claude --ref <reviewed-commit-sha>   # project install
+python3 ~/.claude/scripts/sync-egm.py --ref <reviewed-commit-sha>                # user install
+```
+
+Jump straight to the review with `/sdlc <issue> --design-review`.
+
+With a user install the reviewers read their personas from `~/.claude/vendor/egm`, outside the project. In headless or auto-approved sessions, allow only that folder: `Read(~/.claude/vendor/egm/**)`. A reviewer that cannot read its persona or standard stops and reports it instead of reviewing.
+
 ## Dependency CVE Gate
 
 `/sdlc` runs a Dependency CVE Gate between Implement and Review, backed by the `dependency-cve-remediation` skill (`.claude/skills/dependency-cve-remediation/`). It scans the whole repo's dependencies, then fixes every Critical, High and CISA KEV finding in a loop: bumps the version with the package manager, maps removed or renamed APIs from the release notes on major upgrades, guards untested call sites with characterization tests, and reruns build, lint and tests against a recorded baseline. Output is `docs/{issue}/CVE_REMEDIATION.md` with a PASS, RESIDUAL or BLOCKED verdict; BLOCKED (a Critical or KEV item left) stops the pipeline for a human decision.
@@ -308,7 +334,7 @@ Agents live under `.claude/agents/` and split into two roles — **orchestrators
 
 | Agent | Role |
 |---|---|
-| `sdlc-orchestrator` | Autonomous SDLC driver: Research → Plan → Implement → CVE Gate → Review, with parallel specialist dispatch and JSON state machine |
+| `sdlc-orchestrator` | Autonomous SDLC driver: Research → Plan → Goldfish Design Review → Implement → CVE Gate → Review, with parallel specialist dispatch and JSON state machine |
 | `security-orchestrator` | Composes 40 defensive skills based on asset type, scope risk, and detected stack |
 
 **Specialists:**
@@ -1167,9 +1193,10 @@ This project synthesizes and extends:
 - **[Shannon](https://github.com/KeygraphHQ/shannon)** by KeygraphHQ — autonomous AI pentester for dynamic security testing
 - **[OBLITERATUS](https://github.com/elder-plinius/OBLITERATUS)** by elder-plinius — mechanistic interpretability toolkit for AI model alignment analysis
 - **[visual-explainer](https://github.com/nicobailon/visual-explainer)** by nicobailon — rich HTML visualization engine with Mermaid diagrams, interactive zoom/pan, slide decks, and anti-AI-slop design guardrails
+- **[Elephant-Goldfish Model](https://github.com/google/elephant-goldfish-model)** by Google: zero-context (Goldfish) design review protocol, reviewer personas and design-drafting skills, vendored at a pinned commit in `.claude/vendor/egm/` (Apache-2.0; not an officially supported Google product)
 
 Extended with: Discovery, Architecture/ADR, DevSecOps security layer (static + dynamic + AI audit + hardening), Deployment, Observability, Retrospective phases, Visualization layer, AI/LLM integration commands, performance testing, hotfix workflow, multi-agent orchestration patterns, and self-improving CLAUDE.md via automated retrospectives.
 
 ## License
 
-MIT
+MIT. Vendored third-party code keeps its own license: `.claude/vendor/egm/` is Apache-2.0 (see its `LICENSE` and `NOTICE.md`).

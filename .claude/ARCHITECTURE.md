@@ -360,7 +360,8 @@ Research ──gate──▶ Plan ──gate──▶ Implement ──gate──
 | Gate | Check |
 |------|-------|
 | Research → Plan | 3 questions answered |
-| Plan → Implement | Scope + phases + criteria defined |
+| Plan → Design Review | Scope + phases + criteria defined |
+| Design Review → Implement | Goldfish review APPROVED with no open decision, or skipped with a recorded reason (`/sdlc` only) |
 | Implement → CVE Gate | All phases done + tests pass |
 | CVE Gate → Review | No Critical/High/KEV dependency CVEs left (or risk-accepted) |
 | Review → Security | APPROVED verdict |

@@ -61,6 +61,7 @@ Parse the Progress section of the selected `00_STATUS.md` (or `STATUS.md`). The 
 | `Research` | Research | `/research {issue-name}` |
 | `Design` | Design | `/design-system {issue-name}` |
 | `Planning` | Planning | `/plan {issue-name}` |
+| `Design Review` | Goldfish Design Review | `/sdlc {issue-name} --design-review` |
 | `Implementation` | Implementation | `/implement {issue-name}` |
 | `CVE Gate` | Dependency CVE Gate | `/sdlc {issue-name} --cve` |
 | `Review` | Review | `/review {issue-name}` |
