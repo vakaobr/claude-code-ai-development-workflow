@@ -4,12 +4,12 @@ Quick reference for the SDLC workflow.
 
 ## `/sdlc <issue-name> [description] [flags]`
 
-Execute complete SDLC: Research → Plan → Implement → CVE Gate → Review
+Execute complete SDLC: Research → Plan → Goldfish Design Review → Implement → CVE Gate → Review
 
 ### Syntax
 
 ```bash
-/sdlc <issue-name> [description] [--resume | --plan | --implement | --cve | --review]
+/sdlc <issue-name> [description] [--design <path>] [--no-design-review] [--resume | --plan | --design-review | --implement | --cve | --review]
 ```
 
 ### Arguments
@@ -19,8 +19,11 @@ Execute complete SDLC: Research → Plan → Implement → CVE Gate → Review
 | `issue-name` | Yes | Kebab-case identifier (1-50 chars) |
 | `description` | No* | What to build (max 1000 chars) |
 | `--resume` | No | Continue from STATUS.md |
+| `--design <path>` | No | Start from an approved design document (for example from `/egm-draft`); Architecture and Planning work within it |
+| `--no-design-review` | No | Skip the Goldfish design review (recorded; small low-risk fixes skip it automatically) |
 | `--plan` | No | Start from Planning (needs RESEARCH.md) |
-| `--implement` | No | Start from Implementation (needs PLAN.md) |
+| `--design-review` | No | Run only the Goldfish design review on the existing plan (needs RESEARCH.md, ADR.md, PLAN.md) |
+| `--implement` | No | Start from Implementation (needs PLAN.md; runs the design review first unless approved or skipped) |
 | `--cve` | No | Start from the Dependency CVE Gate (needs IMPLEMENTATION.md) |
 | `--review` | No | Start from Review (needs IMPLEMENTATION.md; runs the CVE Gate first if CVE_REMEDIATION.md is missing) |
 
