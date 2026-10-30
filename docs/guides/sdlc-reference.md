@@ -85,9 +85,19 @@ Resume an incomplete workflow automatically.
 - Determines the next phase and invokes the appropriate command
 - Supports both new (`00_STATUS.md`) and legacy (`STATUS.md`) naming
 
+### `/sdlc {issue-name} [description] [flags]`
+Run the whole pipeline for one issue, autonomously: Research, Architecture, Plan, Goldfish Design Review, Implement, Dependency CVE Gate, parallel expert review (Security, QA, SRE), Documentation and a production readiness gate.
+- **Goldfish Design Review:** fresh-context reviewers from the vendored Elephant-Goldfish Model check the design and plan before any code is written. Clear findings are fixed, wrong ones are contested with evidence, and trade-offs come to you at the plan confirmation.
+- **Dependency CVE Gate:** scans every dependency locally with trivy and fixes Critical, High and CISA KEV findings without changing behaviour.
+- `--design <path>` starts from an approved design document; `--no-design-review` skips the design review; `--design-review`, `--cve` and `--review` start at those steps; `--resume` continues a run.
+- Artifacts and state live in `docs/{issue}/` (`STATE.json` is the source of truth).
+
 ---
 
 ## Bonus Commands
+
+### `/egm-brainstorm`, `/egm-draft`, `/egm-review`, `/egm-resolve`
+Design a feature before building it, with Google's Elephant-Goldfish Model (vendored in `.claude/vendor/egm/`). Brainstorm writes a concept brief, Draft turns it into a design document one section at a time, Review runs five zero-context review stages, and Resolve works through the findings with you. They ask one question at a time and wait for your approval. Hand the result to `/sdlc {issue} --design <path>`. Also available: `/egm-review-loop` (a configured group of reviewers) and `/egm-bootstrap` (documentation for an existing codebase).
 
 ### `/ai-integrate {issue-name}`
 Add LLM/AI capabilities to a feature. Covers model selection, prompt engineering, RAG architecture, guardrails, evaluation strategy, and cost optimization. Use between Design and Plan phases.

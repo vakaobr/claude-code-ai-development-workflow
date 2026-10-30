@@ -642,7 +642,7 @@
     </div>
     <h1 class="slide__display reveal">AI-Powered SDLC</h1>
     <div class="reveal">
-      <p class="slide__subtitle" style="margin-top:clamp(16px,2vh,32px);">DevSecOps Edition &mdash; 11 Phases, 50+ Commands, 11 Integrated Tools</p>
+      <p class="slide__subtitle" style="margin-top:clamp(16px,2vh,32px);">DevSecOps Edition: 11 Phases, 50+ Commands, 13 Integrated Tools</p>
     </div>
   </section>
 
@@ -744,7 +744,8 @@ flowchart LR
   end
   subgraph build["Build"]
     direction TB
-    I["5. Implement"] --> RV["6. Review"]
+    I["5. Implement"] --> CV{{"CVE Gate"}}
+    CV --> RV["6. Review"]
   end
   subgraph secure["Secure"]
     direction TB
@@ -757,7 +758,8 @@ flowchart LR
     DP --> O["10. Observe"]
     O --> RT["11. Retro"]
   end
-  P --> I
+  P --> GR{{"Goldfish<br/>Design Review"}}
+  GR --> I
   RV --> S7a
   S7b --> H
   S7c -.-> H
@@ -765,13 +767,15 @@ flowchart LR
   classDef phase fill:#14b8a622,stroke:#14b8a6,stroke-width:2px
   classDef security fill:#f59e0b22,stroke:#f59e0b,stroke-width:2px
   classDef ops fill:#60a5fa22,stroke:#60a5fa,stroke-width:2px
+  classDef gate fill:#a78bfa22,stroke:#a78bfa,stroke-width:2px,stroke-dasharray:5 3
 
   class D,R,DS,P,I,RV phase
   class S7a,S7b,S7c,H security
   class DP,O,RT ops
+  class GR,CV gate
       </pre>
     </div>
-    <p class="reveal" style="color:var(--text-dim);text-align:center;margin-top:10px;font-size:clamp(12px,1.3vw,15px);">Grouped by lifecycle flow (Define · Build · Secure · Ship). The next slide shows the same 11 phases grouped by purpose — the four Delivery Layers.</p>
+    <p class="reveal" style="color:var(--text-dim);text-align:center;margin-top:10px;font-size:clamp(12px,1.3vw,15px);">Grouped by lifecycle flow (Define · Build · Secure · Ship). Dashed hexagons are quality gates that <code>/sdlc</code> runs between phases. The next slide shows the same 11 phases grouped by purpose: the four Delivery Layers.</p>
   </section>
 
   <!-- SLIDE 5b: CONTENT — DELIVERY LAYERS -->
@@ -802,6 +806,46 @@ flowchart LR
   </section>
 
   <!-- SLIDE 6: DASHBOARD — KEY METRICS -->
+  <!-- SLIDE 5c: SPLIT, GOLDFISH DESIGN REVIEW -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal" style="color:var(--accent);">Design Before Code</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">Goldfish Design Review</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal">Between Plan and Implement, <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;">/sdlc</code> has the design reviewed by agents that never saw how it was made</li>
+          <li class="reveal"><strong>Elephant:</strong> the agents that researched, designed and planned hold the full context</li>
+          <li class="reveal"><strong>Goldfish:</strong> fresh reviewers with no chat history, no CLAUDE.md and read-only tools, given only the design and the code it touches</li>
+          <li class="reveal">Five stages: zoom out, comprehension, design critique, zoom out again, implementation readiness</li>
+          <li class="reveal">Each finding is fixed, contested with evidence, or brought to you as a trade-off (at most 2 rounds)</li>
+        </ul>
+      </div>
+      <div class="slide__panel slide__panel--secondary">
+        <p class="slide__label reveal" style="color:var(--accent2);">Setup &amp; Use</p>
+        <div style="margin-top:12px;">
+          <pre class="reveal" style="background:var(--code-bg);color:var(--code-text);padding:16px;border-radius:8px;font-family:var(--font-mono);font-size:clamp(11px,1.2vw,14px);line-height:1.6;overflow-x:auto;"><code><span style="color:var(--text-dim);"># Runs inside /sdlc by default</span>
+<span style="color:var(--accent);">/sdlc</span> add-webhooks Deliver job events
+
+<span style="color:var(--text-dim);"># Or design first, then build from it</span>
+<span style="color:var(--accent);">/egm-brainstorm</span> Add webhook delivery
+<span style="color:var(--accent);">/egm-draft</span>
+<span style="color:var(--accent);">/sdlc</span> add-webhooks \
+  --design docs/designs/webhooks.md</code></pre>
+          <div class="icon-grid reveal" style="grid-template-columns:1fr;gap:8px;margin-top:12px;">
+            <div class="icon-card">
+              <div class="icon-card__title">Elephant-Goldfish Model</div>
+              <div class="icon-card__desc">Google's open-source review protocol, vendored at a reviewed commit (Apache-2.0)</div>
+            </div>
+            <div class="icon-card">
+              <div class="icon-card__title">DESIGN_REVIEW.md</div>
+              <div class="icon-card__desc">Fixed, contested and decided findings, read by Implementation, Security and QA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="slide slide--dashboard" style="background-image:radial-gradient(ellipse at 70% 30%, var(--accent-dim) 0%, transparent 40%);">
     <h2 class="slide__heading reveal">By the Numbers</h2>
     <div class="slide__kpis">
@@ -816,14 +860,14 @@ flowchart LR
         <div class="slide__kpi-trend" style="color:var(--text-dim);">workflow + experts + quality + cloud cost</div>
       </div>
       <div class="slide__kpi reveal">
-        <div class="slide__kpi-val" style="color:var(--green);">77</div>
+        <div class="slide__kpi-val" style="color:var(--green);">102</div>
         <div class="slide__kpi-label">Skills</div>
-        <div class="slide__kpi-trend" style="color:var(--text-dim);">7 SDLC + 39 defensive security + 12 architecture + 19 security knowledge</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">7 SDLC + 6 design review + 58 security + 12 architecture + 19 security knowledge</div>
       </div>
       <div class="slide__kpi reveal">
-        <div class="slide__kpi-val" style="color:var(--blue);">11</div>
+        <div class="slide__kpi-val" style="color:var(--blue);">13</div>
         <div class="slide__kpi-label">Integrated Tools</div>
-        <div class="slide__kpi-trend" style="color:var(--text-dim);">Shannon, n8n, Firecrawl, claude-context, MarkItDown, aws-doctor, cloud-cost-cli...</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">Shannon, EGM, trivy, n8n, Firecrawl, claude-context, MarkItDown, aws-doctor...</div>
       </div>
       <div class="slide__kpi reveal">
         <div class="slide__kpi-val" style="color:var(--accent);">~50%</div>
@@ -864,6 +908,42 @@ flowchart LR
           <li class="reveal"><strong style="color:var(--accent);">7c.</strong> AI red team (OBLITERATUS)</li>
           <li class="reveal"><strong style="color:var(--accent);">8.</strong> Prioritized fix + re-verify</li>
         </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8b: SPLIT, DEPENDENCY CVE GATE -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal" style="color:var(--accent2);">Dependency Security</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">Dependency CVE Gate</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal">Runs after Implement and before Review, on every dependency in the repo, new or existing</li>
+          <li class="reveal">Local scan with <strong>trivy</strong>; only public advisory IDs go to <strong>cve.now</strong> for KEV, EPSS and fix data. Lockfiles never leave the machine</li>
+          <li class="reveal">Fixes every Critical, High and CISA KEV finding: bump, map removed APIs from the release notes, guard untested call sites with characterization tests, rerun the baseline</li>
+          <li class="reveal"><strong>PASS</strong>, <strong>RESIDUAL</strong> or <strong>BLOCKED</strong>: a Critical or KEV item left stops the pipeline for a human decision</li>
+        </ul>
+      </div>
+      <div class="slide__panel slide__panel--secondary">
+        <p class="slide__label reveal" style="color:var(--accent2);">Setup &amp; Use</p>
+        <div style="margin-top:12px;">
+          <pre class="reveal" style="background:var(--code-bg);color:var(--code-text);padding:16px;border-radius:8px;font-family:var(--font-mono);font-size:clamp(11px,1.2vw,14px);line-height:1.6;overflow-x:auto;"><code><span style="color:var(--text-dim);"># Runs inside /sdlc by default.</span>
+<span style="color:var(--text-dim);"># Jump straight to the gate:</span>
+<span style="color:var(--accent);">/sdlc</span> add-oauth-auth --cve
+
+<span style="color:var(--text-dim);"># Or scan on its own</span>
+<span style="color:var(--accent);">python3</span> -I .claude/skills/\
+  dependency-cve-remediation/\
+  scripts/cve_scan.py \
+  --path . --base origin/main</code></pre>
+          <div class="icon-grid reveal" style="grid-template-columns:1fr;gap:8px;margin-top:12px;">
+            <div class="icon-card">
+              <div class="icon-card__title">CVE_REMEDIATION.md</div>
+              <div class="icon-card__desc">Each fix with its API changes, plus residual items with their patch deadlines</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -970,6 +1050,16 @@ flowchart LR
               <td><strong>cloud-cost-cli</strong></td>
               <td>Multi-cloud cost analysis &mdash; AWS / Azure / GCP, 38 analyzers, confidence-labeled findings</td>
               <td><code>/cloud/cost-cli-setup</code>, <code>/cloud/cost-scan</code>, <code>/cloud/aws-cost-compare</code></td>
+            </tr>
+            <tr>
+              <td><strong>Elephant-Goldfish Model</strong></td>
+              <td>Zero-context design review: fresh reviewers stress-test the design before any code is written (Google, Apache-2.0, vendored)</td>
+              <td><code>/sdlc</code>, <code>/egm-brainstorm</code>, <code>/egm-draft</code>, <code>/egm-review</code></td>
+            </tr>
+            <tr>
+              <td><strong>trivy + cve.now</strong></td>
+              <td>Local dependency CVE scan, enriched with KEV, EPSS and fix data by advisory ID only</td>
+              <td><code>/sdlc --cve</code></td>
             </tr>
           </tbody>
         </table>
