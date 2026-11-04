@@ -13,3 +13,7 @@ pentest-agent-development/source-books/
 .claude/.venvs/
 # MarkItDown — auto-generated converted documents (regenerable; may hold PII/secrets)
 *.converted.md
+
+# Python bytecode
+__pycache__/
+*.pyc

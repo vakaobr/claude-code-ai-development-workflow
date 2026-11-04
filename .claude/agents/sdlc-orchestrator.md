@@ -434,16 +434,17 @@ Agent(
     and guard untested call sites with characterization tests first.
     Show actual command output for the baseline and final validation. Do not weaken tests.
 
-    Produce a clear PASS, RESIDUAL or BLOCKED verdict.
+    Produce a clear PASS, PASS (runtime unvalidated), RESIDUAL or BLOCKED verdict.
   "
 )
 ```
 
 **After complete:**
 1. Read `docs/{issue_name}/CVE_REMEDIATION.md`. Verify the final scan and validation output are present, and the verdict matches the Residual table.
-2. Update STATE.json: `CVE_REMEDIATION.md: "complete"`, `cve_verdict: "{pass|residual|blocked}"`
+2. Update STATE.json: `CVE_REMEDIATION.md: "complete"`, `cve_verdict: "{pass|pass_unvalidated|residual|blocked}"`
 3. By verdict:
    - **PASS / RESIDUAL:** `current_phase: "review"`. Notify: `✅ CVE Gate {PASS|RESIDUAL}: {N} packages fixed, {M} residual → Parallel Expert Review`
+   - **PASS (runtime unvalidated):** `current_phase: "review"`. Notify: `⚠️ CVE Gate PASS, runtime unvalidated: {N} packages fixed; the owner must run the checks listed in CVE_REMEDIATION.md before merge → Parallel Expert Review`
    - **BLOCKED** (a Critical or KEV item is left): `current_phase: "blocked"`. Show the Residual table and ask the user to choose: accept the risk (then record it in CVE_REMEDIATION.md, set `cve_verdict: "residual"` and continue), approve a replacement package (re-run this phase), or fix it by hand and `--resume`.
 
 ---
@@ -679,7 +680,8 @@ Read all expert artifacts and write `docs/{issue_name}/PRODUCTION_READINESS.md`:
 
 ## Dependency CVEs
 
-- [x/·] CVE Gate: {PASS | RESIDUAL | BLOCKED} (CVE_REMEDIATION.md): {N} packages fixed, {M} residual
+- [x/·] CVE Gate: {PASS | PASS (runtime unvalidated) | RESIDUAL | BLOCKED} (CVE_REMEDIATION.md): {N} packages fixed, {M} residual
+- {if runtime unvalidated: the checks the owner must run before merge}
 - {each residual item: package, severity, deadline, mitigation or accepted-risk note}
 
 A residual Critical or KEV item without a recorded risk acceptance makes the Final Verdict BLOCKED.
@@ -901,7 +903,7 @@ Workflow is PRODUCTION_READY only when:
 - [x] PLAN.md — implementation plan with validation checkpoints
 - [x] DESIGN_REVIEW.md: Goldfish review APPROVED with no open decision, or skipped with a recorded reason
 - [x] IMPLEMENTATION.md — all phases complete, actual test output present
-- [x] CVE_REMEDIATION.md: PASS, or RESIDUAL with every Critical/KEV item risk-accepted
+- [x] CVE_REMEDIATION.md: PASS (if runtime unvalidated, the owner has run the listed checks), or RESIDUAL with every Critical/KEV item risk-accepted
 - [x] SECURITY.md — APPROVED
 - [x] QA.md — APPROVED
 - [x] SRE.md — APPROVED
